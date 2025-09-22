@@ -661,7 +661,7 @@ class ProductResource extends Resource
                                 $content = '';
 
                                 // Показываем уточнение если есть
-                                if ($record->hasCorrection()) {
+                                if ($record->correction_status === 'correction' && ! empty($record->correction)) {
                                     $correctionText = $record->correction ?? 'Нет текста уточнения';
                                     $updatedAt = $record->updated_at?->format('d.m.Y H:i') ?? 'Неизвестно';
 
@@ -670,7 +670,7 @@ class ProductResource extends Resource
                                 }
 
                                 // Показываем информацию о скорректированном статусе
-                                if ($record->isRevised()) {
+                                if ($record->correction_status === 'revised') {
                                     $user = auth()->user();
                                     $userName = $user ? $user->name : 'Неизвестный сотрудник';
                                     $revisedAt = now()->format('d.m.Y H:i');
@@ -680,10 +680,10 @@ class ProductResource extends Resource
 
                                 return $content;
                             })
-                            ->visible(fn (?Product $record): bool => $record && $record->hasCorrectionOrRevised())
+                            ->visible(fn (?Product $record): bool => $record && ($record->correction_status === 'correction' || $record->correction_status === 'revised'))
                             ->columnSpanFull(),
                     ])
-                    ->visible(fn (?Product $record): bool => $record && $record->hasCorrectionOrRevised())
+                    ->visible(true)
                     ->collapsible(false)
                     ->icon('heroicon-o-exclamation-triangle'),
 

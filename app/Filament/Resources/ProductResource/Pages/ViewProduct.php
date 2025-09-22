@@ -208,18 +208,29 @@ class ViewProduct extends ViewRecord
                         Infolists\Components\TextEntry::make('correction_info')
                             ->label('')
                             ->state(function () {
-                                if (! $this->record->hasCorrection()) {
-                                    return null;
-                                }
-                                $correctionText = $this->record->correction ?? 'Нет текста уточнения';
-                                $updatedAt = $this->record->updated_at?->format('d.m.Y H:i') ?? 'Неизвестно';
+                                $content = '';
 
-                                return "⚠️ **У товара есть уточнение:** \"{$correctionText}\"\n\n*Дата внесения:* {$updatedAt}";
+                                if ($this->record->hasCorrection()) {
+                                    $correctionText = $this->record->correction ?? 'Нет текста уточнения';
+                                    $updatedAt = $this->record->updated_at?->format('d.m.Y H:i') ?? 'Неизвестно';
+
+                                    $content .= "⚠️ **У товара есть уточнение:** \"{$correctionText}\"\n\n*Дата внесения:* {$updatedAt}\n\n";
+                                }
+
+                                if ($this->record->isRevised()) {
+                                    $user = auth()->user();
+                                    $userName = $user ? $user->name : 'Неизвестный сотрудник';
+                                    $revisedAt = now()->format('d.m.Y H:i');
+
+                                    $content .= "✅ **Данные скорректированы** \"{$userName}\" {$revisedAt}";
+                                }
+
+                                return $content !== '' ? $content : null;
                             })
                             ->markdown()
                             ->columnSpanFull(),
                     ])
-                    ->visible(fn (): bool => $this->record->hasCorrection())
+                    ->visible(fn (): bool => $this->record->hasCorrectionOrRevised())
                     ->icon('heroicon-o-exclamation-triangle'),
 
                 // Секция с документами
