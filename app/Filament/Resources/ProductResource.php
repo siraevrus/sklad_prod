@@ -654,7 +654,7 @@ class ProductResource extends Resource
                         Forms\Components\Placeholder::make('correction_info')
                             ->label('')
                             ->content(function (?Product $record): string {
-                                if (! $record || ! $record->hasCorrectionOrRevised()) {
+                                if (! $record) {
                                     return '';
                                 }
 
