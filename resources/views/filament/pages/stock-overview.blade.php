@@ -34,6 +34,7 @@
                             : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 border-transparent'"
                         class="border-b-2 py-2 md:py-3 px-3 md:px-4 text-sm font-medium rounded-t-md transition-colors duration-200 inline-flex items-center whitespace-nowrap"
                     >
+                        <span x-show="activeTab === 'producers'" class="mr-1">✅</span>
                         По производителям
                         <span :class="activeTab === 'producers' ? 'bg-primary-100 dark:bg-primary-800/50 text-primary-700 dark:text-primary-200' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'" class="ml-2 inline-flex items-center rounded-full px-2 py-0.5 text-xs">{{ $producerCount }}</span>
                     </button>
@@ -44,6 +45,7 @@
                             : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 border-transparent'"
                         class="border-b-2 py-2 md:py-3 px-3 md:px-4 text-sm font-medium rounded-t-md transition-colors duration-200 inline-flex items-center whitespace-nowrap"
                     >
+                        <span x-show="activeTab === 'warehouses'" class="mr-1">✅</span>
                         По складам
                         <span :class="activeTab === 'warehouses' ? 'bg-primary-100 dark:bg-primary-800/50 text-primary-700 dark:text-primary-200' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'" class="ml-2 inline-flex items-center rounded-full px-2 py-0.5 text-xs">{{ $warehouseCount }}</span>
                     </button>
@@ -54,6 +56,7 @@
                             : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 border-transparent'"
                         class="border-b-2 py-2 md:py-3 px-3 md:px-4 text-sm font-medium rounded-t-md transition-colors duration-200 inline-flex items-center whitespace-nowrap"
                     >
+                        <span x-show="activeTab === 'companies'" class="mr-1">✅</span>
                         Компании
                         <span :class="activeTab === 'companies' ? 'bg-primary-100 dark:bg-primary-800/50 text-primary-700 dark:text-primary-200' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'" class="ml-2 inline-flex items-center rounded-full px-2 py-0.5 text-xs">{{ $companyCount }}</span>
                     </button>
