@@ -18,22 +18,22 @@ class ViewProduct extends ViewRecord
         return [
             Actions\EditAction::make()
                 ->label('Изменить'),
-            
-            Actions\Action::make('clear_correction')
+
+            Actions\Action::make('mark_revised')
                 ->label('Скорректировано')
                 ->icon('heroicon-o-check-circle')
                 ->color('success')
                 ->requiresConfirmation()
-                ->visible(fn (): bool => $this->record->hasCorrection())
+                ->visible(fn (): bool => $this->record->hasCorrection() && ! $this->record->isRevised())
                 ->action(function (): void {
-                    $this->record->clearCorrectionStatus();
-                    
+                    $this->record->markAsRevised();
+
                     \Filament\Notifications\Notification::make()
-                        ->title('Статус коррекции сброшен')
-                        ->body('Товар возвращен к обычному статусу')
+                        ->title('Товар отмечен как скорректированный')
+                        ->body('Статус товара изменен на "Скорректировано"')
                         ->success()
                         ->send();
-                        
+
                     $this->redirect($this->getResource()::getUrl('view', ['record' => $this->record]));
                 })
                 ->modalHeading('Подтверждение о внесении изменения')
@@ -84,7 +84,10 @@ class ViewProduct extends ViewRecord
                                     if ($this->record->hasCorrection()) {
                                         return 'danger';
                                     }
-                                    
+                                    if ($this->record->isRevised()) {
+                                        return 'success';
+                                    }
+
                                     return match ($this->record->status) {
                                         'in_stock' => 'success',
                                         'in_transit' => 'warning',
@@ -96,7 +99,10 @@ class ViewProduct extends ViewRecord
                                     if ($this->record->hasCorrection()) {
                                         return 'Коррекция';
                                     }
-                                    
+                                    if ($this->record->isRevised()) {
+                                        return 'Скорректировано';
+                                    }
+
                                     return match ($this->record->status) {
                                         'in_stock' => 'На складе',
                                         'in_transit' => 'В пути',

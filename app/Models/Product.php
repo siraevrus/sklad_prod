@@ -727,6 +727,22 @@ class Product extends Model
     }
 
     /**
+     * Проверить, скорректирован ли товар
+     */
+    public function isRevised(): bool
+    {
+        return $this->correction_status === 'revised';
+    }
+
+    /**
+     * Проверить, есть ли коррекция или товар скорректирован
+     */
+    public function hasCorrectionOrRevised(): bool
+    {
+        return $this->hasCorrection() || $this->isRevised();
+    }
+
+    /**
      * Добавить уточнение к товару
      */
     public function addCorrection(string $correctionText): bool
@@ -756,6 +772,16 @@ class Product extends Model
         return $this->update([
             'correction' => null,
             'correction_status' => null,
+        ]);
+    }
+
+    /**
+     * Отметить товар как скорректированный
+     */
+    public function markAsRevised(): bool
+    {
+        return $this->update([
+            'correction_status' => 'revised',
         ]);
     }
 }

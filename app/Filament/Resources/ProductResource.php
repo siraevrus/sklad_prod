@@ -654,20 +654,36 @@ class ProductResource extends Resource
                         Forms\Components\Placeholder::make('correction_info')
                             ->label('')
                             ->content(function (?Product $record): string {
-                                if (! $record || ! $record->hasCorrection()) {
+                                if (! $record || ! $record->hasCorrectionOrRevised()) {
                                     return '';
                                 }
 
-                                $correctionText = $record->correction ?? 'Нет текста уточнения';
-                                $updatedAt = $record->updated_at?->format('d.m.Y H:i') ?? 'Неизвестно';
+                                $content = '';
 
-                                return "⚠️ **У товара есть уточнение:** \"{$correctionText}\"\n\n".
-                                       "*Дата внесения:* {$updatedAt}";
+                                // Показываем уточнение если есть
+                                if ($record->hasCorrection()) {
+                                    $correctionText = $record->correction ?? 'Нет текста уточнения';
+                                    $updatedAt = $record->updated_at?->format('d.m.Y H:i') ?? 'Неизвестно';
+
+                                    $content .= "⚠️ **У товара есть уточнение:** \"{$correctionText}\"\n\n".
+                                              "*Дата внесения:* {$updatedAt}\n\n";
+                                }
+
+                                // Показываем информацию о скорректированном статусе
+                                if ($record->isRevised()) {
+                                    $user = auth()->user();
+                                    $userName = $user ? $user->name : 'Неизвестный сотрудник';
+                                    $revisedAt = now()->format('d.m.Y H:i');
+
+                                    $content .= "✅ **Данные скорректированы** \"{$userName}\" {$revisedAt}";
+                                }
+
+                                return $content;
                             })
-                            ->visible(fn (?Product $record): bool => $record && $record->hasCorrection())
+                            ->visible(fn (?Product $record): bool => $record && $record->hasCorrectionOrRevised())
                             ->columnSpanFull(),
                     ])
-                    ->visible(fn (?Product $record): bool => $record && $record->hasCorrection())
+                    ->visible(fn (?Product $record): bool => $record && $record->hasCorrectionOrRevised())
                     ->collapsible(false)
                     ->icon('heroicon-o-exclamation-triangle'),
 
@@ -793,11 +809,21 @@ class ProductResource extends Resource
                     ->searchable()
                     ->sortable()
                     ->color(function (?Product $record): ?string {
-                        return $record && $record->hasCorrection() ? 'danger' : null;
+                        if ($record && $record->hasCorrection()) {
+                            return 'danger';
+                        }
+                        if ($record && $record->isRevised()) {
+                            return 'success';
+                        }
+
+                        return null;
                     })
                     ->formatStateUsing(function (string $state, ?Product $record): string {
                         if ($record && $record->hasCorrection()) {
                             return '⚠️ '.e($state);
+                        }
+                        if ($record && $record->isRevised()) {
+                            return '✅ '.e($state);
                         }
 
                         return e($state);
@@ -935,10 +961,12 @@ class ProductResource extends Resource
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
                         'correction' => 'danger',
+                        'revised' => 'success',
                         default => 'gray',
                     })
                     ->formatStateUsing(fn (string $state): string => match ($state) {
                         'correction' => 'Коррекция',
+                        'revised' => 'Скорректировано',
                         default => 'Нет',
                     })
                     ->sortable(),
