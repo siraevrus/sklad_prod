@@ -2,9 +2,12 @@
 
 namespace Tests\Feature\Integration;
 
+use App\Filament\Resources\ReceiptResource\Pages\ViewReceipt;
 use App\Models\Product;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Filament\Facades\Filament;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class ReceiptsFlowTest extends TestCase
@@ -33,5 +36,26 @@ class ReceiptsFlowTest extends TestCase
         $this->get('/admin/receipts/'.$product->id)->assertStatus(404);
         $response = $this->get('/admin/receipts/'.$product->id.'/edit');
         $this->assertContains($response->status(), [200, 404]);
+    }
+
+    public function test_save_correction_accepts_and_redirects(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $product = Product::factory()->inTransit()->create([
+            'status' => Product::STATUS_FOR_RECEIPT,
+        ]);
+        $this->actingAs($admin);
+        Filament::setCurrentPanel(Filament::getPanel('admin'));
+
+        Livewire::test(ViewReceipt::class, ['record' => $product->getKey()])
+            ->callAction('correction', data: ['correction' => 'Уточнение по товару 12345'])
+            ->assertHasNoActionErrors();
+
+        $product->refresh();
+        $this->assertEquals(Product::STATUS_IN_STOCK, $product->status);
+        $this->assertNotNull($product->actual_arrival_date);
+
+        $response = $this->get('/admin/receipts');
+        $response->assertStatus(200);
     }
 }

@@ -38,11 +38,20 @@ class ViewReceipt extends ViewRecord
                 ->action(function (Product $record, array $data): void {
                     $record->addCorrection($data['correction']);
 
+                    // При сохранении уточнения сразу принимаем товар
+                    $record->update([
+                        'status' => Product::STATUS_IN_STOCK,
+                        'actual_arrival_date' => now(),
+                    ]);
+
                     Notification::make()
-                        ->title('Уточнение сохранено')
-                        ->body('Уточнение успешно добавлено к товару.')
+                        ->title('Уточнение сохранено и товар принят')
+                        ->body('Уточнение сохранено. Товар добавлен в остатки и вы перенаправлены к списку.')
                         ->success()
                         ->send();
+
+                    // Закрываем модалку и уходим на список приходов
+                    $this->redirect(ReceiptResource::getUrl('index'));
                 })
                 ->modalHeading('Внести уточнение')
                 ->modalDescription('Укажите дополнительную информацию или уточнения по данному товару')
