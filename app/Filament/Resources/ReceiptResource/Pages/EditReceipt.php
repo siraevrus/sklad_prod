@@ -72,12 +72,14 @@ class EditReceipt extends EditRecord
     protected function mutateFormDataBeforeFill(array $data): array
     {
         // Логируем исходные данные для отладки
-        \Log::info('EditReceipt: mutateFormDataBeforeFill input', [
-            'has_attributes' => isset($data['attributes']),
-            'attributes_type' => gettype($data['attributes'] ?? 'not set'),
-            'attributes' => $data['attributes'] ?? 'not set',
-            'product_template_id' => $data['product_template_id'] ?? 'not set',
-        ]);
+        if (config('app.debug')) {
+            \Log::debug('EditReceipt: mutateFormDataBeforeFill input', [
+                'has_attributes' => isset($data['attributes']),
+                'attributes_type' => gettype($data['attributes'] ?? 'not set'),
+                'attributes' => $data['attributes'] ?? 'not set',
+                'product_template_id' => $data['product_template_id'] ?? 'not set',
+            ]);
+        }
 
         // Преобразуем attributes в поля для репитера товаров (один товар)
         $item = [
@@ -89,15 +91,17 @@ class EditReceipt extends EditRecord
             'description' => $data['description'] ?? null,
             'actual_arrival_date' => $data['actual_arrival_date'] ?? null,
         ];
-        
+
         if (isset($data['attributes']) && is_array($data['attributes'])) {
             foreach ($data['attributes'] as $key => $value) {
                 $item["attribute_{$key}"] = $value;
-                \Log::info("EditReceipt: Adding attribute", [
-                    'key' => $key,
-                    'value' => $value,
-                    'field_name' => "attribute_{$key}"
-                ]);
+                if (config('app.debug')) {
+                    \Log::debug('EditReceipt: Adding attribute', [
+                        'key' => $key,
+                        'value' => $value,
+                        'field_name' => "attribute_{$key}",
+                    ]);
+                }
             }
         } elseif (isset($data['attributes']) && is_string($data['attributes'])) {
             // Если attributes сохранены как JSON строка
@@ -105,26 +109,29 @@ class EditReceipt extends EditRecord
             if (is_array($attributes)) {
                 foreach ($attributes as $key => $value) {
                     $item["attribute_{$key}"] = $value;
-                    \Log::info("EditReceipt: Adding attribute from JSON", [
-                        'key' => $key,
-                        'value' => $value,
-                        'field_name' => "attribute_{$key}"
-                    ]);
+                    if (config('app.debug')) {
+                        \Log::debug('EditReceipt: Adding attribute from JSON', [
+                            'key' => $key,
+                            'value' => $value,
+                            'field_name' => "attribute_{$key}",
+                        ]);
+                    }
                 }
             }
         }
-        
+
         $data['products'] = [$item];
 
-        \Log::info('EditReceipt: mutateFormDataBeforeFill output', [
-            'item_keys' => array_keys($item),
-            'products_count' => count($data['products']),
-            'first_product_keys' => array_keys($data['products'][0]),
-        ]);
+        if (config('app.debug')) {
+            \Log::debug('EditReceipt: mutateFormDataBeforeFill output', [
+                'item_keys' => array_keys($item),
+                'products_count' => count($data['products']),
+                'first_product_keys' => array_keys($data['products'][0]),
+            ]);
+        }
 
         return $data;
     }
-
 
     protected function mutateFormDataBeforeSave(array $data): array
     {
@@ -165,18 +172,18 @@ class EditReceipt extends EditRecord
             $data['calculated_volume'] = $firstProduct['calculated_volume'] ?? null;
 
             // Генерируем имя, если оно пустое
-            if (empty($data['name']) && !empty($data['product_template_id'])) {
+            if (empty($data['name']) && ! empty($data['product_template_id'])) {
                 $template = \App\Models\ProductTemplate::find($data['product_template_id']);
-                if ($template && !empty($existingAttributes)) {
+                if ($template && ! empty($existingAttributes)) {
                     $nameParts = [];
                     foreach ($template->attributes as $attribute) {
-                        if (isset($existingAttributes[$attribute->variable]) && !empty($existingAttributes[$attribute->variable])) {
+                        if (isset($existingAttributes[$attribute->variable]) && ! empty($existingAttributes[$attribute->variable])) {
                             $nameParts[] = $existingAttributes[$attribute->variable];
                         }
                     }
-                    
-                    if (!empty($nameParts)) {
-                        $data['name'] = $template->name . ': ' . implode(', ', $nameParts);
+
+                    if (! empty($nameParts)) {
+                        $data['name'] = $template->name.': '.implode(', ', $nameParts);
                     } else {
                         $data['name'] = $template->name ?? 'Товар';
                     }
@@ -199,23 +206,29 @@ class EditReceipt extends EditRecord
                     }
 
                     // Логируем атрибуты для отладки
-                    \Log::info('EditReceipt: Attributes for formula', [
-                        'template' => $template->name,
-                        'existing_attributes' => $existingAttributes,
-                        'formula_attributes' => $formulaAttributes,
-                        'quantity' => $data['quantity'] ?? 'not set',
-                        'formula' => $template->formula,
-                    ]);
+                    if (config('app.debug')) {
+                        \Log::debug('EditReceipt: Attributes for formula', [
+                            'template' => $template->name,
+                            'existing_attributes' => $existingAttributes,
+                            'formula_attributes' => $formulaAttributes,
+                            'quantity' => $data['quantity'] ?? 'not set',
+                            'formula' => $template->formula,
+                        ]);
+                    }
 
                     $testResult = $template->testFormula($formulaAttributes);
-                    \Log::info('EditReceipt: Formula result', $testResult);
+                    if (config('app.debug')) {
+                        \Log::debug('EditReceipt: Formula result', $testResult);
+                    }
 
                     if ($testResult['success']) {
                         $result = $testResult['result'];
                         $data['calculated_volume'] = $result;
-                        \Log::info('EditReceipt: Volume calculated and saved', [
-                            'calculated_volume' => $result,
-                        ]);
+                        if (config('app.debug')) {
+                            \Log::debug('EditReceipt: Volume calculated and saved', [
+                                'calculated_volume' => $result,
+                            ]);
+                        }
                     } else {
                         \Log::warning('EditReceipt: Volume calculation failed', [
                             'error' => $testResult['error'],
@@ -225,10 +238,12 @@ class EditReceipt extends EditRecord
                 }
             } else {
                 // Если нет характеристик для расчета, сохраняем существующий объем
-                \Log::info('EditReceipt: No attributes for volume calculation, keeping existing volume', [
-                    'existing_volume' => $data['calculated_volume'] ?? 'not set',
-                    'attributes_count' => count($attributes ?? []),
-                ]);
+                if (config('app.debug')) {
+                    \Log::debug('EditReceipt: No attributes for volume calculation, keeping existing volume', [
+                        'existing_volume' => $data['calculated_volume'] ?? 'not set',
+                        'attributes_count' => count($attributes ?? []),
+                    ]);
+                }
             }
 
             // Формируем наименование из характеристик
@@ -246,11 +261,15 @@ class EditReceipt extends EditRecord
                     if (! empty($nameParts)) {
                         $templateName = $template->name ?? 'Товар';
                         $data['name'] = $templateName.': '.implode(', ', $nameParts);
-                        \Log::info('EditReceipt: Name generated', ['name' => $data['name']]);
+                        if (config('app.debug')) {
+                            \Log::debug('EditReceipt: Name generated', ['name' => $data['name']]);
+                        }
                     } else {
                         // Если не удалось сформировать имя из характеристик, используем название шаблона
                         $data['name'] = $template->name ?? 'Товар';
-                        \Log::info('EditReceipt: Using template name', ['name' => $data['name']]);
+                        if (config('app.debug')) {
+                            \Log::debug('EditReceipt: Using template name', ['name' => $data['name']]);
+                        }
                     }
                 }
             }
