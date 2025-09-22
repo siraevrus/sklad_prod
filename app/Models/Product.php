@@ -723,7 +723,7 @@ class Product extends Model
      */
     public function hasCorrection(): bool
     {
-        return $this->correction_status === 'correction' && ! empty($this->correction);
+        return ($this->correction_status === 'correction' || $this->correction_status === 'revised') && ! empty($this->correction);
     }
 
     /**
