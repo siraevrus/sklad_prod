@@ -13,6 +13,44 @@ use Illuminate\Support\Facades\Cache;
 class ProductController extends Controller
 {
     /**
+     * Build product name from template and attributes (UI-consistent).
+     */
+    private function buildNameFromAttributes(ProductTemplate $template, array $attributes): string
+    {
+        $formulaParts = [];
+        $regularParts = [];
+
+        foreach ($template->attributes as $templateAttribute) {
+            $key = $templateAttribute->variable;
+            if ($templateAttribute->type !== 'text' && array_key_exists($key, $attributes) && $attributes[$key] !== null && $attributes[$key] !== '') {
+                $value = $attributes[$key];
+                if (property_exists($templateAttribute, 'is_in_formula') && $templateAttribute->is_in_formula) {
+                    $formulaParts[] = $value;
+                } else {
+                    $regularParts[] = $value;
+                }
+            }
+        }
+
+        $templateName = $template->name ?? 'Товар';
+        if (empty($formulaParts) && empty($regularParts)) {
+            return $templateName;
+        }
+
+        $name = $templateName;
+        if (! empty($formulaParts)) {
+            $name .= ': '.implode(' x ', $formulaParts);
+        }
+        if (! empty($regularParts)) {
+            $name .= empty($formulaParts)
+                ? ': '.implode(', ', $regularParts)
+                : ', '.implode(', ', $regularParts);
+        }
+
+        return $name;
+    }
+
+    /**
      * Получение списка товаров
      */
     public function index(Request $request): JsonResponse
@@ -116,19 +154,13 @@ class ProductController extends Controller
             }
         }
 
-        // Генерируем имя из атрибутов, если оно не предоставлено
+        // Генерируем имя из атрибутов, если оно не предоставлено (UI-consistent)
         $name = $request->name;
-        if (! $name && $request->has('attributes')) {
+        $attributes = $request->get('attributes', []);
+        if (! $name && ! empty($attributes)) {
             $template = ProductTemplate::find($request->product_template_id);
             if ($template) {
-                $nameParts = [];
-                foreach ($template->attributes as $templateAttribute) {
-                    $attributeKey = $templateAttribute->variable;
-                    if ($templateAttribute->type !== 'text' && isset($request->attributes[$attributeKey]) && $request->attributes[$attributeKey] !== null) {
-                        $nameParts[] = $request->attributes[$attributeKey];
-                    }
-                }
-                $name = $template->name.': '.implode(', ', $nameParts);
+                $name = $this->buildNameFromAttributes($template, $attributes);
             }
         }
 
@@ -138,7 +170,7 @@ class ProductController extends Controller
             'created_by' => $user->id,
             'name' => $name ?? 'Товар без названия',
             'description' => $request->description,
-            'attributes' => $request->get('attributes', []),
+            'attributes' => $attributes,
             'quantity' => $request->quantity,
             'transport_number' => $request->get('transport_number'), // Номер транспортного средства
             'producer_id' => $request->producer_id, // Используем producer_id
@@ -178,10 +210,20 @@ class ProductController extends Controller
             'is_active' => 'boolean',
         ]);
 
-        $product->update($request->only([
+        // If attributes provided and name not explicitly provided, regenerate name
+        $payload = $request->only([
             'name', 'description', 'attributes', 'quantity',
             'transport_number', 'producer', 'arrival_date', 'is_active',
-        ]));
+        ]);
+
+        if ($request->has('attributes') && ! $request->filled('name')) {
+            $template = ProductTemplate::find($product->product_template_id);
+            if ($template) {
+                $payload['name'] = $this->buildNameFromAttributes($template, $request->get('attributes', []));
+            }
+        }
+
+        $product->update($payload);
 
         // Пересчитываем объем если изменились атрибуты
         if ($request->has('attributes')) {
