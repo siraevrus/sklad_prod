@@ -1055,7 +1055,10 @@ class ProductResource extends Resource
                     ->query(function (Builder $query, array $data): Builder {
                         return $query->when(
                             $data['has_correction'],
-                            fn (Builder $query): Builder => $query->where('correction_status', 'correction')
+                            fn (Builder $query): Builder => $query
+                                ->whereIn('correction_status', ['correction', 'revised'])
+                                ->whereNotNull('correction')
+                                ->where('correction', '!=', '')
                         );
                     })
                     ->form([
