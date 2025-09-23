@@ -75,6 +75,79 @@ class DashboardController extends Controller
             'latest_sales' => $latestSales,
         ]);
     }
+
+    /**
+     * Revenue by currencies for the selected period.
+     */
+    public function revenue(): JsonResponse
+    {
+        $period = request('period', 'day'); // day, week, month, custom
+        $dateFrom = request('date_from');
+        $dateTo = request('date_to');
+
+        // Resolve date range
+        if ($period !== 'custom') {
+            switch ($period) {
+                case 'week':
+                    $start = now()->startOfWeek();
+                    $end = now()->endOfWeek();
+                    break;
+                case 'month':
+                    $start = now()->startOfMonth();
+                    $end = now()->endOfMonth();
+                    break;
+                case 'day':
+                default:
+                    $start = now()->startOfDay();
+                    $end = now()->endOfDay();
+                    $period = 'day';
+                    break;
+            }
+        } else {
+            // custom
+            $start = $dateFrom ? \Illuminate\Support\Carbon::parse($dateFrom)->startOfDay() : now()->startOfDay();
+            $end = $dateTo ? \Illuminate\Support\Carbon::parse($dateTo)->endOfDay() : now()->endOfDay();
+        }
+
+        // Base query: only paid sales in date range
+        $base = Sale::query()
+            ->where('payment_status', Sale::PAYMENT_STATUS_PAID)
+            ->when(schema_has_column('sales', 'sale_date'), function ($q) use ($start, $end) {
+                /** @var \Illuminate\Database\Eloquent\Builder $q */
+                $q->whereBetween('sale_date', [$start->toDateString(), $end->toDateString()]);
+            }, function ($q) use ($start, $end) {
+                /** @var \Illuminate\Database\Eloquent\Builder $q */
+                $q->whereBetween('created_at', [$start, $end]);
+            });
+
+        // Sum by currency
+        $currencies = ['USD', 'RUB', 'UZS'];
+        $revenue = [];
+        foreach ($currencies as $currency) {
+            $amount = (clone $base)->where('currency', $currency)->sum('total_price');
+            $revenue[$currency] = [
+                'amount' => (float) $amount,
+                'formatted' => $this->formatCurrency((float) $amount, $currency),
+            ];
+        }
+
+        return response()->json([
+            'period' => $period,
+            'date_from' => $start->toDateString(),
+            'date_to' => $end->toDateString(),
+            'revenue' => $revenue,
+        ]);
+    }
+
+    private function formatCurrency(float $amount, string $currency): string
+    {
+        return match ($currency) {
+            'USD' => number_format($amount, 2, '.', ' ').' $',
+            'RUB' => number_format($amount, 2, '.', ' ').' ₽',
+            'UZS' => number_format($amount, 2, '.', ' ').' UZS',
+            default => number_format($amount, 2, '.', ' ').' '.$currency,
+        };
+    }
 }
 
 if (! function_exists('schema_has_column')) {
