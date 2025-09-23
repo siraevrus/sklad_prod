@@ -105,8 +105,16 @@ class ProductController extends Controller
             'quantity' => 'required|integer|min:1',
             'transport_number' => 'nullable|string|max:255', // Номер транспортного средства
             'producer' => 'nullable|string|max:255',
+            'producer_id' => 'nullable|exists:producers,id',
             'arrival_date' => 'sometimes|date',
             'is_active' => 'boolean',
+            // Дополнительные поля для статуса "в пути"
+            'status' => 'sometimes|in:in_stock,in_transit,for_receipt',
+            'shipping_location' => 'nullable|string|max:255',
+            'shipping_date' => 'nullable|date',
+            'expected_arrival_date' => 'nullable|date',
+            'notes' => 'nullable|string|max:1000',
+            'document_path' => 'nullable|array',
         ]);
 
         $user = Auth::user();
@@ -149,10 +157,23 @@ class ProductController extends Controller
             'producer_id' => $request->producer_id, // Используем producer_id
             'arrival_date' => $request->get('arrival_date', now()->toDateString()),
             'is_active' => $request->get('is_active', true),
+            // Поля доставки, если переданы
+            'shipping_location' => $request->get('shipping_location'),
+            'shipping_date' => $request->get('shipping_date'),
+            'expected_arrival_date' => $request->get('expected_arrival_date'),
+            'notes' => $request->get('notes'),
+            'document_path' => $request->get('document_path', []),
+            // Статус, если передан, иначе по умолчанию остаётся in_stock (по миграции)
+            'status' => $request->get('status', Product::STATUS_IN_STOCK),
         ]);
 
         // Рассчитываем объем
         $product->updateCalculatedVolume();
+
+        // Если создаём как "в пути" — фиксируем это и создаём запись в таблице товаров в пути
+        if ($request->get('status') === Product::STATUS_IN_TRANSIT) {
+            $product->markInTransit();
+        }
 
         return response()->json([
             'message' => 'Товар создан',
