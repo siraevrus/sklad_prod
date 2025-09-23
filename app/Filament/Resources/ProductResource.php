@@ -809,21 +809,21 @@ class ProductResource extends Resource
                     ->searchable()
                     ->sortable()
                     ->color(function (?Product $record): ?string {
-                        if ($record && $record->hasCorrection()) {
-                            return 'danger';
-                        }
                         if ($record && $record->isRevised()) {
                             return 'success';
+                        }
+                        if ($record && $record->hasCorrection()) {
+                            return 'danger';
                         }
 
                         return null;
                     })
                     ->formatStateUsing(function (string $state, ?Product $record): string {
+                        if ($record && $record->isRevised()) {
+                            return e($state);
+                        }
                         if ($record && $record->hasCorrection()) {
                             return '⚠️ '.e($state);
-                        }
-                        if ($record && $record->isRevised()) {
-                            return '✅ '.e($state);
                         }
 
                         return e($state);
