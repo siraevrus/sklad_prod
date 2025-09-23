@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: Sklad API
-  version: 1.2.0
+  version: 1.2.1
   description: |
     Машиночитаемая спецификация API для системы управления складом. 
     Использует аутентификацию Laravel Sanctum через Bearer токен.
@@ -43,6 +43,10 @@ tags:
     description: Остатки товаров
   - name: Dashboard
     description: Агрегированные данные Инфопанели
+  - name: Producers
+    description: Управление производителями
+  - name: Discrepancies
+    description: Управление расхождениями
 
 security:
   - bearerAuth: []
@@ -308,7 +312,7 @@ paths:
                   message:
                     type: string
                     example: "Товар создан"
-                  data:
+                  product:
                     $ref: '#/components/schemas/Product'
         '422':
           $ref: '#/components/responses/ValidationError'
@@ -1253,7 +1257,26 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedReceipts'
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Product'
+                  pagination:
+                    type: object
+                    properties:
+                      current_page:
+                        type: integer
+                      last_page:
+                        type: integer
+                      per_page:
+                        type: integer
+                      total:
+                        type: integer
 
     post:
       tags: [Receipts]
@@ -1326,7 +1349,26 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedReceipts'
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Product'
+                  pagination:
+                    type: object
+                    properties:
+                      current_page:
+                        type: integer
+                      last_page:
+                        type: integer
+                      per_page:
+                        type: integer
+                      total:
+                        type: integer
 
   # === STOCKS ===
   /stocks:
@@ -1428,6 +1470,238 @@ paths:
                           type: string
                           format: date-time
                           example: "2025-09-17T13:45:00Z"
+
+  # === DISCREPANCIES ===
+  /discrepancies:
+    get:
+      tags: [Discrepancies]
+      summary: Получение списка расхождений
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PerPage'
+      responses:
+        '200':
+          description: Список расхождений
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedDiscrepancies'
+    post:
+      tags: [Discrepancies]
+      summary: Создание расхождения
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DiscrepancyInput'
+      responses:
+        '201':
+          description: Расхождение создано
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Discrepancy'
+
+  /dashboard/revenue:
+    get:
+      tags: [Dashboard]
+      summary: Выручка по валютам за период
+      parameters:
+        - name: period
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [day, week, month, custom]
+            default: day
+        - name: date_from
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: date_to
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Выручка по валютам
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  period:
+                    type: string
+                    example: week
+                  date_from:
+                    type: string
+                    format: date
+                    example: '2025-09-16'
+                  date_to:
+                    type: string
+                    format: date
+                    example: '2025-09-22'
+                  revenue:
+                    type: object
+                    properties:
+                      USD:
+                        type: object
+                        properties:
+                          amount:
+                            type: number
+                            example: 444
+                          formatted:
+                            type: string
+                            example: '444$'
+                      RUB:
+                        type: object
+                        properties:
+                          amount:
+                            type: number
+                            example: 244
+                          formatted:
+                            type: string
+                            example: '244 ₽'
+                      UZS:
+                        type: object
+                        properties:
+                          amount:
+                            type: number
+                            example: 0
+                          formatted:
+                            type: string
+                            example: '0 Сум'
+  /discrepancies/{discrepancy}:
+    get:
+      tags: [Discrepancies]
+      summary: Получение расхождения по ID
+      parameters:
+        - name: discrepancy
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Информация о расхождении
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Discrepancy'
+    put:
+      tags: [Discrepancies]
+      summary: Обновление расхождения
+      parameters:
+        - name: discrepancy
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DiscrepancyInput'
+      responses:
+        '200':
+          description: Расхождение обновлено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Discrepancy'
+    delete:
+      tags: [Discrepancies]
+      summary: Удаление расхождения
+      parameters:
+        - name: discrepancy
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Расхождение удалено
+
+  # === PRODUCERS ===
+  /producers:
+    get:
+      tags: [Producers]
+      summary: Получение списка производителей
+      responses:
+        '200':
+          description: Список производителей
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Producer'
+    post:
+      tags: [Producers]
+      summary: Создание производителя
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProducerInput'
+      responses:
+        '201':
+          description: Производитель создан
+
+  /producers/{producer}:
+    get:
+      tags: [Producers]
+      summary: Получение производителя по ID
+      parameters:
+        - name: producer
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Информация о производителе
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Producer'
+    put:
+      tags: [Producers]
+      summary: Обновление производителя
+      parameters:
+        - name: producer
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProducerInput'
+      responses:
+        '200':
+          description: Производитель обновлен
+    delete:
+      tags: [Producers]
+      summary: Удаление производителя
+      parameters:
+        - name: producer
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Производитель удален
 
 # === COMPONENTS ===
 components:
@@ -1894,9 +2168,13 @@ components:
           format: date
           nullable: true
         document_path:
-          type: string
+          type: array
+          items:
+            type: string
           nullable: true
-          example: "documents/product_1.pdf"
+          example:
+            - "documents/invoice_1.pdf"
+            - "documents/ttn_2.pdf"
         notes:
           type: string
           example: "Заметки о товаре"
@@ -1944,6 +2222,10 @@ components:
         arrival_date:
           type: string
           format: date
+        status:
+          type: string
+          description: Статус товара при создании. Передайте in_transit, чтобы запись попала в "Поступления".
+          enum: [in_stock, in_transit, for_receipt]
         shipping_location:
           type: string
         shipping_date:
@@ -1954,6 +2236,10 @@ components:
           format: date
         notes:
           type: string
+        document_path:
+          type: array
+          items:
+            type: string
         correction:
           type: number
           format: float
@@ -1968,6 +2254,14 @@ components:
         name:
           type: string
           example: "Металлургический завод"
+        region:
+          type: string
+          nullable: true
+          example: "Московская область"
+        products_count:
+          type: integer
+          example: 15
+          description: "Количество товаров этого производителя"
         created_at:
           type: string
           format: date-time
@@ -2231,6 +2525,118 @@ components:
         warehouse:
           $ref: '#/components/schemas/Warehouse'
 
+    ProducerInput:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          maxLength: 255
+        region:
+          type: string
+          maxLength: 255
+          nullable: true
+
+    Discrepancy:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        product_in_transit_id:
+          type: integer
+          example: 1
+        user_id:
+          type: integer
+          example: 1
+        reason:
+          type: string
+          example: "Повреждение при транспортировке"
+        old_quantity:
+          type: integer
+          nullable: true
+          example: 100
+        new_quantity:
+          type: integer
+          nullable: true
+          example: 95
+        old_color:
+          type: string
+          nullable: true
+          example: "Красный"
+        new_color:
+          type: string
+          nullable: true
+          example: "Синий"
+        old_size:
+          type: string
+          nullable: true
+          example: "L"
+        new_size:
+          type: string
+          nullable: true
+          example: "M"
+        old_weight:
+          type: number
+          format: float
+          nullable: true
+          example: 10.5
+        new_weight:
+          type: number
+          format: float
+          nullable: true
+          example: 9.8
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        product_in_transit:
+          $ref: '#/components/schemas/ProductInTransit'
+        user:
+          $ref: '#/components/schemas/User'
+
+    DiscrepancyInput:
+      type: object
+      required: [product_in_transit_id, reason]
+      properties:
+        product_in_transit_id:
+          type: integer
+        reason:
+          type: string
+          maxLength: 255
+        old_quantity:
+          type: integer
+          nullable: true
+        new_quantity:
+          type: integer
+          nullable: true
+        old_color:
+          type: string
+          maxLength: 255
+          nullable: true
+        new_color:
+          type: string
+          maxLength: 255
+          nullable: true
+        old_size:
+          type: string
+          maxLength: 255
+          nullable: true
+        new_size:
+          type: string
+          maxLength: 255
+          nullable: true
+        old_weight:
+          type: number
+          format: float
+          nullable: true
+        new_weight:
+          type: number
+          format: float
+          nullable: true
+
     # Paginated responses
     PaginatedUsers:
       type: object
@@ -2311,6 +2717,18 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Stock'
+        links:
+          $ref: '#/components/schemas/PaginationLinks'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+
+    PaginatedDiscrepancies:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Discrepancy'
         links:
           $ref: '#/components/schemas/PaginationLinks'
         meta:

@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: Sklad API
-  version: 1.2.0
+  version: 1.2.1
   description: |
     Машиночитаемая спецификация API для системы управления складом. 
     Использует аутентификацию Laravel Sanctum через Bearer токен.
@@ -312,7 +312,7 @@ paths:
                   message:
                     type: string
                     example: "Товар создан"
-                  data:
+                  product:
                     $ref: '#/components/schemas/Product'
         '422':
           $ref: '#/components/responses/ValidationError'
@@ -1257,7 +1257,26 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedReceipts'
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Product'
+                  pagination:
+                    type: object
+                    properties:
+                      current_page:
+                        type: integer
+                      last_page:
+                        type: integer
+                      per_page:
+                        type: integer
+                      total:
+                        type: integer
 
     post:
       tags: [Receipts]
@@ -1330,7 +1349,26 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedReceipts'
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Product'
+                  pagination:
+                    type: object
+                    properties:
+                      current_page:
+                        type: integer
+                      last_page:
+                        type: integer
+                      per_page:
+                        type: integer
+                      total:
+                        type: integer
 
   # === STOCKS ===
   /stocks:
@@ -2130,9 +2168,13 @@ components:
           format: date
           nullable: true
         document_path:
-          type: string
+          type: array
+          items:
+            type: string
           nullable: true
-          example: "documents/product_1.pdf"
+          example:
+            - "documents/invoice_1.pdf"
+            - "documents/ttn_2.pdf"
         notes:
           type: string
           example: "Заметки о товаре"
@@ -2180,6 +2222,10 @@ components:
         arrival_date:
           type: string
           format: date
+        status:
+          type: string
+          description: Статус товара при создании. Передайте in_transit, чтобы запись попала в "Поступления".
+          enum: [in_stock, in_transit, for_receipt]
         shipping_location:
           type: string
         shipping_date:
@@ -2190,6 +2236,10 @@ components:
           format: date
         notes:
           type: string
+        document_path:
+          type: array
+          items:
+            type: string
         correction:
           type: number
           format: float
