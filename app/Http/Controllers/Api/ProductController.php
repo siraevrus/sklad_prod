@@ -121,13 +121,16 @@ class ProductController extends Controller
         // Генерируем простое имя из атрибутов, если оно не предоставлено
         $name = $request->name;
         if (! $name && $request->has('attributes')) {
+            // Важно: $request->attributes — это служебный ParameterBag, а не входные данные
+            // Забираем пользовательские атрибуты корректно из input
+            $inputAttributes = (array) $request->input('attributes', []);
             $template = ProductTemplate::find($request->product_template_id);
             if ($template) {
                 $nameParts = [];
                 foreach ($template->attributes as $templateAttribute) {
                     $attributeKey = $templateAttribute->variable;
-                    if ($templateAttribute->type !== 'text' && isset($request->attributes[$attributeKey]) && $request->attributes[$attributeKey] !== null) {
-                        $nameParts[] = $request->attributes[$attributeKey];
+                    if ($templateAttribute->type !== 'text' && array_key_exists($attributeKey, $inputAttributes) && $inputAttributes[$attributeKey] !== null) {
+                        $nameParts[] = $inputAttributes[$attributeKey];
                     }
                 }
                 $name = $template->name.': '.implode(', ', $nameParts);
