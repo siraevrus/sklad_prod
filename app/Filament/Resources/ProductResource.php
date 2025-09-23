@@ -1056,7 +1056,7 @@ class ProductResource extends Resource
                         return $query->when(
                             $data['has_correction'],
                             fn (Builder $query): Builder => $query
-                                ->whereIn('correction_status', ['correction', 'revised'])
+                                ->where('correction_status', 'correction')
                                 ->whereNotNull('correction')
                                 ->where('correction', '!=', '')
                         );
@@ -1064,6 +1064,20 @@ class ProductResource extends Resource
                     ->form([
                         Forms\Components\Checkbox::make('has_correction')
                             ->label('Показать только товары с уточнениями'),
+                    ]),
+
+                Filter::make('has_revised')
+                    ->label('Скорректировано')
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query->when(
+                            $data['has_revised'],
+                            fn (Builder $query): Builder => $query
+                                ->where('correction_status', 'revised')
+                        );
+                    })
+                    ->form([
+                        Forms\Components\Checkbox::make('has_revised')
+                            ->label('Показать только товары с корректировкой'),
                     ]),
             ])
             ->actions([
