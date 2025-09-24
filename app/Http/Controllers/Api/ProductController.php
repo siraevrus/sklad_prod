@@ -223,11 +223,12 @@ class ProductController extends Controller
             'producer' => 'nullable|string|max:255',
             'arrival_date' => 'sometimes|date',
             'is_active' => 'boolean',
+            'notes' => 'nullable|string|max:1000',
         ]);
 
         $product->update($request->only([
             'name', 'description', 'attributes', 'quantity',
-            'transport_number', 'producer', 'arrival_date', 'is_active',
+            'transport_number', 'producer', 'arrival_date', 'is_active', 'notes',
         ]));
 
         // Пересчитываем объем если изменились атрибуты
