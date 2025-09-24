@@ -683,7 +683,7 @@ class ProductResource extends Resource
                             ->visible(fn (?Product $record): bool => $record && ($record->correction_status === 'correction' || $record->correction_status === 'revised'))
                             ->columnSpanFull(),
                     ])
-                    ->visible(true)
+                    ->visible(fn (?Product $record): bool => $record !== null)
                     ->collapsible(false)
                     ->icon('heroicon-o-exclamation-triangle'),
 
