@@ -53,7 +53,7 @@ class Product extends Model
     protected $casts = [
         'attributes' => 'array',
         'calculated_volume' => 'decimal:4',
-        'quantity' => 'integer',
+        'quantity' => 'decimal:3',
         'sold_quantity' => 'integer',
         'arrival_date' => 'date',
         'status' => 'string',

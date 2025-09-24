@@ -86,9 +86,15 @@ class ReceiptController extends Controller
             }
 
             foreach ($items as $item) {
+                // normalize quantity decimal separator
+                $q = $item['quantity'] ?? 1;
+                if (is_string($q)) {
+                    $q = str_replace(',', '.', $q);
+                }
+
                 $productData = array_merge($common, [
                     'product_template_id' => $item['product_template_id'],
-                    'quantity' => (int) ($item['quantity'] ?? 1),
+                    'quantity' => (float) ($q ?? 1),
                     'producer' => $item['producer'] ?? null,
                     'description' => $item['description'] ?? null,
                     'name' => $item['name'] ?? null,

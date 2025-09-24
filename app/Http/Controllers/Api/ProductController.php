@@ -166,6 +166,12 @@ class ProductController extends Controller
             }
         }
 
+        // Нормализуем десятичный разделитель quantity
+        $quantity = $request->quantity;
+        if (is_string($quantity)) {
+            $quantity = str_replace(',', '.', $quantity);
+        }
+
         $product = Product::create([
             'product_template_id' => $request->product_template_id,
             'warehouse_id' => $request->warehouse_id,
@@ -173,7 +179,7 @@ class ProductController extends Controller
             'name' => $name ?? 'Товар без названия',
             'description' => $request->description,
             'attributes' => $request->get('attributes', []),
-            'quantity' => $request->quantity,
+            'quantity' => (float) $quantity,
             'transport_number' => $request->get('transport_number'), // Номер транспортного средства
             'producer_id' => $request->producer_id, // Используем producer_id
             'arrival_date' => $request->get('arrival_date', now()->toDateString()),
@@ -239,6 +245,15 @@ class ProductController extends Controller
                 return response()->json(['message' => 'Изменение склада запрещено'], 403);
             }
             $updateData['warehouse_id'] = (int) $request->integer('warehouse_id');
+        }
+
+        // Нормализуем десятичный разделитель для quantity
+        if (array_key_exists('quantity', $updateData)) {
+            $q = $updateData['quantity'];
+            if (is_string($q)) {
+                $q = str_replace(',', '.', $q);
+            }
+            $updateData['quantity'] = (float) $q;
         }
 
         $product->update($updateData);
