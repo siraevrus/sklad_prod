@@ -221,6 +221,7 @@ class ProductController extends Controller
             'quantity' => 'sometimes|integer|min:0',
             'transport_number' => 'nullable|string|max:255', // Номер транспортного средства
             'producer' => 'nullable|string|max:255',
+            'producer_id' => 'sometimes|integer|exists:producers,id',
             'arrival_date' => 'sometimes|date',
             'is_active' => 'boolean',
             'notes' => 'nullable|string|max:1000',
@@ -229,7 +230,7 @@ class ProductController extends Controller
 
         $updateData = $request->only([
             'name', 'description', 'attributes', 'quantity',
-            'transport_number', 'producer', 'arrival_date', 'is_active', 'notes',
+            'transport_number', 'producer', 'producer_id', 'arrival_date', 'is_active', 'notes',
         ]);
 
         // Перенос между складами разрешим только администратору
