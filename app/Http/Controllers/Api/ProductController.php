@@ -102,7 +102,7 @@ class ProductController extends Controller
             'name' => 'nullable|string|max:255', // Теперь не обязательно, генерируется автоматически
             'description' => 'nullable|string',
             'attributes' => 'sometimes|array',
-            'quantity' => 'required|integer|min:1',
+            'quantity' => 'required|numeric|min:0',
             'transport_number' => 'nullable|string|max:255', // Номер транспортного средства
             'producer' => 'nullable|string|max:255',
             'producer_id' => 'nullable|exists:producers,id',
@@ -218,7 +218,7 @@ class ProductController extends Controller
             'name' => 'sometimes|string|max:255',
             'description' => 'nullable|string',
             'attributes' => 'sometimes|array',
-            'quantity' => 'sometimes|integer|min:0',
+            'quantity' => 'sometimes|numeric|min:0',
             'transport_number' => 'nullable|string|max:255', // Номер транспортного средства
             'producer' => 'nullable|string|max:255',
             'producer_id' => 'sometimes|integer|exists:producers,id',

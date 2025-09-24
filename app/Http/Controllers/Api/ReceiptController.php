@@ -31,7 +31,7 @@ class ReceiptController extends Controller
             'document_path' => ['nullable', 'array'],
             'products' => ['nullable', 'array', 'min:1'],
             'products.*.product_template_id' => ['required_without:product_template_id', 'integer', 'exists:product_templates,id'],
-            'products.*.quantity' => ['nullable', 'integer', 'min:1'],
+            'products.*.quantity' => ['nullable', 'numeric', 'min:0'],
             'products.*.producer' => ['nullable', 'string', 'max:255'],
             'products.*.description' => ['nullable', 'string', 'max:1000'],
             'products.*.name' => ['nullable', 'string', 'max:255'],
@@ -39,7 +39,7 @@ class ReceiptController extends Controller
 
             // Плоский вариант (без массива products)
             'product_template_id' => ['required_without:products', 'integer', 'exists:product_templates,id'],
-            'quantity' => ['nullable', 'integer', 'min:1'],
+            'quantity' => ['nullable', 'numeric', 'min:0'],
             'producer' => ['nullable', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:1000'],
             'name' => ['nullable', 'string', 'max:255'],
