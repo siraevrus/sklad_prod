@@ -224,12 +224,23 @@ class ProductController extends Controller
             'arrival_date' => 'sometimes|date',
             'is_active' => 'boolean',
             'notes' => 'nullable|string|max:1000',
+            'warehouse_id' => 'sometimes|integer|exists:warehouses,id',
         ]);
 
-        $product->update($request->only([
+        $updateData = $request->only([
             'name', 'description', 'attributes', 'quantity',
             'transport_number', 'producer', 'arrival_date', 'is_active', 'notes',
-        ]));
+        ]);
+
+        // Перенос между складами разрешим только администратору
+        if ($request->has('warehouse_id')) {
+            if (! $user->isAdmin()) {
+                return response()->json(['message' => 'Изменение склада запрещено'], 403);
+            }
+            $updateData['warehouse_id'] = (int) $request->integer('warehouse_id');
+        }
+
+        $product->update($updateData);
 
         // Пересчитываем объем если изменились атрибуты
         if ($request->has('attributes')) {
