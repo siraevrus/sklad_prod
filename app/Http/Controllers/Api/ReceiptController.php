@@ -98,17 +98,36 @@ class ReceiptController extends Controller
                 // Генерация имени и объёма по формуле шаблона
                 $template = ProductTemplate::find($productData['product_template_id']);
                 if ($template) {
-                    // Имя
+                    // Имя — формируем в стиле формулы: формульные поля через "x", остальные через запятую
                     if (empty($productData['name'])) {
-                        $nameParts = [];
+                        $formulaParts = [];
+                        $regularParts = [];
+                        $formulaAttrKeys = method_exists($template, 'formulaAttributes')
+                            ? $template->formulaAttributes->pluck('variable')->toArray()
+                            : [];
+
                         foreach ($template->attributes as $templateAttribute) {
                             $key = $templateAttribute->variable;
-                            if ($templateAttribute->type !== 'text' && isset($productData['attributes'][$key]) && $productData['attributes'][$key] !== null) {
-                                $nameParts[] = $productData['attributes'][$key];
+                            if ($templateAttribute->type !== 'text' && isset($productData['attributes'][$key]) && $productData['attributes'][$key] !== null && $productData['attributes'][$key] !== '') {
+                                if (! empty($formulaAttrKeys) && in_array($key, $formulaAttrKeys, true)) {
+                                    $formulaParts[] = $productData['attributes'][$key];
+                                } else {
+                                    $regularParts[] = $productData['attributes'][$key];
+                                }
                             }
                         }
-                        if (! empty($nameParts)) {
-                            $productData['name'] = ($template->name ?? 'Товар').': '.implode(', ', $nameParts);
+
+                        if (! empty($formulaParts) || ! empty($regularParts)) {
+                            $generatedName = ($template->name ?? 'Товар');
+                            if (! empty($formulaParts)) {
+                                $generatedName .= ': '.implode(' x ', $formulaParts);
+                            }
+                            if (! empty($regularParts)) {
+                                $generatedName .= ! empty($formulaParts)
+                                    ? ', '.implode(', ', $regularParts)
+                                    : ': '.implode(', ', $regularParts);
+                            }
+                            $productData['name'] = $generatedName;
                         }
                     }
 
@@ -137,6 +156,7 @@ class ReceiptController extends Controller
             DB::commit();
         } catch (\Throwable $e) {
             DB::rollBack();
+
             return response()->json([
                 'success' => false,
                 'message' => 'Ошибка при создании товара(ов) в пути',
@@ -150,6 +170,7 @@ class ReceiptController extends Controller
             'data' => count($created) === 1 ? $created[0] : $created,
         ], 201);
     }
+
     /**
      * Список приемок (товары со статусом «Прибыл»)
      */

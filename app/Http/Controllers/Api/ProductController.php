@@ -134,14 +134,35 @@ class ProductController extends Controller
             $inputAttributes = (array) $request->input('attributes', []);
             $template = ProductTemplate::find($request->product_template_id);
             if ($template) {
-                $nameParts = [];
+                $formulaParts = [];
+                $regularParts = [];
+                // Если у шаблона есть явные поля формулы
+                $formulaAttrKeys = method_exists($template, 'formulaAttributes')
+                    ? $template->formulaAttributes->pluck('variable')->toArray()
+                    : [];
+
                 foreach ($template->attributes as $templateAttribute) {
                     $attributeKey = $templateAttribute->variable;
-                    if ($templateAttribute->type !== 'text' && array_key_exists($attributeKey, $inputAttributes) && $inputAttributes[$attributeKey] !== null) {
-                        $nameParts[] = $inputAttributes[$attributeKey];
+                    if ($templateAttribute->type !== 'text' && array_key_exists($attributeKey, $inputAttributes) && $inputAttributes[$attributeKey] !== null && $inputAttributes[$attributeKey] !== '') {
+                        if (! empty($formulaAttrKeys) && in_array($attributeKey, $formulaAttrKeys, true)) {
+                            $formulaParts[] = $inputAttributes[$attributeKey];
+                        } else {
+                            $regularParts[] = $inputAttributes[$attributeKey];
+                        }
                     }
                 }
-                $name = $template->name.': '.implode(', ', $nameParts);
+
+                $generatedName = $template->name ?? 'Товар';
+                if (! empty($formulaParts)) {
+                    $generatedName .= ': '.implode(' x ', $formulaParts);
+                }
+                if (! empty($regularParts)) {
+                    $generatedName .= ! empty($formulaParts)
+                        ? ', '.implode(', ', $regularParts)
+                        : ': '.implode(', ', $regularParts);
+                }
+
+                $name = $generatedName;
             }
         }
 
