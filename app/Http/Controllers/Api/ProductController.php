@@ -243,8 +243,8 @@ class ProductController extends Controller
 
         $product->update($updateData);
 
-        // Пересчитываем объем если изменились атрибуты
-        if ($request->has('attributes')) {
+        // Пересчитываем объем если изменились атрибуты или количество
+        if ($request->has('attributes') || $request->has('quantity')) {
             $product->updateCalculatedVolume();
         }
 
