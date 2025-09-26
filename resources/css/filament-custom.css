@@ -76,7 +76,7 @@
     max-width: none !important;
 }
 
-/* Переопределяем для всех элементов с ограничением ширины */
+/* Переопределяем максимальную ширину для всех элементов с ограничением ширины */
 [class*="max-w-"] {
     max-width: none !important;
 }
@@ -127,4 +127,26 @@
     width: 100% !important;
     padding-left: 1rem !important;
     padding-right: 1rem !important;
+}
+
+/* Стили для спиннера загрузки */
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.animate-spin {
+    animation: spin 1s linear infinite;
+}
+
+.opacity-25 {
+    opacity: 0.25;
+}
+
+.opacity-75 {
+    opacity: 0.75;
 }

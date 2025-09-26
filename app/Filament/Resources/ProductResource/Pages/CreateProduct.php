@@ -3,11 +3,15 @@
 namespace App\Filament\Resources\ProductResource\Pages;
 
 use App\Filament\Resources\ProductResource;
+use App\Traits\HasLoadingIndicator;
 use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Support\Facades\Auth;
+use Filament\Notifications\Notification;
 
 class CreateProduct extends CreateRecord
 {
+    use HasLoadingIndicator;
+
     protected static string $resource = ProductResource::class;
 
     protected function mutateFormDataBeforeCreate(array $data): array
@@ -170,5 +174,14 @@ class CreateProduct extends CreateRecord
     protected function getRedirectUrl(): string
     {
         return $this->getResource()::getUrl('index');
+    }
+
+    protected function getCreatedNotification(): ?Notification
+    {
+        return Notification::make()
+            ->success()
+            ->title('Товар создан')
+            ->body('Товар успешно создан и добавлен в систему.')
+            ->send();
     }
 }

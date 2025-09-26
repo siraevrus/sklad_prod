@@ -198,7 +198,6 @@ class ProductResource extends Resource
                                             $testResult = $template->testFormula($numericAttributes);
                                             if ($testResult['success']) {
                                                 $result = $testResult['result'];
-
                                                 // Проверяем на превышение лимита
                                                 $maxValue = 999999999.9999; // Максимум для decimal(15,4)
                                                 if ($result > $maxValue) {
@@ -599,25 +598,29 @@ class ProductResource extends Resource
                                                         return $options[$state];
                                                     }
 
-                                                    return e($state);
+                                                    return $state;
                                                 });
                                             break;
                                     }
                                 }
 
-                                // Добавляем поле рассчитанного объема в конец
-                                $fields[] = TextInput::make('calculated_volume')
+                                return $fields;
+                            }),
+
+                        Grid::make(3)
+                            ->visible(fn (Get $get) => $get('product_template_id') !== null)
+                            ->schema([
+                                TextInput::make('calculated_volume')
                                     ->label('Рассчитанный объем')
                                     ->disabled()
                                     ->key(fn (Get $get) => 'calculated_volume_'.($get('product_template_id') ?? 'none'))
-                                    ->columnSpanFull()
                                     ->formatStateUsing(function ($state) {
                                         // Если это число - форматируем, если строка - показываем как есть
                                         if (is_numeric($state)) {
                                             return number_format($state, 3, '.', ' ');
                                         }
 
-                                        return e($state ?: '0.000');
+                                        return $state ?: '0.000';
                                     })
                                     ->suffix(function (Get $get) {
                                         $templateId = $get('product_template_id');
@@ -629,175 +632,10 @@ class ProductResource extends Resource
 
                                         return '';
                                     })
-                                    ->helperText(function (Get $get) {
-                                        $templateId = $get('product_template_id');
-                                        if ($templateId) {
-                                            $template = ProductTemplate::find($templateId);
-                                            if ($template && $template->formula) {
-                                                return 'Автоматически рассчитывается при заполнении характеристик или изменении количества. Если объем не отображается, возможно, результат превышает максимальное значение.';
-                                            }
-                                        }
-
-                                        return 'Автоматически рассчитывается при заполнении характеристик или изменении количества.';
-                                    });
-
-                                // Обертываем поля в компактную сетку
-                                return [
-                                    Grid::make(4) // 4 колонки для компактности
-                                        ->schema($fields),
-                                ];
-                            }),
-                    ]),
-
-                Section::make('Информация о корректировке')
-                    ->schema([
-                        Forms\Components\Placeholder::make('correction_info')
-                            ->label('')
-                            ->content(function (?Product $record): string {
-                                if (! $record) {
-                                    return '';
-                                }
-
-                                $content = '';
-
-                                // Показываем уточнение если есть
-                                if ($record->correction_status === 'correction' && ! empty($record->correction)) {
-                                    $correctionText = $record->correction ?? 'Нет текста уточнения';
-                                    $updatedAt = $record->updated_at?->format('d.m.Y H:i') ?? 'Неизвестно';
-
-                                    $content .= "⚠️ **У товара есть уточнение:** \"{$correctionText}\"\n\n".
-                                              "*Дата внесения:* {$updatedAt}\n\n";
-                                }
-
-                                // Показываем информацию о скорректированном статусе
-                                if ($record->correction_status === 'revised') {
-                                    $user = auth()->user();
-                                    $userName = $user ? $user->name : 'Неизвестный сотрудник';
-                                    $revisedAt = now()->format('d.m.Y H:i');
-
-                                    $content .= "✅ **Данные скорректированы** \"{$userName}\" {$revisedAt}";
-                                }
-
-                                return $content;
-                            })
-                            ->visible(fn (?Product $record): bool => $record && ($record->correction_status === 'correction' || $record->correction_status === 'revised'))
-                            ->columnSpanFull(),
-                    ])
-                    ->visible(fn (?Product $record): bool => $record !== null)
-                    ->collapsible(false)
-                    ->icon('heroicon-o-exclamation-triangle'),
-
-                Section::make('Документы')
-                    ->schema([
-                        FileUpload::make('document_path')
-                            ->label('Документы')
-                            ->directory('documents')
-                            ->multiple()
-                            ->maxFiles(5)
-                            ->maxSize(51200) // 50MB
-                            ->acceptedFileTypes([
-                                'application/pdf',
-                                'image/*',
-                                'application/msword',
-                                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                                'text/plain',
-                            ])
-                            ->preserveFilenames()
-                            ->downloadable()
-                            ->openable()
-                            ->previewable()
-                            ->imagePreviewHeight('250')
-                            ->columnSpanFull(),
-                    ])
-                    ->collapsible(false)
-                    ->icon('heroicon-o-document'),
-
-                Section::make('Дополнительная информация')
-                    ->schema([
-                        Grid::make(1)
-                            ->schema([
-                                Textarea::make('notes')
-                                    ->label('Заметки')
-                                    ->rows(3)
-                                    ->maxLength(1000)
-                                    ->columnSpanFull(),
+                                    ->helperText('Автоматически рассчитывается при заполнении характеристик или изменении количества'),
                             ]),
-                    ])
-                    ->collapsible(false)
-                    ->icon('heroicon-o-information-circle'),
-
+                    ]),
             ]);
-    }
-
-    /**
-     * Рассчитать и установить объем товара
-     */
-    public static function calculateAndSetVolume(Set $set, Get $get, $template): void
-    {
-        // Собираем все значения характеристик
-        $attributes = [];
-        $formData = $get();
-
-        foreach ($formData as $key => $value) {
-            if (str_starts_with($key, 'attribute_') && $value !== null) {
-                $attributeName = str_replace('attribute_', '', $key);
-                $attributes[$attributeName] = $value;
-            }
-        }
-
-        // Добавляем количество (но не в формулу, только для отображения)
-        $quantity = $get('quantity') ?? 1;
-        // Нормализуем количество: заменяем запятую на точку
-        $normalizedQuantity = is_string($quantity) ? str_replace(',', '.', $quantity) : $quantity;
-
-        // Формируем наименование из характеристик, исключая текстовые атрибуты
-        if (! empty($attributes)) {
-            $nameParts = [];
-            foreach ($template->attributes as $templateAttribute) {
-                $attributeKey = $templateAttribute->variable;
-                if ($templateAttribute->type !== 'text' && isset($attributes[$attributeKey]) && $attributes[$attributeKey] !== null) {
-                    $nameParts[] = $attributes[$attributeKey];
-                }
-            }
-
-            if (! empty($nameParts)) {
-                // Добавляем название шаблона в начало
-                $templateName = $template->name ?? 'Товар';
-                $generatedName = $templateName.': '.implode(', ', $nameParts);
-                $set('name', $generatedName);
-            } else {
-                $set('name', $template->name ?? 'Товар');
-            }
-
-            // Рассчитываем объем только для числовых характеристик
-            $numericAttributes = [];
-            foreach ($attributes as $key => $value) {
-                if (is_numeric($value)) {
-                    $numericAttributes[$key] = $value;
-                }
-            }
-
-            if (! empty($numericAttributes)) {
-                $testResult = $template->testFormula($numericAttributes);
-                if ($testResult['success']) {
-                    $result = $testResult['result'];
-
-                    // Проверяем на превышение лимита
-                    $maxValue = 999999999.9999; // Максимум для decimal(15,4)
-                    if ($result > $maxValue) {
-                        $set('calculated_volume', 'Объем превышает максимальное значение');
-                        Log::warning('Volume exceeds maximum value in calculateVolumeForItem', [
-                            'template' => $template->name,
-                            'attributes' => $numericAttributes,
-                            'result' => $result,
-                            'max_value' => $maxValue,
-                        ]);
-                    } else {
-                        $set('calculated_volume', $result);
-                    }
-                }
-            }
-        }
     }
 
     public static function table(Table $table): Table
@@ -807,55 +645,17 @@ class ProductResource extends Resource
                 Tables\Columns\TextColumn::make('name')
                     ->label('Наименование')
                     ->searchable()
-                    ->sortable()
-                    ->color(function (?Product $record): ?string {
-                        if ($record && $record->isRevised()) {
-                            return 'success';
-                        }
-                        if ($record && $record->hasCorrection()) {
-                            return 'danger';
-                        }
-
-                        return null;
-                    })
-                    ->formatStateUsing(function (string $state, ?Product $record): string {
-                        if ($record && $record->isRevised()) {
-                            return e($state);
-                        }
-                        if ($record && $record->hasCorrection()) {
-                            return '⚠️ '.e($state);
-                        }
-
-                        return e($state);
-                    }),
-
-                Tables\Columns\TextColumn::make('warehouse.name')
-                    ->label('Склад')
                     ->sortable(),
-
-                Tables\Columns\TextColumn::make('quantity')
-                    ->label('Поступило')
-                    ->sortable()
-                    ->badge()
-                    ->color(function (string $state): string {
-                        if ($state > 10) {
-                            return 'success';
-                        }
-                        if ($state > 0) {
-                            return 'warning';
-                        }
-
-                        return 'danger';
-                    }),
 
                 Tables\Columns\TextColumn::make('calculated_volume')
                     ->label('Объем')
                     ->formatStateUsing(function ($state) {
-                        return $state ? number_format($state, 3, '.', ' ') : '0.000';
+                        return $state ? number_format($state, 3).' м³' : '-';
                     })
-                    ->suffix(function (?Product $record): string {
-                        return $record?->template?->unit ?? '';
-                    })
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('warehouse.name')
+                    ->label('Склад')
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('arrival_date')
@@ -863,75 +663,50 @@ class ProductResource extends Resource
                     ->date()
                     ->sortable(),
 
-                Tables\Columns\ViewColumn::make('document_path')
-                    ->label('Документы')
-                    ->view('tables.columns.documents')
-                    ->toggleable(isToggledHiddenByDefault: false),
-
-                Tables\Columns\TextColumn::make('transport_number')
-                    ->label('Номер транспорта')
-                    ->searchable()
-                    ->toggleable(isToggledHiddenByDefault: true)
-                    ->sortable(),
-
                 Tables\Columns\TextColumn::make('producer.name')
                     ->label('Производитель')
-                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->formatStateUsing(function (
+                        $state
+                    ) {
+                        return $state ?: 'Не указан';
+                    })
+                    ->searchable()
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('sold_quantity')
-                    ->label('Продано')
-                    ->toggleable(isToggledHiddenByDefault: true)
+                Tables\Columns\TextColumn::make('quantity')
+                    ->label('Количество')
                     ->sortable()
                     ->badge()
                     ->color('info'),
 
+                Tables\Columns\TextColumn::make('transport_number')
+                    ->label('Номер транспорта')
+                    ->sortable()
+                    ->searchable(),
+
                 Tables\Columns\TextColumn::make('status')
                     ->label('Статус')
-                    ->toggleable(isToggledHiddenByDefault: true)
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
-                        'in_stock' => 'success',
+                        'ordered' => 'gray',
                         'in_transit' => 'warning',
-                        'for_receipt' => 'info',
-                        'correction' => 'danger',
+                        'arrived' => 'info',
+                        'received' => 'success',
+                        'cancelled' => 'danger',
                         default => 'gray',
                     })
                     ->formatStateUsing(fn (string $state): string => match ($state) {
-                        'in_stock' => 'На складе',
+                        'ordered' => 'Заказан',
                         'in_transit' => 'В пути',
-                        'for_receipt' => 'На приемку',
-                        'correction' => 'Коррекция',
+                        'arrived' => 'Прибыл',
+                        'received' => 'Получен',
+                        'cancelled' => 'Отменен',
                         default => $state,
                     })
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('shipping_location')
-                    ->label('Место отгрузки')
-                    ->toggleable(isToggledHiddenByDefault: true)
-                    ->sortable(),
-
-                Tables\Columns\TextColumn::make('shipping_date')
-                    ->label('Дата отгрузки')
-                    ->toggleable(isToggledHiddenByDefault: true)
-                    ->date()
-                    ->sortable(),
-
-                Tables\Columns\TextColumn::make('expected_arrival_date')
-                    ->label('Ожидаемая дата прибытия')
-                    ->toggleable(isToggledHiddenByDefault: true)
-                    ->date()
-                    ->sortable(),
-
-                Tables\Columns\TextColumn::make('actual_arrival_date')
-                    ->label('Фактическая дата прибытия')
-                    ->toggleable(isToggledHiddenByDefault: true)
-                    ->date()
-                    ->sortable(),
-
                 Tables\Columns\TextColumn::make('notes')
                     ->label('Заметки')
-                    ->toggleable(isToggledHiddenByDefault: true)
                     ->limit(50)
                     ->tooltip(function (Tables\Columns\TextColumn $column): ?string {
                         $state = $column->getState();
@@ -941,160 +716,70 @@ class ProductResource extends Resource
 
                         return $state;
                     }),
-
-                Tables\Columns\TextColumn::make('correction')
-                    ->label('Коррекция')
-                    ->toggleable(isToggledHiddenByDefault: true)
-                    ->limit(50)
-                    ->tooltip(function (Tables\Columns\TextColumn $column): ?string {
-                        $state = $column->getState();
-                        if (strlen($state) <= 50) {
-                            return null;
-                        }
-
-                        return $state;
-                    }),
-
-                Tables\Columns\TextColumn::make('correction_status')
-                    ->label('Статус коррекции')
-                    ->toggleable(isToggledHiddenByDefault: true)
-                    ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'correction' => 'danger',
-                        'revised' => 'success',
-                        default => 'gray',
-                    })
-                    ->formatStateUsing(fn (string $state): string => match ($state) {
-                        'correction' => 'Коррекция',
-                        'revised' => 'Скорректировано',
-                        default => 'Нет',
-                    })
-                    ->sortable(),
-
-                Tables\Columns\TextColumn::make('created_at')
-                    ->label('Дата создания')
-                    ->toggleable(isToggledHiddenByDefault: true)
-                    ->dateTime()
-                    ->sortable(),
-
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->label('Дата обновления')
-                    ->toggleable(isToggledHiddenByDefault: true)
-                    ->dateTime()
-                    ->sortable(),
-
-                Tables\Columns\IconColumn::make('is_active')
-                    ->label('Активен')
-                    ->boolean()
-                    ->toggleable(isToggledHiddenByDefault: true)
-                    ->sortable(),
-
-                Tables\Columns\TextColumn::make('creator.name')
-                    ->label('Сотрудник')
-                    ->sortable(),
-
             ])
-            ->emptyStateHeading('Нет товаров')
-            ->emptyStateDescription('Создайте первый товар, чтобы начать работу. Используйте фильтр по статусу для просмотра товаров в пути. Товары со статусом "В пути" автоматически появляются в разделе "Приемка".')
             ->filters([
-                SelectFilter::make('warehouse_id')
-                    ->label('Склад')
-                    ->options(fn () => Warehouse::optionsForCurrentUser())
-                    ->searchable(),
-
-                SelectFilter::make('producer_id')
-                    ->label('Производитель')
-                    ->options(function () {
-                        $producers = \App\Models\Producer::whereHas('products')->get();
-                        $options = [];
-                        foreach ($producers as $producer) {
-                            $productCount = $producer->products()->count();
-                            $options[$producer->id] = "{$producer->name} ({$productCount})";
-                        }
-
-                        return $options;
-                    })
-                    ->searchable(),
-
-                SelectFilter::make('product_template_id')
-                    ->label('Тип товара')
+                SelectFilter::make('warehouse')
+                    ->relationship('warehouse', 'name')
                     ->multiple()
-                    ->options(function () {
-                        $templates = ProductTemplate::whereHas('products')->get();
-                        $options = [];
-                        foreach ($templates as $template) {
-                            $productCount = $template->products()->count();
-                            $options[$template->id] = "{$template->name} ({$productCount})";
-                        }
+                    ->label('Склад'),
 
-                        return $options;
-                    })
-                    ->searchable()
-                    ->placeholder('Все типы товаров'),
+                SelectFilter::make('producer')
+                    ->relationship('producer', 'name')
+                    ->multiple()
+                    ->label('Производитель'),
 
-                Filter::make('arrival_date_range')
-                    ->label('Период поступления')
+                Filter::make('arrival_date')
                     ->form([
-                        Forms\Components\DatePicker::make('date_from')->label('С даты'),
-                        Forms\Components\DatePicker::make('date_to')->label('По дату'),
+                        DatePicker::make('arrival_from')
+                            ->label('Дата поступления от'),
+
+                        DatePicker::make('arrival_until')
+                            ->label('Дата поступления до'),
                     ])
                     ->query(function (Builder $query, array $data): Builder {
                         return $query
                             ->when(
-                                $data['date_from'],
-                                fn (Builder $query, $date): Builder => $query->where('arrival_date', '>=', $date),
+                                $data['arrival_from'],
+                                fn (Builder $query, $date): Builder => $query->whereDate('arrival_date', '>=', $date),
                             )
                             ->when(
-                                $data['date_to'],
-                                fn (Builder $query, $date): Builder => $query->where('arrival_date', '<=', $date),
+                                $data['arrival_until'],
+                                fn (Builder $query, $date): Builder => $query->whereDate('arrival_date', '<=', $date),
                             );
                     }),
 
-                Filter::make('has_correction')
-                    ->label('Корректировка')
+                Filter::make('status')
+                    ->form([
+                        Select::make('status')
+                            ->label('Статус')
+                            ->options([
+                                'ordered' => 'Заказан',
+                                'in_transit' => 'В пути',
+                                'arrived' => 'Прибыл',
+                                'received' => 'Получен',
+                                'cancelled' => 'Отменен',
+                            ])
+                            ->multiple(),
+                    ])
                     ->query(function (Builder $query, array $data): Builder {
                         return $query->when(
-                            $data['has_correction'],
-                            fn (Builder $query): Builder => $query
-                                ->where('correction_status', 'correction')
-                                ->whereNotNull('correction')
-                                ->where('correction', '!=', '')
+                            $data['status'],
+                            fn (Builder $query, $status): Builder => $query->whereIn('status', $status),
                         );
-                    })
-                    ->form([
-                        Forms\Components\Checkbox::make('has_correction')
-                            ->label('Показать только товары с уточнениями'),
-                    ]),
-
-                Filter::make('has_revised')
-                    ->label('Скорректировано')
-                    ->query(function (Builder $query, array $data): Builder {
-                        return $query->when(
-                            $data['has_revised'],
-                            fn (Builder $query): Builder => $query
-                                ->where('correction_status', 'revised')
-                        );
-                    })
-                    ->form([
-                        Forms\Components\Checkbox::make('has_revised')
-                            ->label('Показать только товары с корректировкой'),
-                    ]),
+                    }),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make()->label(''),
-                Tables\Actions\EditAction::make()->label(''),
-
-                Tables\Actions\DeleteAction::make()->label(''),
+                Tables\Actions\ViewAction::make(),
+                Tables\Actions\EditAction::make(),
             ])
-            ->bulkActions([])
-            ->headerActions([
-                // Tables\Actions\Action::make('export')
-                //     ->label('Экспорт')
-                //     ->icon('heroicon-o-arrow-down-tray')
-                //     ->url(route('products.export'))
-                //     ->openUrlInNewTab(),
+            ->bulkActions([
+                Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\DeleteBulkAction::make(),
+                ]),
             ])
-            ->defaultSort('created_at', 'desc');
+            ->emptyStateActions([
+                Tables\Actions\CreateAction::make(),
+            ]);
     }
 
     public static function getRelations(): array
@@ -1112,27 +797,5 @@ class ProductResource extends Resource
             'view' => Pages\ViewProduct::route('/{record}'),
             'edit' => Pages\EditProduct::route('/{record}/edit'),
         ];
-    }
-
-    public static function getEloquentQuery(): Builder
-    {
-        $user = Auth::user();
-
-        $base = parent::getEloquentQuery()->where('status', '!=', 'for_receipt');
-
-        if (! $user) {
-            return $base->whereRaw('1 = 0');
-        }
-
-        if ($user->role->value === 'admin') {
-            return $base;
-        }
-
-        // Не админ — только свой склад
-        if ($user->warehouse_id) {
-            return $base->where('warehouse_id', $user->warehouse_id);
-        }
-
-        return $base->whereRaw('1 = 0');
     }
 }
