@@ -147,7 +147,7 @@ class SaleResource extends Resource
                                     ->visible(fn () => (bool) (Auth::user()?->isAdmin() ?? false))
                                     ->dehydrated(fn () => (bool) (Auth::user()?->isAdmin() ?? false))
                                     ->live()
-                                    ->debounce(1000)
+                                    ->debounce(30)
                                     ->afterStateUpdated(function (Set $set, Get $get) {
                                         // Сбрасываем выбор товара при смене склада
                                         $set('product_id', null);
