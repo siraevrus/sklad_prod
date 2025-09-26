@@ -229,7 +229,7 @@ class SaleResource extends Resource
                                     ->searchable()
                                     ->preload()
                                     ->live()
-                                    ->debounce(1000)
+                                    ->debounce(30)
                                     ->afterStateUpdated(function (Set $set, Get $get) {
                                         $set('quantity', 1);
                                         static::calculateTotalPrice($set, $get);
@@ -263,7 +263,7 @@ class SaleResource extends Resource
                                     ->required()
                                     ->mask(RawJs::make('$number($input, { decimalPlaces: 0, thousandsSeparator: " " })'))
                                     ->live()
-                                    ->debounce(1000)
+                                    ->debounce(30)
                                     ->afterStateUpdated(function (Set $set, Get $get) {
                                         static::calculateTotalPrice($set, $get);
 
