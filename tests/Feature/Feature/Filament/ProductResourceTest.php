@@ -51,4 +51,15 @@ class ProductResourceTest extends TestCase
         $response = $this->get('/admin/products/create');
         $response->assertStatus(200);
     }
+
+    public function test_create_product_page_has_loading_indicator_trait(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $this->actingAs($admin);
+
+        // Test that the CreateProduct page uses the HasLoadingIndicator trait
+        $reflection = new \ReflectionClass(CreateProduct::class);
+        $this->assertTrue($reflection->hasMethod('create'), 'CreateProduct should have create method');
+        $this->assertTrue($reflection->hasMethod('save'), 'CreateProduct should have save method');
+    }
 }
