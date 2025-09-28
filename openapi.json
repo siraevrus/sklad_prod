@@ -2159,11 +2159,17 @@
         ],
         "summary": "Получение списка товаров в пути (алиас для receipts)",
         "parameters": [
+          { "$ref": "#/components/parameters/Page" },
+          { "$ref": "#/components/parameters/PerPage" },
           {
-            "$ref": "#/components/parameters/Page"
-          },
-          {
-            "$ref": "#/components/parameters/PerPage"
+            "name": "status",
+            "in": "query",
+            "description": "Статус товара (например, in_transit, for_receipt, in_stock)",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["in_transit", "for_receipt", "in_stock"]
+            }
           }
         ],
         "responses": {
@@ -2716,6 +2722,39 @@
         "responses": {
           "200": {
             "description": "Производитель удален"
+          }
+        }
+      }
+    },
+    "/api/products": {
+      "get": {
+        "summary": "Get list of products",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filter by product status, e.g., 'in_transit'",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["ordered", "in_transit", "arrived", "received", "cancelled"]
+            }
+          }
+          // ... existing parameters ...
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Product"
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -4148,6 +4187,16 @@
           "meta": {
             "$ref": "#/components/schemas/PaginationMeta"
           }
+        }
+      },
+      "Client": {
+        "type": "object",
+        "properties": {
+          "id": {"type": "integer"},
+          "name": {"type": "string"},
+          "email": {"type": "string"},
+          "address": {"type": "string", "description": "Адрес клиента"},
+          "currency_rate": {"type": "number", "description": "Курс валют для клиента"}
         }
       }
     }

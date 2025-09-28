@@ -151,7 +151,7 @@ class ProductInTransitResource extends Resource
                                             ->validationMessages([
                                                 'regex' => 'Поле должно содержать только цифры и одну запятую или точку',
                                             ])
-                                            ->live(debounce: 1000)
+                                            ->live(debounce: 30)
                                             ->afterStateUpdated(function (Set $set, Get $get) {
                                                 self::calculateVolumeForItem($set, $get);
                                             })
@@ -188,7 +188,7 @@ class ProductInTransitResource extends Resource
                                                             'regex' => 'Поле должно содержать только цифры и одну запятую или точку',
                                                         ])
                                                         ->key("number_attr_{$attribute->id}_{$attribute->variable}")
-                                                        ->live(debounce: 1000)
+                                                        ->live(debounce: 30)
                                                         ->afterStateUpdated(function (Set $set, Get $get) {
                                                             self::calculateVolumeForItem($set, $get);
                                                         })
@@ -201,7 +201,7 @@ class ProductInTransitResource extends Resource
                                                         ->maxLength(255)
                                                         ->required($attribute->is_required)
                                                         ->key("text_attr_{$attribute->id}_{$attribute->variable}")
-                                                        ->live(debounce: 1000)
+                                                        ->live(debounce: 30)
                                                         ->afterStateUpdated(function (Set $set, Get $get) {
                                                             self::calculateVolumeForItem($set, $get);
                                                         });

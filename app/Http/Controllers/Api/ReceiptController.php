@@ -184,10 +184,16 @@ class ReceiptController extends Controller
     {
         $user = Auth::user();
 
+        // Новый блок: поддержка фильтрации по статусу
+        $status = $request->get('status');
         $query = Product::query()
-            ->where('status', Product::STATUS_IN_TRANSIT)
             ->where('is_active', true)
             ->with(['warehouse', 'template', 'creator']);
+        if ($status) {
+            $query->where('status', $status);
+        } else {
+            $query->where('status', Product::STATUS_IN_TRANSIT);
+        }
 
         // Ограничение по складу для не-админа
         if ($user && ! $user->isAdmin()) {
