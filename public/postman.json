@@ -1635,9 +1635,9 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/stocks/1_2_Producer%20Name",
+              "raw": "{{base_url}}/stocks/1_2_3",
               "host": ["{{base_url}}"],
-              "path": ["stocks", "1_2_Producer%20Name"]
+              "path": ["stocks", "1_2_3"]
             }
           },
           "response": []

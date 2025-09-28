@@ -2339,11 +2339,11 @@
             "name": "stock",
             "in": "path",
             "required": true,
-            "description": "Составной ID в формате {product_template_id}_{warehouse_id}_{producer}",
+            "description": "Составной ID в формате {product_template_id}_{warehouse_id}_{producer_id}",
             "schema": {
               "type": "string"
             },
-            "example": "1_2_Producer Name"
+            "example": "1_2_3"
           }
         ],
         "responses": {
@@ -3973,8 +3973,8 @@
         "properties": {
           "id": {
             "type": "string",
-            "description": "Составной ID в формате {product_template_id}_{warehouse_id}_{producer}",
-            "example": "1_2_Producer Name"
+            "description": "Составной ID в формате {product_template_id}_{warehouse_id}_{producer_id}",
+            "example": "1_2_3"
           },
           "name": {
             "type": "string",
@@ -4011,10 +4011,10 @@
             "description": "ID склада",
             "example": 2
           },
-          "producer": {
-            "type": "string",
-            "description": "Производитель",
-            "example": "Samsung",
+          "producer_id": {
+            "type": "integer",
+            "description": "ID производителя",
+            "example": 3,
             "nullable": true
           },
           "warehouse": {

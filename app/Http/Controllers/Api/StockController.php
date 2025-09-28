@@ -21,8 +21,8 @@ class StockController extends Controller
                 ->select([
                     'product_template_id',
                     'warehouse_id',
-                    'producer',
-                    DB::raw('CONCAT(product_template_id, "_", warehouse_id, "_", COALESCE(producer, "null")) as id'),
+                    'producer_id',
+                    DB::raw('CONCAT(product_template_id, "_", warehouse_id, "_", COALESCE(producer_id, "null")) as id'),
                     DB::raw('SUM(COALESCE(quantity, 0) - COALESCE(sold_quantity, 0)) as total_quantity'),
                     DB::raw('SUM(COALESCE(calculated_volume, 0) * COALESCE(quantity, 0)) as total_volume'),
                     DB::raw('MIN(name) as name'),
@@ -30,7 +30,7 @@ class StockController extends Controller
                     DB::raw('MIN(is_active) as is_active')
                 ])
                 ->where('is_active', 1)
-                ->groupBy('product_template_id', 'warehouse_id', 'producer')
+                ->groupBy('product_template_id', 'warehouse_id', 'producer_id')
                 ->having('total_quantity', '>', 0);
 
             // Фильтрация по складу
@@ -43,7 +43,7 @@ class StockController extends Controller
                 $query->where('status', $request->status);
             }
 
-            $stocks = $query->with(['productTemplate', 'warehouse'])
+            $stocks = $query->with(['productTemplate', 'warehouse', 'producer'])
                 ->orderBy('name')
                 ->paginate($request->get('per_page', 15));
 
@@ -86,16 +86,16 @@ class StockController extends Controller
                 ], 400);
             }
 
-            [$productTemplateId, $warehouseId, $producer] = $parts;
-            if ($producer === 'null') {
-                $producer = null;
+            [$productTemplateId, $warehouseId, $producerId] = $parts;
+            if ($producerId === 'null') {
+                $producerId = null;
             }
 
             $stock = Product::query()
                 ->select([
                     'product_template_id',
                     'warehouse_id',
-                    'producer',
+                    'producer_id',
                     DB::raw('SUM(COALESCE(quantity, 0) - COALESCE(sold_quantity, 0)) as total_quantity'),
                     DB::raw('SUM(COALESCE(calculated_volume, 0) * COALESCE(quantity, 0)) as total_volume'),
                     DB::raw('MIN(name) as name'),
@@ -104,10 +104,10 @@ class StockController extends Controller
                 ])
                 ->where('product_template_id', $productTemplateId)
                 ->where('warehouse_id', $warehouseId)
-                ->where('producer', $producer)
+                ->where('producer_id', $producerId)
                 ->where('is_active', 1)
-                ->groupBy('product_template_id', 'warehouse_id', 'producer')
-                ->with(['productTemplate', 'warehouse'])
+                ->groupBy('product_template_id', 'warehouse_id', 'producer_id')
+                ->with(['productTemplate', 'warehouse', 'producer'])
                 ->first();
 
             if (!$stock) {
@@ -120,10 +120,10 @@ class StockController extends Controller
             // Получаем детальную информацию о товарах
             $products = Product::where('product_template_id', $productTemplateId)
                 ->where('warehouse_id', $warehouseId)
-                ->where('producer', $producer)
+                ->where('producer_id', $producerId)
                 ->where('is_active', 1)
                 ->where('quantity', '>', 0)
-                ->with(['productTemplate', 'warehouse'])
+                ->with(['productTemplate', 'warehouse', 'producer'])
                 ->get();
 
             return response()->json([

@@ -618,10 +618,10 @@ paths:
         - name: id
           in: path
           required: true
-          description: Составной ID в формате {product_template_id}_{warehouse_id}_{producer}
+          description: Составной ID в формате {product_template_id}_{warehouse_id}_{producer_id}
           schema:
             type: string
-            example: "1_2_Producer Name"
+            example: "1_2_3"
       responses:
         200:
           description: Детальная информация об остатке
@@ -922,8 +922,8 @@ components:
       properties:
         id:
           type: string
-          description: Составной ID в формате {product_template_id}_{warehouse_id}_{producer}
-          example: "1_2_Producer Name"
+          description: Составной ID в формате {product_template_id}_{warehouse_id}_{producer_id}
+          example: "1_2_3"
         name:
           type: string
           description: Название товара
@@ -945,9 +945,9 @@ components:
         warehouse_id:
           type: integer
           description: ID склада
-        producer:
-          type: string
-          description: Производитель
+        producer_id:
+          type: integer
+          description: ID производителя
           nullable: true
         warehouse:
           $ref: '#/components/schemas/Warehouse'
