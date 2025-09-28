@@ -402,6 +402,15 @@
             "description": "Фильтр по производителю"
           },
           {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["in_stock", "in_transit", "for_receipt", "correction"]
+            },
+            "description": "Фильтр по статусу товара"
+          },
+          {
             "name": "in_stock",
             "in": "query",
             "schema": {

@@ -21,11 +21,13 @@ class ProductController extends Controller
     {
         $user = Auth::user();
 
-        $query = Product::with(['template', 'warehouse', 'creator'])
+        $query = Product::with(['template', 'warehouse', 'creator', 'producer'])
             ->when($request->search, function ($query, $search) {
                 $query->where('name', 'like', "%{$search}%")
                     ->orWhere('description', 'like', "%{$search}%")
-                    ->orWhere('producer', 'like', "%{$search}%");
+                    ->orWhereHas('producer', function ($q) use ($search) {
+                        $q->where('name', 'like', "%{$search}%");
+                    });
             })
             ->when($request->warehouse_id, function ($query, $warehouseId) {
                 $query->where('warehouse_id', $warehouseId);
@@ -35,6 +37,9 @@ class ProductController extends Controller
             })
             ->when($request->producer_id, function ($query, $producerId) {
                 $query->where('producer_id', $producerId);
+            })
+            ->when($request->status, function ($query, $status) {
+                $query->where('status', $status);
             })
             ->when($request->in_stock, function ($query) {
                 $query->where('quantity', '>', 0);
@@ -373,11 +378,13 @@ class ProductController extends Controller
     {
         $user = Auth::user();
 
-        $query = Product::with(['template', 'warehouse', 'creator'])
+        $query = Product::with(['template', 'warehouse', 'creator', 'producer'])
             ->when($request->search, function ($query, $search) {
                 $query->where('name', 'like', "%{$search}%")
                     ->orWhere('description', 'like', "%{$search}%")
-                    ->orWhere('producer', 'like', "%{$search}%");
+                    ->orWhereHas('producer', function ($q) use ($search) {
+                        $q->where('name', 'like', "%{$search}%");
+                    });
             })
             ->when($request->warehouse_id, function ($query, $warehouseId) {
                 $query->where('warehouse_id', $warehouseId);
@@ -387,6 +394,9 @@ class ProductController extends Controller
             })
             ->when($request->producer_id, function ($query, $producerId) {
                 $query->where('producer_id', $producerId);
+            })
+            ->when($request->status, function ($query, $status) {
+                $query->where('status', $status);
             })
             ->when($request->in_stock, function ($query) {
                 $query->where('quantity', '>', 0);

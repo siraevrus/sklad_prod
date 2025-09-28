@@ -201,6 +201,11 @@
                   "disabled": true
                 },
                 {
+                  "key": "status",
+                  "value": "for_receipt",
+                  "disabled": true
+                },
+                {
                   "key": "in_stock",
                   "value": "true",
                   "disabled": true
