@@ -1,542 +1,1648 @@
 {
   "info": {
-    "name": "Sklad API",
+    "name": "Система управления складом API",
+    "description": "API для системы управления складом с поддержкой товаров, продаж, запросов и управления пользователями",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "_postman_id": "b9b1b3f1-3b1a-4c0e-9c7b-{{timestamp}}"
+    "_postman_id": "sklad-api-collection"
   },
-  "variable": [
-    { "key": "base_url", "value": "http://localhost:8000", "type": "string" },
-    { "key": "token", "value": "", "type": "string" }
-  ],
   "auth": {
     "type": "bearer",
     "bearer": [
-      { "key": "token", "value": "{{token}}", "type": "string" }
+      {
+        "key": "token",
+        "value": "{{auth_token}}",
+        "type": "string"
+      }
     ]
   },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost/api",
+      "type": "string"
+    },
+    {
+      "key": "auth_token",
+      "value": "",
+      "type": "string"
+    }
+  ],
   "item": [
     {
-      "name": "Auth",
+      "name": "Аутентификация",
       "item": [
         {
-          "name": "Register",
+          "name": "Регистрация",
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Content-Type", "value": "application/json" }
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
             ],
-            "url": { "raw": "{{base_url}}/api/auth/register", "host": ["{{base_url}}"], "path": ["api","auth","register"] },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"John Doe\",\n  \"username\": \"johndoe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\"\n}"
+              "raw": "{\n  \"name\": \"Иван Иванов\",\n  \"username\": \"ivan\",\n  \"email\": \"ivan@example.com\",\n  \"password\": \"password123\",\n  \"password_confirmation\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "register"]
             }
-          }
+          },
+          "response": []
         },
         {
-          "name": "Login",
+          "name": "Вход",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('auth_token', response.token);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"login\": \"admin@example.com\",\n  \"password\": \"password\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Выход",
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Content-Type", "value": "application/json" }
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
             ],
-            "url": { "raw": "{{base_url}}/api/auth/login", "host": ["{{base_url}}"], "path": ["api","auth","login"] },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"login\": \"johndoe\",\n  \"password\": \"password123\"\n}"
+            "url": {
+              "raw": "{{base_url}}/auth/logout",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "logout"]
             }
-          }
+          },
+          "response": []
         },
-        { "name": "Logout", "request": { "method": "POST", "url": { "raw": "{{base_url}}/api/auth/logout", "host": ["{{base_url}}"], "path": ["api","auth","logout"] } } },
-        { "name": "Me", "request": { "method": "GET", "url": { "raw": "{{base_url}}/api/auth/me", "host": ["{{base_url}}"], "path": ["api","auth","me"] } } },
         {
-          "name": "Update Profile",
+          "name": "Информация о пользователе",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/me",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "me"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Обновить профиль",
           "request": {
             "method": "PUT",
             "header": [
-              { "key": "Content-Type", "value": "application/json" }
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
             ],
-            "url": { "raw": "{{base_url}}/api/auth/profile", "host": ["{{base_url}}"], "path": ["api","auth","profile"] },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Admin Updated\",\n  \"email\": \"admin@example.com\"\n}"
+              "raw": "{\n  \"name\": \"Иван Петров\",\n  \"email\": \"ivan.petrov@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/profile",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "profile"]
             }
-          }
+          },
+          "response": []
         }
       ]
     },
     {
-      "name": "Products",
+      "name": "Товары",
       "item": [
-        { "name": "List", "request": { "method": "GET", "url": { "raw": "{{base_url}}/api/products?per_page=15", "host": ["{{base_url}}"], "path": ["api","products"], "query": [{"key":"per_page","value":"15"}] } } },
-        { "name": "Stats", "request": { "method": "GET", "url": { "raw": "{{base_url}}/api/products/stats", "host": ["{{base_url}}"], "path": ["api","products","stats"] } } },
-        { "name": "Popular", "request": { "method": "GET", "url": { "raw": "{{base_url}}/api/products/popular", "host": ["{{base_url}}"], "path": ["api","products","popular"] } } },
-        { "name": "Export", "request": { "method": "GET", "url": { "raw": "{{base_url}}/api/products/export", "host": ["{{base_url}}"], "path": ["api","products","export"] } } },
         {
-          "name": "Show by ID",
-          "request": { "method": "GET", "url": { "raw": "{{base_url}}/api/products/1", "host": ["{{base_url}}"], "path": ["api","products","1"] } }
+          "name": "Список товаров",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/products?per_page=15",
+              "host": ["{{base_url}}"],
+              "path": ["products"],
+              "query": [
+                {
+                  "key": "per_page",
+                  "value": "15"
+                },
+                {
+                  "key": "search",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "warehouse_id",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "template_id",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "in_stock",
+                  "value": "true",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
         },
         {
-          "name": "Create",
+          "name": "Создать товар",
           "request": {
             "method": "POST",
-            "header": [ { "key": "Content-Type", "value": "application/json" } ],
-            "url": { "raw": "{{base_url}}/api/products", "host": ["{{base_url}}"], "path": ["api","products"] },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"product_template_id\": 1,\n  \"warehouse_id\": 1,\n  \"quantity\": 1,\n  \"attributes\": {\n    \"length\": 2,\n    \"width\": 3,\n    \"height\": 4\n  }\n}"
+              "raw": "{\n  \"product_template_id\": 1,\n  \"warehouse_id\": 1,\n  \"name\": \"Товар тест\",\n  \"description\": \"Описание товара\",\n  \"quantity\": 10,\n  \"attributes\": {\n    \"length\": 100,\n    \"width\": 50,\n    \"height\": 30\n  },\n  \"producer_id\": 1,\n  \"is_active\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/products",
+              "host": ["{{base_url}}"],
+              "path": ["products"]
             }
-          }
+          },
+          "response": []
         },
         {
-          "name": "Update",
+          "name": "Получить товар",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/products/1",
+              "host": ["{{base_url}}"],
+              "path": ["products", "1"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Обновить товар",
           "request": {
             "method": "PUT",
-            "header": [ { "key": "Content-Type", "value": "application/json" } ],
-            "url": { "raw": "{{base_url}}/api/products/1", "host": ["{{base_url}}"], "path": ["api","products","1"] },
-            "body": { "mode": "raw", "raw": "{\n  \"quantity\": 5\n}" }
-          }
-        },
-        { "name": "Delete", "request": { "method": "DELETE", "url": { "raw": "{{base_url}}/api/products/1", "host": ["{{base_url}}"], "path": ["api","products","1"] } } }
-      ]
-    },
-    {
-      "name": "Sales",
-      "item": [
-        { "name": "List", "request": { "method": "GET", "url": { "raw": "{{base_url}}/api/sales", "host": ["{{base_url}}"], "path": ["api","sales"] } } },
-        { "name": "Stats", "request": { "method": "GET", "url": { "raw": "{{base_url}}/api/sales/stats", "host": ["{{base_url}}"], "path": ["api","sales","stats"] } } },
-        { "name": "Export", "request": { "method": "GET", "url": { "raw": "{{base_url}}/api/sales/export", "host": ["{{base_url}}"], "path": ["api","sales","export"] } } },
-        {
-          "name": "Show by ID",
-          "request": { "method": "GET", "url": { "raw": "{{base_url}}/api/sales/1", "host": ["{{base_url}}"], "path": ["api","sales","1"] } }
-        },
-        {
-          "name": "Create",
-          "request": {
-            "method": "POST",
-            "header": [ { "key": "Content-Type", "value": "application/json" } ],
-            "url": { "raw": "{{base_url}}/api/sales", "host": ["{{base_url}}"], "path": ["api","sales"] },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"product_id\": 1,\n  \"quantity\": 2,\n  \"price\": 100.50\n}"
+              "raw": "{\n  \"name\": \"Обновленный товар\",\n  \"quantity\": 15,\n  \"is_active\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/products/1",
+              "host": ["{{base_url}}"],
+              "path": ["products", "1"]
             }
-          }
+          },
+          "response": []
         },
         {
-          "name": "Update",
+          "name": "Удалить товар",
           "request": {
-            "method": "PUT",
-            "header": [ { "key": "Content-Type", "value": "application/json" } ],
-            "url": { "raw": "{{base_url}}/api/sales/1", "host": ["{{base_url}}"], "path": ["api","sales","1"] },
-            "body": { "mode": "raw", "raw": "{\n  \"quantity\": 3,\n  \"price\": 150.00\n}" }
-          }
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/products/1",
+              "host": ["{{base_url}}"],
+              "path": ["products", "1"]
+            }
+          },
+          "response": []
         },
-        { "name": "Delete", "request": { "method": "DELETE", "url": { "raw": "{{base_url}}/api/sales/1", "host": ["{{base_url}}"], "path": ["api","sales","1"] } } },
         {
-          "name": "Process",
+          "name": "Статистика товаров",
           "request": {
-            "method": "POST",
-            "url": { "raw": "{{base_url}}/api/sales/1/process", "host": ["{{base_url}}"], "path": ["api","sales","1","process"] }
-          }
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/products/stats",
+              "host": ["{{base_url}}"],
+              "path": ["products", "stats"]
+            }
+          },
+          "response": []
         },
         {
-          "name": "Cancel",
+          "name": "Популярные товары",
           "request": {
-            "method": "POST",
-            "url": { "raw": "{{base_url}}/api/sales/1/cancel", "host": ["{{base_url}}"], "path": ["api","sales","1","cancel"] }
-          }
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/products/popular",
+              "host": ["{{base_url}}"],
+              "path": ["products", "popular"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Экспорт товаров",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/products/export",
+              "host": ["{{base_url}}"],
+              "path": ["products", "export"]
+            }
+          },
+          "response": []
         }
       ]
     },
     {
-      "name": "Requests",
+      "name": "Продажи",
       "item": [
-        { "name": "List", "request": { "method": "GET", "url": { "raw": "{{base_url}}/api/requests", "host": ["{{base_url}}"], "path": ["api","requests"] } } },
-        { "name": "Stats", "request": { "method": "GET", "url": { "raw": "{{base_url}}/api/requests/stats", "host": ["{{base_url}}"], "path": ["api","requests","stats"] } } },
         {
-          "name": "Show by ID",
-          "request": { "method": "GET", "url": { "raw": "{{base_url}}/api/requests/1", "host": ["{{base_url}}"], "path": ["api","requests","1"] } }
+          "name": "Список продаж",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/sales?per_page=15",
+              "host": ["{{base_url}}"],
+              "path": ["sales"],
+              "query": [
+                {
+                  "key": "per_page",
+                  "value": "15"
+                },
+                {
+                  "key": "search",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "warehouse_id",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "payment_status",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "date_from",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "date_to",
+                  "value": "",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
         },
         {
-          "name": "Create",
+          "name": "Создать продажу",
           "request": {
             "method": "POST",
-            "header": [ { "key": "Content-Type", "value": "application/json" } ],
-            "url": { "raw": "{{base_url}}/api/requests", "host": ["{{base_url}}"], "path": ["api","requests"] },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"product_template_id\": 1,\n  \"quantity\": 10,\n  \"description\": \"Запрос на поставку\"\n}"
+              "raw": "{\n  \"product_id\": 1,\n  \"warehouse_id\": 1,\n  \"customer_name\": \"Иван Покупатель\",\n  \"customer_phone\": \"+7 123 456 78 90\",\n  \"customer_email\": \"customer@example.com\",\n  \"quantity\": 2,\n  \"unit_price\": 1000,\n  \"vat_rate\": 20,\n  \"payment_method\": \"cash\",\n  \"payment_status\": \"pending\",\n  \"sale_date\": \"2024-01-15\",\n  \"notes\": \"Комментарий к продаже\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/sales",
+              "host": ["{{base_url}}"],
+              "path": ["sales"]
             }
-          }
+          },
+          "response": []
         },
         {
-          "name": "Update",
+          "name": "Получить продажу",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/sales/1",
+              "host": ["{{base_url}}"],
+              "path": ["sales", "1"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Обновить продажу",
           "request": {
             "method": "PUT",
-            "header": [ { "key": "Content-Type", "value": "application/json" } ],
-            "url": { "raw": "{{base_url}}/api/requests/1", "host": ["{{base_url}}"], "path": ["api","requests","1"] },
-            "body": { "mode": "raw", "raw": "{\n  \"quantity\": 15,\n  \"description\": \"Обновленный запрос\"\n}" }
-          }
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customer_name\": \"Петр Покупатель\",\n  \"payment_status\": \"paid\",\n  \"notes\": \"Обновленный комментарий\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/sales/1",
+              "host": ["{{base_url}}"],
+              "path": ["sales", "1"]
+            }
+          },
+          "response": []
         },
-        { "name": "Delete", "request": { "method": "DELETE", "url": { "raw": "{{base_url}}/api/requests/1", "host": ["{{base_url}}"], "path": ["api","requests","1"] } } },
         {
-          "name": "Process",
+          "name": "Оформить продажу",
           "request": {
             "method": "POST",
-            "url": { "raw": "{{base_url}}/api/requests/1/process", "host": ["{{base_url}}"], "path": ["api","requests","1","process"] }
-          }
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/sales/1/process",
+              "host": ["{{base_url}}"],
+              "path": ["sales", "1", "process"]
+            }
+          },
+          "response": []
         },
         {
-          "name": "Reject",
+          "name": "Отменить продажу",
           "request": {
             "method": "POST",
-            "url": { "raw": "{{base_url}}/api/requests/1/reject", "host": ["{{base_url}}"], "path": ["api","requests","1","reject"] }
-          }
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/sales/1/cancel",
+              "host": ["{{base_url}}"],
+              "path": ["sales", "1", "cancel"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Статистика продаж",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/sales/stats",
+              "host": ["{{base_url}}"],
+              "path": ["sales", "stats"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Экспорт продаж",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/sales/export",
+              "host": ["{{base_url}}"],
+              "path": ["sales", "export"]
+            }
+          },
+          "response": []
         }
       ]
     },
     {
-      "name": "Users",
+      "name": "Товары в пути / Приемка",
       "item": [
-        { "name": "List", "request": { "method": "GET", "url": { "raw": "{{base_url}}/api/users", "host": ["{{base_url}}"], "path": ["api","users"] } } },
-        { "name": "Stats", "request": { "method": "GET", "url": { "raw": "{{base_url}}/api/users/stats", "host": ["{{base_url}}"], "path": ["api","users","stats"] } } },
-        { "name": "Profile", "request": { "method": "GET", "url": { "raw": "{{base_url}}/api/users/profile", "host": ["{{base_url}}"], "path": ["api","users","profile"] } } },
         {
-          "name": "Update Profile",
+          "name": "Список товаров в пути",
           "request": {
-            "method": "PUT",
-            "header": [ { "key": "Content-Type", "value": "application/json" } ],
-            "url": { "raw": "{{base_url}}/api/users/profile", "host": ["{{base_url}}"], "path": ["api","users","profile"] },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/receipts?per_page=15",
+              "host": ["{{base_url}}"],
+              "path": ["receipts"],
+              "query": [
+                {
+                  "key": "per_page",
+                  "value": "15"
+                },
+                {
+                  "key": "status",
+                  "value": "in_transit",
+                  "disabled": true
+                },
+                {
+                  "key": "warehouse_id",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "search",
+                  "value": "",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Создать товар в пути",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Updated Name\",\n  \"email\": \"updated@example.com\"\n}"
+              "raw": "{\n  \"warehouse_id\": 1,\n  \"shipping_location\": \"Москва\",\n  \"shipping_date\": \"2024-01-10\",\n  \"transport_number\": \"А123БВ77\",\n  \"expected_arrival_date\": \"2024-01-15\",\n  \"notes\": \"Срочная доставка\",\n  \"products\": [\n    {\n      \"product_template_id\": 1,\n      \"quantity\": 10,\n      \"producer\": \"ООО Производитель\",\n      \"name\": \"Товар в пути\",\n      \"attributes\": {\n        \"length\": 100,\n        \"width\": 50\n      }\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/receipts",
+              "host": ["{{base_url}}"],
+              "path": ["receipts"]
             }
-          }
+          },
+          "response": []
         },
         {
-          "name": "Show by ID",
-          "request": { "method": "GET", "url": { "raw": "{{base_url}}/api/users/1", "host": ["{{base_url}}"], "path": ["api","users","1"] } }
+          "name": "Получить товар в пути",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/receipts/1",
+              "host": ["{{base_url}}"],
+              "path": ["receipts", "1"]
+            }
+          },
+          "response": []
         },
         {
-          "name": "Create",
+          "name": "Принять товар",
           "request": {
             "method": "POST",
-            "header": [ { "key": "Content-Type", "value": "application/json" } ],
-            "url": { "raw": "{{base_url}}/api/users", "host": ["{{base_url}}"], "path": ["api","users"] },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/receipts/1/receive",
+              "host": ["{{base_url}}"],
+              "path": ["receipts", "1", "receive"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Добавить уточнение к товару",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"New User\",\n  \"username\": \"newuser\",\n  \"email\": \"newuser@example.com\",\n  \"password\": \"password123\"\n}"
+              "raw": "{\n  \"correction\": \"Товар прибыл с небольшими повреждениями упаковки, но содержимое в порядке. Требуется дополнительная проверка качества.\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/receipts/1/correction",
+              "host": ["{{base_url}}"],
+              "path": ["receipts", "1", "correction"]
             }
-          }
-        },
-        {
-          "name": "Update",
-          "request": {
-            "method": "PUT",
-            "header": [ { "key": "Content-Type", "value": "application/json" } ],
-            "url": { "raw": "{{base_url}}/api/users/1", "host": ["{{base_url}}"], "path": ["api","users","1"] },
-            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Updated User\",\n  \"email\": \"updated@example.com\"\n}" }
-          }
-        },
-        { "name": "Delete", "request": { "method": "DELETE", "url": { "raw": "{{base_url}}/api/users/1", "host": ["{{base_url}}"], "path": ["api","users","1"] } } },
-        {
-          "name": "Block",
-          "request": {
-            "method": "POST",
-            "url": { "raw": "{{base_url}}/api/users/1/block", "host": ["{{base_url}}"], "path": ["api","users","1","block"] }
-          }
-        },
-        {
-          "name": "Unblock",
-          "request": {
-            "method": "POST",
-            "url": { "raw": "{{base_url}}/api/users/1/unblock", "host": ["{{base_url}}"], "path": ["api","users","1","unblock"] }
-          }
+          },
+          "response": []
         }
       ]
     },
     {
-      "name": "Companies",
+      "name": "Пользователи",
       "item": [
-        { "name": "List", "request": { "method": "GET", "url": { "raw": "{{base_url}}/api/companies", "host": ["{{base_url}}"], "path": ["api","companies"] } } },
         {
-          "name": "Create",
+          "name": "Список пользователей",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users?per_page=15",
+              "host": ["{{base_url}}"],
+              "path": ["users"],
+              "query": [
+                {
+                  "key": "per_page",
+                  "value": "15"
+                },
+                {
+                  "key": "role",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "warehouse_id",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "search",
+                  "value": "",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Создать пользователя",
           "request": {
             "method": "POST",
-            "header": [ { "key": "Content-Type", "value": "application/json" } ],
-            "url": { "raw": "{{base_url}}/api/companies", "host": ["{{base_url}}"], "path": ["api","companies"] },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"New Company\",\n  \"description\": \"Описание компании\"\n}"
+              "raw": "{\n  \"first_name\": \"Петр\",\n  \"last_name\": \"Петров\",\n  \"email\": \"petr@example.com\",\n  \"password\": \"password123\",\n  \"role\": \"warehouse_worker\",\n  \"warehouse_id\": 1,\n  \"phone\": \"+7 123 456 78 90\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/users",
+              "host": ["{{base_url}}"],
+              "path": ["users"]
             }
-          }
+          },
+          "response": []
         },
         {
-          "name": "Show by ID",
-          "request": { "method": "GET", "url": { "raw": "{{base_url}}/api/companies/1", "host": ["{{base_url}}"], "path": ["api","companies","1"] } }
+          "name": "Получить пользователя",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/1",
+              "host": ["{{base_url}}"],
+              "path": ["users", "1"]
+            }
+          },
+          "response": []
         },
         {
-          "name": "Update",
+          "name": "Обновить пользователя",
           "request": {
             "method": "PUT",
-            "header": [ { "key": "Content-Type", "value": "application/json" } ],
-            "url": { "raw": "{{base_url}}/api/companies/1", "host": ["{{base_url}}"], "path": ["api","companies","1"] },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Updated Company\",\n  \"description\": \"Обновленное описание\"\n}"
+              "raw": "{\n  \"first_name\": \"Петр\",\n  \"last_name\": \"Сидоров\",\n  \"phone\": \"+7 987 654 32 10\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/users/1",
+              "host": ["{{base_url}}"],
+              "path": ["users", "1"]
             }
-          }
-        },
-        { "name": "Delete", "request": { "method": "DELETE", "url": { "raw": "{{base_url}}/api/companies/1", "host": ["{{base_url}}"], "path": ["api","companies","1"] } } },
-        {
-          "name": "Archive",
-          "request": {
-            "method": "POST",
-            "url": { "raw": "{{base_url}}/api/companies/1/archive", "host": ["{{base_url}}"], "path": ["api","companies","1","archive"] }
-          }
+          },
+          "response": []
         },
         {
-          "name": "Restore",
+          "name": "Заблокировать пользователя",
           "request": {
             "method": "POST",
-            "url": { "raw": "{{base_url}}/api/companies/1/restore", "host": ["{{base_url}}"], "path": ["api","companies","1","restore"] }
-          }
-        },
-        {
-          "name": "Company Warehouses",
-          "request": { "method": "GET", "url": { "raw": "{{base_url}}/api/companies/1/warehouses", "host": ["{{base_url}}"], "path": ["api","companies","1","warehouses"] } }
-        }
-      ]
-    },
-    {
-      "name": "Receipts",
-      "item": [
-        { "name": "List", "request": { "method": "GET", "url": { "raw": "{{base_url}}/api/receipts", "host": ["{{base_url}}"], "path": ["api","receipts"] } } },
-        {
-          "name": "Create",
-          "request": {
-            "method": "POST",
-            "header": [ { "key": "Content-Type", "value": "application/json" } ],
-            "url": { "raw": "{{base_url}}/api/receipts", "host": ["{{base_url}}"], "path": ["api","receipts"] },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"product_template_id\": 1,\n  \"warehouse_id\": 1,\n  \"quantity\": 100,\n  \"expected_date\": \"2024-01-15\"\n}"
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/1/block",
+              "host": ["{{base_url}}"],
+              "path": ["users", "1", "block"]
             }
-          }
+          },
+          "response": []
         },
         {
-          "name": "Show by ID",
-          "request": { "method": "GET", "url": { "raw": "{{base_url}}/api/receipts/1", "host": ["{{base_url}}"], "path": ["api","receipts","1"] } }
-        },
-        {
-          "name": "Receive",
+          "name": "Разблокировать пользователя",
           "request": {
             "method": "POST",
-            "url": { "raw": "{{base_url}}/api/receipts/1/receive", "host": ["{{base_url}}"], "path": ["api","receipts","1","receive"] }
-          }
-        }
-      ]
-    },
-    {
-      "name": "Products in Transit",
-      "item": [
-        { "name": "List", "request": { "method": "GET", "url": { "raw": "{{base_url}}/api/products-in-transit", "host": ["{{base_url}}"], "path": ["api","products-in-transit"] } } },
-        {
-          "name": "Create",
-          "request": {
-            "method": "POST",
-            "header": [ { "key": "Content-Type", "value": "application/json" } ],
-            "url": { "raw": "{{base_url}}/api/products-in-transit", "host": ["{{base_url}}"], "path": ["api","products-in-transit"] },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"product_template_id\": 1,\n  \"warehouse_id\": 1,\n  \"quantity\": 50,\n  \"expected_date\": \"2024-01-20\"\n}"
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/1/unblock",
+              "host": ["{{base_url}}"],
+              "path": ["users", "1", "unblock"]
             }
-          }
+          },
+          "response": []
         },
         {
-          "name": "Show by ID",
-          "request": { "method": "GET", "url": { "raw": "{{base_url}}/api/products-in-transit/1", "host": ["{{base_url}}"], "path": ["api","products-in-transit","1"] } }
-        },
-        {
-          "name": "Receive",
+          "name": "Статистика пользователей",
           "request": {
-            "method": "POST",
-            "url": { "raw": "{{base_url}}/api/products-in-transit/1/receive", "host": ["{{base_url}}"], "path": ["api","products-in-transit","1","receive"] }
-          }
-        }
-      ]
-    },
-    {
-      "name": "Warehouses",
-      "item": [
-        { "name": "List", "request": { "method": "GET", "url": { "raw": "{{base_url}}/api/warehouses", "host": ["{{base_url}}"], "path": ["api","warehouses"] } } },
-        { "name": "Stats All", "request": { "method": "GET", "url": { "raw": "{{base_url}}/api/warehouses/stats", "host": ["{{base_url}}"], "path": ["api","warehouses","stats"] } } },
-        {
-          "name": "Show by ID",
-          "request": { "method": "GET", "url": { "raw": "{{base_url}}/api/warehouses/1", "host": ["{{base_url}}"], "path": ["api","warehouses","1"] } }
-        },
-        {
-          "name": "Warehouse Stats",
-          "request": { "method": "GET", "url": { "raw": "{{base_url}}/api/warehouses/1/stats", "host": ["{{base_url}}"], "path": ["api","warehouses","1","stats"] } }
-        },
-        {
-          "name": "Warehouse Products",
-          "request": { "method": "GET", "url": { "raw": "{{base_url}}/api/warehouses/1/products", "host": ["{{base_url}}"], "path": ["api","warehouses","1","products"] } }
-        },
-        {
-          "name": "Warehouse Employees",
-          "request": { "method": "GET", "url": { "raw": "{{base_url}}/api/warehouses/1/employees", "host": ["{{base_url}}"], "path": ["api","warehouses","1","employees"] } }
-        },
-        {
-          "name": "Create",
-          "request": {
-            "method": "POST",
-            "header": [ { "key": "Content-Type", "value": "application/json" } ],
-            "url": { "raw": "{{base_url}}/api/warehouses", "host": ["{{base_url}}"], "path": ["api","warehouses"] },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"New Warehouse\",\n  \"address\": \"Адрес склада\",\n  \"company_id\": 1\n}"
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/stats",
+              "host": ["{{base_url}}"],
+              "path": ["users", "stats"]
             }
-          }
+          },
+          "response": []
         },
         {
-          "name": "Update",
+          "name": "Профиль пользователя",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/profile",
+              "host": ["{{base_url}}"],
+              "path": ["users", "profile"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Обновить профиль",
           "request": {
             "method": "PUT",
-            "header": [ { "key": "Content-Type", "value": "application/json" } ],
-            "url": { "raw": "{{base_url}}/api/warehouses/1", "host": ["{{base_url}}"], "path": ["api","warehouses","1"] },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Updated Warehouse\",\n  \"address\": \"Обновленный адрес\"\n}"
+              "raw": "{\n  \"first_name\": \"Новое имя\",\n  \"phone\": \"+7 111 222 33 44\",\n  \"current_password\": \"old_password\",\n  \"new_password\": \"new_password123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/users/profile",
+              "host": ["{{base_url}}"],
+              "path": ["users", "profile"]
             }
-          }
-        },
-        { "name": "Delete", "request": { "method": "DELETE", "url": { "raw": "{{base_url}}/api/warehouses/1", "host": ["{{base_url}}"], "path": ["api","warehouses","1"] } } },
-        {
-          "name": "Activate",
-          "request": {
-            "method": "POST",
-            "url": { "raw": "{{base_url}}/api/warehouses/1/activate", "host": ["{{base_url}}"], "path": ["api","warehouses","1","activate"] }
-          }
-        },
-        {
-          "name": "Deactivate",
-          "request": {
-            "method": "POST",
-            "url": { "raw": "{{base_url}}/api/warehouses/1/deactivate", "host": ["{{base_url}}"], "path": ["api","warehouses","1","deactivate"] }
-          }
+          },
+          "response": []
         }
       ]
     },
     {
-      "name": "Product Templates",
+      "name": "Компании",
       "item": [
-        { "name": "List", "request": { "method": "GET", "url": { "raw": "{{base_url}}/api/product-templates", "host": ["{{base_url}}"], "path": ["api","product-templates"] } } },
-        { "name": "Stats", "request": { "method": "GET", "url": { "raw": "{{base_url}}/api/product-templates/stats", "host": ["{{base_url}}"], "path": ["api","product-templates","stats"] } } },
-        { "name": "Units", "request": { "method": "GET", "url": { "raw": "{{base_url}}/api/product-templates/units", "host": ["{{base_url}}"], "path": ["api","product-templates","units"] } } },
         {
-          "name": "Show by ID",
-          "request": { "method": "GET", "url": { "raw": "{{base_url}}/api/product-templates/1", "host": ["{{base_url}}"], "path": ["api","product-templates","1"] } }
+          "name": "Список компаний",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/companies?per_page=15",
+              "host": ["{{base_url}}"],
+              "path": ["companies"],
+              "query": [
+                {
+                  "key": "per_page",
+                  "value": "15"
+                },
+                {
+                  "key": "is_active",
+                  "value": "true",
+                  "disabled": true
+                },
+                {
+                  "key": "search",
+                  "value": "",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
         },
         {
-          "name": "Template Attributes",
-          "request": { "method": "GET", "url": { "raw": "{{base_url}}/api/product-templates/1/attributes", "host": ["{{base_url}}"], "path": ["api","product-templates","1","attributes"] } }
-        },
-        {
-          "name": "Template Products",
-          "request": { "method": "GET", "url": { "raw": "{{base_url}}/api/product-templates/1/products", "host": ["{{base_url}}"], "path": ["api","product-templates","1","products"] } }
-        },
-        {
-          "name": "Create",
+          "name": "Создать компанию",
           "request": {
             "method": "POST",
-            "header": [ { "key": "Content-Type", "value": "application/json" } ],
-            "url": { "raw": "{{base_url}}/api/product-templates", "host": ["{{base_url}}"], "path": ["api","product-templates"] },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"New Template\",\n  \"description\": \"Описание шаблона\",\n  \"unit\": \"шт\",\n  \"formula\": \"length * width * height\"\n}"
+              "raw": "{\n  \"name\": \"ООО Тестовая компания\",\n  \"legal_address\": \"г. Москва, ул. Тестовая, д. 1\",\n  \"postal_address\": \"г. Москва, ул. Тестовая, д. 1\",\n  \"phone_fax\": \"+7 495 123 45 67\",\n  \"general_director\": \"Иванов Иван Иванович\",\n  \"email\": \"company@example.com\",\n  \"inn\": \"1234567890\",\n  \"kpp\": \"123456789\",\n  \"ogrn\": \"1234567890123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/companies",
+              "host": ["{{base_url}}"],
+              "path": ["companies"]
             }
-          }
+          },
+          "response": []
         },
         {
-          "name": "Update",
+          "name": "Получить компанию",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/companies/1",
+              "host": ["{{base_url}}"],
+              "path": ["companies", "1"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Обновить компанию",
           "request": {
             "method": "PUT",
-            "header": [ { "key": "Content-Type", "value": "application/json" } ],
-            "url": { "raw": "{{base_url}}/api/product-templates/1", "host": ["{{base_url}}"], "path": ["api","product-templates","1"] },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Updated Template\",\n  \"description\": \"Обновленное описание\"\n}"
+              "raw": "{\n  \"name\": \"ООО Обновленная компания\",\n  \"phone_fax\": \"+7 495 987 65 43\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/companies/1",
+              "host": ["{{base_url}}"],
+              "path": ["companies", "1"]
             }
-          }
+          },
+          "response": []
         },
-        { "name": "Delete", "request": { "method": "DELETE", "url": { "raw": "{{base_url}}/api/product-templates/1", "host": ["{{base_url}}"], "path": ["api","product-templates","1"] } } },
         {
-          "name": "Activate",
+          "name": "Архивировать компанию",
           "request": {
             "method": "POST",
-            "url": { "raw": "{{base_url}}/api/product-templates/1/activate", "host": ["{{base_url}}"], "path": ["api","product-templates","1","activate"] }
-          }
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/companies/1/archive",
+              "host": ["{{base_url}}"],
+              "path": ["companies", "1", "archive"]
+            }
+          },
+          "response": []
         },
         {
-          "name": "Deactivate",
+          "name": "Восстановить компанию",
           "request": {
             "method": "POST",
-            "url": { "raw": "{{base_url}}/api/product-templates/1/deactivate", "host": ["{{base_url}}"], "path": ["api","product-templates","1","deactivate"] }
-          }
-        },
-        {
-          "name": "Test Formula",
-          "request": {
-            "method": "POST",
-            "header": [ { "key": "Content-Type", "value": "application/json" } ],
-            "url": { "raw": "{{base_url}}/api/product-templates/1/test-formula", "host": ["{{base_url}}"], "path": ["api","product-templates","1","test-formula"] },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"length\": 10,\n  \"width\": 5,\n  \"height\": 2\n}"
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/companies/1/restore",
+              "host": ["{{base_url}}"],
+              "path": ["companies", "1", "restore"]
             }
-          }
+          },
+          "response": []
         },
         {
-          "name": "Add Attribute",
+          "name": "Склады компании",
           "request": {
-            "method": "POST",
-            "header": [ { "key": "Content-Type", "value": "application/json" } ],
-            "url": { "raw": "{{base_url}}/api/product-templates/1/attributes", "host": ["{{base_url}}"], "path": ["api","product-templates","1","attributes"] },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"weight\",\n  \"type\": \"number\",\n  \"required\": true\n}"
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/companies/1/warehouses",
+              "host": ["{{base_url}}"],
+              "path": ["companies", "1", "warehouses"]
             }
-          }
-        },
-        {
-          "name": "Update Attribute",
-          "request": {
-            "method": "PUT",
-            "header": [ { "key": "Content-Type", "value": "application/json" } ],
-            "url": { "raw": "{{base_url}}/api/product-templates/1/attributes/1", "host": ["{{base_url}}"], "path": ["api","product-templates","1","attributes","1"] },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"weight_kg\",\n  \"type\": \"number\",\n  \"required\": false\n}"
-            }
-          }
-        },
-        {
-          "name": "Delete Attribute",
-          "request": { "method": "DELETE", "url": { "raw": "{{base_url}}/api/product-templates/1/attributes/1", "host": ["{{base_url}}"], "path": ["api","product-templates","1","attributes","1"] } }
+          },
+          "response": []
         }
       ]
     },
     {
-      "name": "Stocks",
+      "name": "Склады",
       "item": [
-        { "name": "List", "request": { "method": "GET", "url": { "raw": "{{base_url}}/api/stocks", "host": ["{{base_url}}"], "path": ["api","stocks"] } } },
         {
-          "name": "Show by ID",
-          "request": { "method": "GET", "url": { "raw": "{{base_url}}/api/stocks/1", "host": ["{{base_url}}"], "path": ["api","stocks","1"] } }
+          "name": "Список складов",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/warehouses?per_page=15",
+              "host": ["{{base_url}}"],
+              "path": ["warehouses"],
+              "query": [
+                {
+                  "key": "per_page",
+                  "value": "15"
+                },
+                {
+                  "key": "company_id",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "is_active",
+                  "value": "true",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Создать склад",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Центральный склад\",\n  \"address\": \"г. Москва, ул. Складская, д. 10\",\n  \"company_id\": 1,\n  \"is_active\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/warehouses",
+              "host": ["{{base_url}}"],
+              "path": ["warehouses"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Получить склад",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/warehouses/1",
+              "host": ["{{base_url}}"],
+              "path": ["warehouses", "1"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Статистика склада",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/warehouses/1/stats",
+              "host": ["{{base_url}}"],
+              "path": ["warehouses", "1", "stats"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Товары склада",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/warehouses/1/products",
+              "host": ["{{base_url}}"],
+              "path": ["warehouses", "1", "products"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Сотрудники склада",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/warehouses/1/employees",
+              "host": ["{{base_url}}"],
+              "path": ["warehouses", "1", "employees"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Статистика всех складов",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/warehouses/stats",
+              "host": ["{{base_url}}"],
+              "path": ["warehouses", "stats"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Запросы",
+      "item": [
+        {
+          "name": "Список запросов",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/requests?per_page=15",
+              "host": ["{{base_url}}"],
+              "path": ["requests"],
+              "query": [
+                {
+                  "key": "per_page",
+                  "value": "15"
+                },
+                {
+                  "key": "status",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "warehouse_id",
+                  "value": "",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Создать запрос",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"warehouse_id\": 1,\n  \"product_template_id\": 1,\n  \"title\": \"Запрос на товар\",\n  \"description\": \"Необходимо заказать товар для склада\",\n  \"quantity\": 50\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/requests",
+              "host": ["{{base_url}}"],
+              "path": ["requests"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Получить запрос",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/requests/1",
+              "host": ["{{base_url}}"],
+              "path": ["requests", "1"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Одобрить запрос",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/requests/1/approve",
+              "host": ["{{base_url}}"],
+              "path": ["requests", "1", "approve"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Статистика запросов",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/requests/stats",
+              "host": ["{{base_url}}"],
+              "path": ["requests", "stats"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Шаблоны товаров",
+      "item": [
+        {
+          "name": "Список шаблонов",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/product-templates?per_page=15",
+              "host": ["{{base_url}}"],
+              "path": ["product-templates"],
+              "query": [
+                {
+                  "key": "per_page",
+                  "value": "15"
+                },
+                {
+                  "key": "is_active",
+                  "value": "true",
+                  "disabled": true
+                },
+                {
+                  "key": "search",
+                  "value": "",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Создать шаблон",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Доска\",\n  \"description\": \"Шаблон для досок\",\n  \"formula\": \"length * width * height * quantity / 1000000\",\n  \"unit\": \"м³\",\n  \"is_active\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/product-templates",
+              "host": ["{{base_url}}"],
+              "path": ["product-templates"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Получить шаблон",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/product-templates/1",
+              "host": ["{{base_url}}"],
+              "path": ["product-templates", "1"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Тест формулы",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"values\": {\n    \"length\": 100,\n    \"width\": 50,\n    \"height\": 25,\n    \"quantity\": 10\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/product-templates/1/test-formula",
+              "host": ["{{base_url}}"],
+              "path": ["product-templates", "1", "test-formula"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Статистика шаблонов",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/product-templates/stats",
+              "host": ["{{base_url}}"],
+              "path": ["product-templates", "stats"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Единицы измерения",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/product-templates/units",
+              "host": ["{{base_url}}"],
+              "path": ["product-templates", "units"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Производители",
+      "item": [
+        {
+          "name": "Список производителей",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/producers",
+              "host": ["{{base_url}}"],
+              "path": ["producers"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Создать производителя",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"ООО Производитель\",\n  \"region\": \"Московская область\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/producers",
+              "host": ["{{base_url}}"],
+              "path": ["producers"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Получить производителя",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/producers/1",
+              "host": ["{{base_url}}"],
+              "path": ["producers", "1"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Обновить производителя",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"ООО Новый производитель\",\n  \"region\": \"Ленинградская область\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/producers/1",
+              "host": ["{{base_url}}"],
+              "path": ["producers", "1"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Удалить производителя",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/producers/1",
+              "host": ["{{base_url}}"],
+              "path": ["producers", "1"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Дашборд",
+      "item": [
+        {
+          "name": "Сводка дашборда",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/dashboard/summary",
+              "host": ["{{base_url}}"],
+              "path": ["dashboard", "summary"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Выручка",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/dashboard/revenue?period=month",
+              "host": ["{{base_url}}"],
+              "path": ["dashboard", "revenue"],
+              "query": [
+                {
+                  "key": "period",
+                  "value": "month"
+                },
+                {
+                  "key": "date_from",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "date_to",
+                  "value": "",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
         }
       ]
     }
   ]
 }
-
-

@@ -653,6 +653,32 @@
             }
           },
           "response": []
+        },
+        {
+          "name": "Добавить уточнение к товару",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correction\": \"Товар прибыл с небольшими повреждениями упаковки, но содержимое в порядке. Требуется дополнительная проверка качества.\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/receipts/1/correction",
+              "host": ["{{base_url}}"],
+              "path": ["receipts", "1", "correction"]
+            }
+          },
+          "response": []
         }
       ]
     },

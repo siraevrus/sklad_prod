@@ -481,6 +481,94 @@ paths:
                   total:
                     type: integer
 
+  # Приемка товаров
+  /receipts:
+    get:
+      tags: [Приемка]
+      summary: Список товаров в пути
+      parameters:
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            default: 15
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [in_transit, in_stock, for_receipt]
+        - name: warehouse_id
+          in: query
+          schema:
+            type: integer
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        200:
+          description: Список товаров в пути
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Product'
+                  pagination:
+                    $ref: '#/components/schemas/PaginationMeta'
+
+  /receipts/{id}/correction:
+    post:
+      tags: [Приемка]
+      summary: Добавить уточнение к товару
+      description: Добавляет текстовое уточнение к товару и автоматически принимает его в остатки
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [correction]
+              properties:
+                correction:
+                  type: string
+                  minLength: 10
+                  maxLength: 1000
+                  description: Текст уточнения (от 10 до 1000 символов)
+                  example: "Товар прибыл с небольшими повреждениями упаковки, но содержимое в порядке."
+      responses:
+        200:
+          description: Уточнение добавлено и товар принят
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                    example: "Уточнение сохранено и товар принят"
+                  data:
+                    $ref: '#/components/schemas/Product'
+        403:
+          description: Доступ запрещен
+        404:
+          description: Товар не найден или не находится в пути
+        422:
+          description: Ошибка валидации
+
 components:
   securitySchemes:
     bearerAuth:

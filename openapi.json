@@ -2152,6 +2152,101 @@
         }
       }
     },
+    "/receipts/{receipt}/correction": {
+      "post": {
+        "tags": [
+          "Receipts"
+        ],
+        "summary": "Добавление уточнения к товару",
+        "description": "Добавляет текстовое уточнение к товару и автоматически принимает его в остатки",
+        "parameters": [
+          {
+            "name": "receipt",
+            "in": "path",
+            "required": true,
+            "description": "ID товара в пути",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["correction"],
+                "properties": {
+                  "correction": {
+                    "type": "string",
+                    "minLength": 10,
+                    "maxLength": 1000,
+                    "description": "Текст уточнения (от 10 до 1000 символов)",
+                    "example": "Товар прибыл с небольшими повреждениями упаковки, но содержимое в порядке. Требуется дополнительная проверка качества."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Уточнение добавлено и товар принят",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Уточнение сохранено и товар принят"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Product"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Доступ запрещен",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Товар не найден или не находится в пути",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Ошибка валидации",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/products-in-transit": {
       "get": {
         "tags": [
