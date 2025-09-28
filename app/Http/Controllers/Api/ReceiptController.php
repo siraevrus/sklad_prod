@@ -297,4 +297,48 @@ class ReceiptController extends Controller
             'data' => $receipt->refresh(),
         ]);
     }
+
+    /**
+     * Добавить уточнение к товару и принять его
+     */
+    public function addCorrection(Request $request, Product $receipt): JsonResponse
+    {
+        // Проверяем, что товар в пути
+        if ($receipt->status !== Product::STATUS_IN_TRANSIT || !$receipt->is_active) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Товар не найден или не находится в пути',
+            ], 404);
+        }
+
+        // Ограничение по складу для не-админа
+        $user = Auth::user();
+        if ($user && !$user->isAdmin()) {
+            if ($user->warehouse_id !== $receipt->warehouse_id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Доступ запрещен',
+                ], 403);
+            }
+        }
+
+        // Валидация данных
+        $validated = $request->validate([
+            'correction' => 'required|string|min:10|max:1000',
+        ]);
+
+        // Добавляем уточнение и принимаем товар
+        $receipt->update([
+            'correction' => $validated['correction'],
+            'correction_status' => 'correction',
+            'status' => Product::STATUS_IN_STOCK,
+            'actual_arrival_date' => now(),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Уточнение сохранено и товар принят',
+            'data' => $receipt->load(['template', 'warehouse', 'creator']),
+        ]);
+    }
 }

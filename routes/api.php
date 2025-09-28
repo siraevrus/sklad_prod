@@ -109,6 +109,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('/', [\App\Http\Controllers\Api\ReceiptController::class, 'store']);
         Route::get('/{receipt}', [\App\Http\Controllers\Api\ReceiptController::class, 'show']);
         Route::post('/{receipt}/receive', [\App\Http\Controllers\Api\ReceiptController::class, 'receive']);
+        Route::post('/{receipt}/correction', [\App\Http\Controllers\Api\ReceiptController::class, 'addCorrection']);
     });
 
     // Алиас для "Товары в пути" (те же обработчики, что и receipts)
@@ -117,6 +118,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('/', [\App\Http\Controllers\Api\ReceiptController::class, 'store']);
         Route::get('/{receipt}', [\App\Http\Controllers\Api\ReceiptController::class, 'show']);
         Route::post('/{receipt}/receive', [\App\Http\Controllers\Api\ReceiptController::class, 'receive']);
+        Route::post('/{receipt}/correction', [\App\Http\Controllers\Api\ReceiptController::class, 'addCorrection']);
     });
 
     // Склады
