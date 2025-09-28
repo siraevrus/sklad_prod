@@ -677,7 +677,10 @@ class ProductResource extends Resource
                     ->label('Количество')
                     ->sortable()
                     ->badge()
-                    ->color('info'),
+                    ->color('info')
+                    ->formatStateUsing(function ($state) {
+                        return (string) $state;  // Выводим как строку, без форматирования
+                    }),
 
                 Tables\Columns\TextColumn::make('transport_number')
                     ->label('Номер транспорта')
