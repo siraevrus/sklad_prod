@@ -641,9 +641,6 @@ class ProductResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->query(function (Builder $query) {
-                return $query->where('status', 'in_stock');
-            })
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->label('Наименование')
