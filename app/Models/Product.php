@@ -70,6 +70,27 @@ class Product extends Model
     ];
 
     /**
+     * Аксессор для document_path - гарантирует, что всегда возвращается массив
+     */
+    public function getDocumentPathAttribute($value)
+    {
+        if ($value === null) {
+            return [];
+        }
+        
+        if (is_string($value)) {
+            $decoded = json_decode($value, true);
+            return is_array($decoded) ? $decoded : [];
+        }
+        
+        if (is_array($value)) {
+            return $value;
+        }
+        
+        return [];
+    }
+
+    /**
      * Мутатор для calculated_volume - валидация на уровне модели
      */
     public function setCalculatedVolumeAttribute($value)
