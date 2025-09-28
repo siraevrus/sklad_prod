@@ -569,6 +569,83 @@ paths:
         422:
           description: Ошибка валидации
 
+  # Остатки на складе
+  /stocks:
+    get:
+      tags: [Остатки]
+      summary: Список остатков товаров
+      description: Получает агрегированные остатки товаров, сгруппированные по шаблону, складу и производителю
+      parameters:
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            default: 15
+        - name: warehouse_id
+          in: query
+          description: Фильтр по складу
+          schema:
+            type: integer
+        - name: status
+          in: query
+          description: Фильтр по статусу товара
+          schema:
+            type: string
+            enum: [in_stock, in_transit, for_receipt]
+      responses:
+        200:
+          description: Список остатков товаров
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Stock'
+                  pagination:
+                    $ref: '#/components/schemas/PaginationMeta'
+
+  /stocks/{id}:
+    get:
+      tags: [Остатки]
+      summary: Детальная информация об остатке
+      description: Получает детальную информацию об остатке с разбивкой по отдельным товарам
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Составной ID в формате {product_template_id}_{warehouse_id}_{producer}
+          schema:
+            type: string
+            example: "1_2_Producer Name"
+      responses:
+        200:
+          description: Детальная информация об остатке
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      stock:
+                        $ref: '#/components/schemas/Stock'
+                      products:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Product'
+        400:
+          description: Неверный формат ID
+        404:
+          description: Остаток не найден
+
 components:
   securitySchemes:
     bearerAuth:
@@ -838,6 +915,44 @@ components:
         updated_at:
           type: string
           format: date-time
+
+    Stock:
+      type: object
+      description: Агрегированный остаток товаров
+      properties:
+        id:
+          type: string
+          description: Составной ID в формате {product_template_id}_{warehouse_id}_{producer}
+          example: "1_2_Producer Name"
+        name:
+          type: string
+          description: Название товара
+        total_quantity:
+          type: number
+          description: Общее количество товаров в остатке
+        total_volume:
+          type: number
+          description: Общий объем товаров в м³
+        status:
+          type: string
+          description: Статус товаров
+        is_active:
+          type: boolean
+          description: Активность товаров
+        product_template_id:
+          type: integer
+          description: ID шаблона товара
+        warehouse_id:
+          type: integer
+          description: ID склада
+        producer:
+          type: string
+          description: Производитель
+          nullable: true
+        warehouse:
+          $ref: '#/components/schemas/Warehouse'
+        productTemplate:
+          $ref: '#/components/schemas/ProductTemplate'
 
     PaginationLinks:
       type: object

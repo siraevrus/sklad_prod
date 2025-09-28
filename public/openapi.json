@@ -2287,6 +2287,7 @@
           "Stocks"
         ],
         "summary": "Получение остатков товаров",
+        "description": "Получает агрегированные остатки товаров, сгруппированные по шаблону, складу и производителю. Показывает только активные товары с количеством больше 0.",
         "parameters": [
           {
             "$ref": "#/components/parameters/Page"
@@ -2297,17 +2298,19 @@
           {
             "name": "warehouse_id",
             "in": "query",
+            "description": "Фильтр по складу",
             "schema": {
               "type": "integer"
             }
           },
           {
-            "name": "low_stock",
+            "name": "status",
             "in": "query",
+            "description": "Фильтр по статусу товара",
             "schema": {
-              "type": "boolean"
-            },
-            "description": "Только товары с низким остатком"
+              "type": "string",
+              "enum": ["in_stock", "in_transit", "for_receipt"]
+            }
           }
         ],
         "responses": {
@@ -2330,14 +2333,17 @@
           "Stocks"
         ],
         "summary": "Получение остатка по ID",
+        "description": "Получает детальную информацию об остатке с разбивкой по отдельным товарам. ID имеет составной формат: {product_template_id}_{warehouse_id}_{producer}",
         "parameters": [
           {
             "name": "stock",
             "in": "path",
             "required": true,
+            "description": "Составной ID в формате {product_template_id}_{warehouse_id}_{producer}",
             "schema": {
-              "type": "integer"
-            }
+              "type": "string"
+            },
+            "example": "1_2_Producer Name"
           }
         ],
         "responses": {
@@ -3963,40 +3969,59 @@
       },
       "Stock": {
         "type": "object",
+        "description": "Агрегированный остаток товаров",
         "properties": {
           "id": {
-            "type": "integer",
-            "example": 1
+            "type": "string",
+            "description": "Составной ID в формате {product_template_id}_{warehouse_id}_{producer}",
+            "example": "1_2_Producer Name"
           },
-          "product_id": {
+          "name": {
+            "type": "string",
+            "description": "Название товара",
+            "example": "Смартфон Samsung Galaxy"
+          },
+          "total_quantity": {
+            "type": "number",
+            "description": "Общее количество товаров в остатке",
+            "example": 150
+          },
+          "total_volume": {
+            "type": "number",
+            "description": "Общий объем товаров в м³",
+            "example": 25.500
+          },
+          "status": {
+            "type": "string",
+            "description": "Статус товаров",
+            "example": "in_stock"
+          },
+          "is_active": {
+            "type": "boolean",
+            "description": "Активность товаров",
+            "example": true
+          },
+          "product_template_id": {
             "type": "integer",
+            "description": "ID шаблона товара",
             "example": 1
           },
           "warehouse_id": {
             "type": "integer",
-            "example": 1
+            "description": "ID склада",
+            "example": 2
           },
-          "quantity": {
-            "type": "integer",
-            "example": 100
-          },
-          "reserved_quantity": {
-            "type": "integer",
-            "example": 10
-          },
-          "available_quantity": {
-            "type": "integer",
-            "example": 90
-          },
-          "last_updated": {
+          "producer": {
             "type": "string",
-            "format": "date-time"
-          },
-          "product": {
-            "$ref": "#/components/schemas/Product"
+            "description": "Производитель",
+            "example": "Samsung",
+            "nullable": true
           },
           "warehouse": {
             "$ref": "#/components/schemas/Warehouse"
+          },
+          "productTemplate": {
+            "$ref": "#/components/schemas/ProductTemplate"
           }
         }
       },
