@@ -303,11 +303,11 @@ class ReceiptController extends Controller
      */
     public function addCorrection(Request $request, Product $receipt): JsonResponse
     {
-        // Проверяем, что товар в пути
-        if ($receipt->status !== Product::STATUS_IN_TRANSIT || !$receipt->is_active) {
+        // Проверяем, что товар в пути или готов к приемке
+        if (!in_array($receipt->status, [Product::STATUS_IN_TRANSIT, Product::STATUS_FOR_RECEIPT]) || !$receipt->is_active) {
             return response()->json([
                 'success' => false,
-                'message' => 'Товар не найден или не находится в пути',
+                'message' => 'Товар не найден или не находится в пути/готов к приемке',
             ], 404);
         }
 
