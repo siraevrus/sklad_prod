@@ -108,6 +108,7 @@ class ProductController extends Controller
             'description' => 'nullable|string',
             'attributes' => 'sometimes|array',
             'quantity' => 'required|numeric|min:0',
+            'calculated_volume' => 'nullable|numeric|min:0',
             'transport_number' => 'nullable|string|max:255', // Номер транспортного средства
             'producer' => 'nullable|string|max:255',
             'producer_id' => 'nullable|exists:producers,id',
@@ -185,6 +186,7 @@ class ProductController extends Controller
             'description' => $request->description,
             'attributes' => $request->get('attributes', []),
             'quantity' => (float) $quantity,
+            'calculated_volume' => $request->get('calculated_volume'),
             'transport_number' => $request->get('transport_number'), // Номер транспортного средства
             'producer_id' => $request->producer_id, // Используем producer_id
             'arrival_date' => $request->get('arrival_date', now()->toDateString()),
@@ -199,8 +201,10 @@ class ProductController extends Controller
             'status' => $request->get('status', Product::STATUS_IN_STOCK),
         ]);
 
-        // Рассчитываем объем
-        $product->updateCalculatedVolume();
+        // Рассчитываем объем только если он не был передан вручную
+        if (!$request->has('calculated_volume') || $request->get('calculated_volume') === null) {
+            $product->updateCalculatedVolume();
+        }
 
         // Если создаём как "в пути" — фиксируем это и создаём запись в таблице товаров в пути
         if ($request->get('status') === Product::STATUS_IN_TRANSIT) {
@@ -230,6 +234,7 @@ class ProductController extends Controller
             'description' => 'nullable|string',
             'attributes' => 'sometimes|array',
             'quantity' => 'sometimes|numeric|min:0',
+            'calculated_volume' => 'nullable|numeric|min:0',
             'transport_number' => 'nullable|string|max:255', // Номер транспортного средства
             'producer' => 'nullable|string|max:255',
             'producer_id' => 'sometimes|integer|exists:producers,id',
@@ -240,7 +245,7 @@ class ProductController extends Controller
         ]);
 
         $updateData = $request->only([
-            'name', 'description', 'attributes', 'quantity',
+            'name', 'description', 'attributes', 'quantity', 'calculated_volume',
             'transport_number', 'producer', 'producer_id', 'arrival_date', 'is_active', 'notes',
         ]);
 
@@ -263,8 +268,8 @@ class ProductController extends Controller
 
         $product->update($updateData);
 
-        // Пересчитываем объем если изменились атрибуты или количество
-        if ($request->has('attributes') || $request->has('quantity')) {
+        // Пересчитываем объем если изменились атрибуты или количество, но не если передан calculated_volume
+        if (($request->has('attributes') || $request->has('quantity')) && !$request->has('calculated_volume')) {
             $product->updateCalculatedVolume();
         }
 
