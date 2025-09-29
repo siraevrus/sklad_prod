@@ -79,6 +79,33 @@ class User extends Authenticatable implements FilamentUser
     }
 
     /**
+     * Get the user's name for API responses.
+     * This accessor ensures the 'name' field is always available in JSON responses.
+     */
+    public function getNameAttribute($value): string
+    {
+        // Если поле name заполнено в БД, возвращаем его
+        if (! empty($value)) {
+            return $value;
+        }
+
+        // Иначе формируем из first_name + last_name
+        $parts = array_filter([
+            $this->attributes['first_name'] ?? null,
+            $this->attributes['last_name'] ?? null,
+        ]);
+
+        $generatedName = implode(' ', $parts);
+
+        // Если и это пустое, возвращаем username или email
+        if (empty($generatedName)) {
+            return $this->attributes['username'] ?? $this->attributes['email'] ?? 'Пользователь';
+        }
+
+        return trim($generatedName);
+    }
+
+    /**
      * Check if user has permission.
      */
     public function hasPermission(string $permission): bool
