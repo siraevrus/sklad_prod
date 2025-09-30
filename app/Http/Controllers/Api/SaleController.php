@@ -133,33 +133,44 @@ class SaleController extends Controller
             return response()->json(['message' => 'Недостаточно товара на складе'], 400);
         }
 
-        $sale = Sale::create([
-            'product_id' => $request->product_id,
-            'warehouse_id' => $request->warehouse_id,
-            'user_id' => $user->id,
-            'sale_number' => Sale::generateSaleNumber(),
-            'customer_name' => $request->customer_name,
-            'customer_phone' => $request->customer_phone,
-            'customer_email' => $request->customer_email,
-            'customer_address' => $request->customer_address,
-            'quantity' => $request->quantity,
-            'unit_price' => $request->unit_price,
-            'price_without_vat' => $request->unit_price * $request->quantity,
-            'vat_rate' => $request->get('vat_rate', 20.00),
-            'vat_amount' => ($request->unit_price * $request->quantity) * ($request->get('vat_rate', 20.00) / 100),
-            'total_price' => ($request->unit_price * $request->quantity) * (1 + ($request->get('vat_rate', 20.00) / 100)),
-            'currency' => $request->get('currency', 'RUB'),
-            'exchange_rate' => $request->get('exchange_rate', 1.0000),
-            'cash_amount' => $request->get('cash_amount', 0.00),
-            'nocash_amount' => $request->get('nocash_amount', 0.00),
-            'payment_method' => $request->payment_method,
-            'payment_status' => $request->get('payment_status', Sale::PAYMENT_STATUS_PENDING),
-            'invoice_number' => $request->invoice_number,
-            'reason_cancellation' => $request->reason_cancellation,
-            'notes' => $request->notes,
-            'sale_date' => $request->sale_date,
-            'is_active' => $request->get('is_active', true),
-        ]);
+        try {
+            $sale = Sale::create([
+                'product_id' => $request->product_id,
+                'warehouse_id' => $request->warehouse_id,
+                'user_id' => $user->id,
+                'sale_number' => Sale::generateSaleNumber(),
+                'customer_name' => $request->customer_name,
+                'customer_phone' => $request->customer_phone,
+                'customer_email' => $request->customer_email,
+                'customer_address' => $request->customer_address,
+                'quantity' => $request->quantity,
+                'unit_price' => $request->unit_price,
+                'price_without_vat' => $request->unit_price * $request->quantity,
+                'vat_rate' => $request->get('vat_rate', 20.00),
+                'vat_amount' => ($request->unit_price * $request->quantity) * ($request->get('vat_rate', 20.00) / 100),
+                'total_price' => ($request->unit_price * $request->quantity) * (1 + ($request->get('vat_rate', 20.00) / 100)),
+                'currency' => $request->get('currency', 'RUB'),
+                'exchange_rate' => $request->get('exchange_rate', 1.0000),
+                'cash_amount' => $request->get('cash_amount', 0.00),
+                'nocash_amount' => $request->get('nocash_amount', 0.00),
+                'payment_method' => $request->payment_method,
+                'payment_status' => $request->get('payment_status', Sale::PAYMENT_STATUS_PENDING),
+                'invoice_number' => $request->invoice_number,
+                'reason_cancellation' => $request->reason_cancellation,
+                'notes' => $request->notes,
+                'sale_date' => $request->sale_date,
+                'is_active' => $request->get('is_active', true),
+            ]);
+        } catch (\Illuminate\Database\QueryException $e) {
+            // Обработка ошибки дубликата номера продажи
+            if ($e->getCode() == 23000 && str_contains($e->getMessage(), 'sale_number')) {
+                return response()->json([
+                    'message' => 'Ошибка генерации номера продажи. Попробуйте еще раз.',
+                    'error' => 'duplicate_sale_number'
+                ], 409);
+            }
+            throw $e;
+        }
 
         // Пересчёт не требуется, значения уже установлены
 

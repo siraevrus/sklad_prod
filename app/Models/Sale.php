@@ -95,27 +95,47 @@ class Sale extends Model
     }
 
     /**
-     * Генерировать номер продажи
+     * Генерировать номер продажи с защитой от дубликатов
      */
     public static function generateSaleNumber(): string
     {
         $prefix = 'SALE';
         $year = now()->format('Y');
         $month = now()->format('m');
+        $maxAttempts = 10; // Максимальное количество попыток
+        $attempt = 0;
 
-        // Получаем последний номер за этот месяц
-        $lastSale = static::where('sale_number', 'like', "{$prefix}-{$year}{$month}-%")
-            ->orderBy('sale_number', 'desc')
-            ->first();
+        do {
+            $attempt++;
+            
+            // Получаем последний номер за этот месяц
+            $lastSale = static::where('sale_number', 'like', "{$prefix}-{$year}{$month}-%")
+                ->orderBy('sale_number', 'desc')
+                ->first();
 
-        if ($lastSale) {
-            $lastNumber = (int) substr($lastSale->sale_number, -4);
-            $newNumber = $lastNumber + 1;
-        } else {
-            $newNumber = 1;
-        }
+            if ($lastSale) {
+                $lastNumber = (int) substr($lastSale->sale_number, -4);
+                $newNumber = $lastNumber + 1;
+            } else {
+                $newNumber = 1;
+            }
 
-        return sprintf('%s-%s%s-%04d', $prefix, $year, $month, $newNumber);
+            $saleNumber = sprintf('%s-%s%s-%04d', $prefix, $year, $month, $newNumber);
+            
+            // Проверяем, не существует ли уже такой номер
+            $exists = static::where('sale_number', $saleNumber)->exists();
+            
+            if (!$exists) {
+                return $saleNumber;
+            }
+            
+            // Если номер существует, ждем немного и пробуем снова
+            usleep(1000); // 1 миллисекунда
+            
+        } while ($attempt < $maxAttempts);
+
+        // Если не удалось сгенерировать уникальный номер, используем timestamp
+        return sprintf('%s-%s%s-%s', $prefix, $year, $month, time());
     }
 
     /**
