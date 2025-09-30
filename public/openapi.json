@@ -3721,32 +3721,132 @@
         "type": "object",
         "required": [
           "product_id",
+          "warehouse_id",
+          "customer_name",
           "quantity",
-          "price",
-          "client_name"
+          "unit_price",
+          "payment_method",
+          "sale_date"
         ],
         "properties": {
           "product_id": {
-            "type": "integer"
+            "type": "integer",
+            "description": "ID товара"
+          },
+          "warehouse_id": {
+            "type": "integer",
+            "description": "ID склада"
+          },
+          "customer_name": {
+            "type": "string",
+            "maxLength": 255,
+            "description": "Имя клиента"
+          },
+          "customer_phone": {
+            "type": "string",
+            "maxLength": 255,
+            "nullable": true,
+            "description": "Телефон клиента"
+          },
+          "customer_email": {
+            "type": "string",
+            "format": "email",
+            "maxLength": 255,
+            "nullable": true,
+            "description": "Email клиента"
+          },
+          "customer_address": {
+            "type": "string",
+            "nullable": true,
+            "description": "Адрес клиента"
           },
           "quantity": {
             "type": "integer",
-            "minimum": 1
+            "minimum": 1,
+            "description": "Количество товара"
           },
-          "price": {
+          "unit_price": {
             "type": "number",
             "format": "float",
-            "minimum": 0
+            "minimum": 0,
+            "description": "Цена за единицу"
           },
-          "client_name": {
+          "vat_rate": {
+            "type": "number",
+            "format": "float",
+            "minimum": 0,
+            "maximum": 100,
+            "default": 20.00,
+            "nullable": true,
+            "description": "Ставка НДС (%)"
+          },
+          "payment_method": {
             "type": "string",
-            "maxLength": 255
+            "enum": ["cash", "card", "bank_transfer", "other"],
+            "description": "Метод оплаты"
           },
-          "client_contact": {
-            "type": "string"
+          "payment_status": {
+            "type": "string",
+            "enum": ["pending", "paid", "partially_paid", "cancelled"],
+            "nullable": true,
+            "description": "Статус оплаты"
+          },
+          "currency": {
+            "type": "string",
+            "maxLength": 3,
+            "default": "RUB",
+            "nullable": true,
+            "description": "Валюта"
+          },
+          "exchange_rate": {
+            "type": "number",
+            "format": "float",
+            "minimum": 0,
+            "default": 1.0000,
+            "nullable": true,
+            "description": "Курс валюты"
+          },
+          "cash_amount": {
+            "type": "number",
+            "format": "float",
+            "minimum": 0,
+            "nullable": true,
+            "description": "Сумма наличными"
+          },
+          "nocash_amount": {
+            "type": "number",
+            "format": "float",
+            "minimum": 0,
+            "nullable": true,
+            "description": "Сумма безналичными"
+          },
+          "invoice_number": {
+            "type": "string",
+            "maxLength": 255,
+            "nullable": true,
+            "description": "Номер счета"
+          },
+          "reason_cancellation": {
+            "type": "string",
+            "maxLength": 500,
+            "nullable": true,
+            "description": "Причина отмены"
           },
           "notes": {
-            "type": "string"
+            "type": "string",
+            "nullable": true,
+            "description": "Заметки"
+          },
+          "sale_date": {
+            "type": "string",
+            "format": "date",
+            "description": "Дата продажи"
+          },
+          "is_active": {
+            "type": "boolean",
+            "default": true,
+            "nullable": true,
+            "description": "Активность записи"
           }
         }
       },
