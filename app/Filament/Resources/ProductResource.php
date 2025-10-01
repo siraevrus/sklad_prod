@@ -647,6 +647,7 @@ class ProductResource extends Resource
                     ->label('Наименование')
                     ->searchable()
                     ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: false)
                     ->color(fn (Product $record): string => match (true) {
                         $record->isRevised() => 'success',
                         $record->hasCorrection() => 'danger',
@@ -662,16 +663,19 @@ class ProductResource extends Resource
                     ->formatStateUsing(function ($state) {
                         return $state ? number_format($state, 3).' м³' : '-';
                     })
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: false),
 
                 Tables\Columns\TextColumn::make('warehouse.name')
                     ->label('Склад')
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: false),
 
                 Tables\Columns\TextColumn::make('arrival_date')
                     ->label('Дата поступления')
                     ->date()
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: false),
 
                 Tables\Columns\TextColumn::make('producer.name')
                     ->label('Производитель')
@@ -681,13 +685,15 @@ class ProductResource extends Resource
                         return $state ?: 'Не указан';
                     })
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: false),
 
                 Tables\Columns\TextColumn::make('quantity')
                     ->label('Количество')
                     ->sortable()
                     ->badge()
                     ->color('info')
+                    ->toggleable(isToggledHiddenByDefault: false)
                     ->formatStateUsing(function ($state) {
                         return (string) $state;  // Выводим как строку, без форматирования
                     }),
@@ -695,7 +701,8 @@ class ProductResource extends Resource
                 Tables\Columns\TextColumn::make('transport_number')
                     ->label('Номер транспорта')
                     ->sortable()
-                    ->searchable(),
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
 
                 Tables\Columns\TextColumn::make('status')
                     ->label('Статус')
@@ -716,11 +723,13 @@ class ProductResource extends Resource
                         'cancelled' => 'Отменен',
                         default => $state,
                     })
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
 
                 Tables\Columns\TextColumn::make('notes')
                     ->label('Заметки')
                     ->limit(50)
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->tooltip(function (Tables\Columns\TextColumn $column): ?string {
                         $state = $column->getState();
                         if (strlen($state) <= 50) {
