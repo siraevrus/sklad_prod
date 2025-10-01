@@ -23,6 +23,7 @@ class ProductRevisedTest extends TestCase
         $this->assertTrue($result);
         $this->assertTrue($product->isRevised());
         $this->assertEquals('revised', $product->correction_status);
+        $this->assertNotNull($product->revised_at);
     }
 
     public function test_is_revised_returns_true_for_revised_status(): void

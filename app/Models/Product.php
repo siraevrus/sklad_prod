@@ -48,6 +48,7 @@ class Product extends Model
         'notes',
         'correction',
         'correction_status',
+        'revised_at',
     ];
 
     protected $casts = [
@@ -63,6 +64,7 @@ class Product extends Model
         'actual_arrival_date' => 'date',
         'document_path' => 'array',
         'correction_status' => 'string',
+        'revised_at' => 'datetime',
     ];
 
     protected $attributes = [
@@ -803,6 +805,7 @@ class Product extends Model
     {
         return $this->update([
             'correction_status' => 'revised',
+            'revised_at' => now(),
         ]);
     }
 }

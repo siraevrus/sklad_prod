@@ -220,7 +220,7 @@ class ViewProduct extends ViewRecord
                                 if ($this->record->isRevised()) {
                                     $user = auth()->user();
                                     $userName = $user ? $user->name : 'Неизвестный сотрудник';
-                                    $revisedAt = now()->format('d.m.Y H:i');
+                                    $revisedAt = $this->record->revised_at?->format('d.m.Y H:i') ?? 'Неизвестно';
 
                                     $content .= "✅ **Данные скорректированы** \"{$userName}\" {$revisedAt}";
                                 }
