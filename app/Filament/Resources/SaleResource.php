@@ -436,47 +436,80 @@ class SaleResource extends Resource
                 Tables\Columns\TextColumn::make('sale_date')
                     ->label('Дата продажи')
                     ->date()
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: false),
 
                 Tables\Columns\TextColumn::make('sale_number')
                     ->label('Номер продажи')
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: false),
 
                 Tables\Columns\TextColumn::make('product.name')
                     ->label('Товар')
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: false),
 
                 Tables\Columns\TextColumn::make('customer_name')
                     ->label('Клиент')
                     ->sortable()
-                    ->placeholder('Не указан'),
+                    ->placeholder('Не указан')
+                    ->toggleable(isToggledHiddenByDefault: false),
 
                 Tables\Columns\TextColumn::make('quantity')
                     ->label('Количество')
                     ->sortable()
-                    ->badge(),
+                    ->badge()
+                    ->toggleable(isToggledHiddenByDefault: false),
 
                 Tables\Columns\TextColumn::make('total_price')
                     ->label('Общая сумма')
                     ->formatStateUsing(fn ($state, $record) => number_format($state, 2, '.', ' '))
                     ->suffix(fn ($record) => ' '.($record->currency ?? ''))
-                    ->sortable(),
-
-                // Tables\Columns\TextColumn::make('exchange_rate')
-                //     ->label('Курс валюты')
-                //     ->formatStateUsing(fn ($state) => $state ? number_format($state, 2, '.', ' ') : '1.00')
-                //     ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: false),
 
                 Tables\Columns\TextColumn::make('user.name')
                     ->label('Продавец')
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
 
                 Tables\Columns\TextColumn::make('payment_status')
                     ->label('Статус оплаты')
                     ->formatStateUsing(fn ($state, $record) => $record->getPaymentStatusLabel())
                     ->badge()
                     ->color(fn ($record) => $record->getPaymentStatusColor())
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: false),
+
+                Tables\Columns\TextColumn::make('cash_amount')
+                    ->label('Сумма (нал)')
+                    ->formatStateUsing(fn ($state) => $state ? number_format($state, 2, '.', ' ') : '-')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+
+                Tables\Columns\TextColumn::make('nocash_amount')
+                    ->label('Сумма (безнал)')
+                    ->formatStateUsing(fn ($state) => $state ? number_format($state, 2, '.', ' ') : '-')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+
+                Tables\Columns\TextColumn::make('currency')
+                    ->label('Валюта')
+                    ->badge()
+                    ->color('info')
+                    ->toggleable(isToggledHiddenByDefault: true),
+
+                Tables\Columns\TextColumn::make('notes')
+                    ->label('Заметки')
+                    ->limit(30)
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->tooltip(function (Tables\Columns\TextColumn $column): ?string {
+                        $state = $column->getState();
+                        if (strlen($state) <= 30) {
+                            return null;
+                        }
+                        return $state;
+                    }),
             ])
             ->filters([
                 SelectFilter::make('warehouse_id')
