@@ -646,7 +646,9 @@ class ProductResource extends Resource
                 Tables\Columns\TextColumn::make('name')
                     ->label('Наименование')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->color(fn (Product $record): string => $record->hasCorrection() ? 'danger' : 'gray')
+                    ->weight(fn (Product $record): string => $record->hasCorrection() ? 'bold' : 'normal'),
 
                 Tables\Columns\TextColumn::make('calculated_volume')
                     ->label('Объем')
