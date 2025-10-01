@@ -773,8 +773,15 @@ class ProductResource extends Resource
                     }),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\ViewAction::make()
+                    ->iconButton()
+                    ->tooltip('Просмотр'),
+                Tables\Actions\EditAction::make()
+                    ->iconButton()
+                    ->tooltip('Изменить'),
+                Tables\Actions\DeleteAction::make()
+                    ->iconButton()
+                    ->tooltip('Удалить'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
