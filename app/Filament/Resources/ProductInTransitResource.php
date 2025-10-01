@@ -428,11 +428,15 @@ class ProductInTransitResource extends Resource
                 SelectFilter::make('warehouse')
                     ->relationship('warehouse', 'name')
                     ->multiple()
+                    ->searchable(false)
+                    ->preload()
                     ->label('Склад'),
 
                 SelectFilter::make('producer')
                     ->relationship('producer', 'name')
                     ->multiple()
+                    ->searchable(false)
+                    ->preload()
                     ->label('Производитель'),
 
                 Filter::make('shipping_date')
