@@ -647,8 +647,15 @@ class ProductResource extends Resource
                     ->label('Наименование')
                     ->searchable()
                     ->sortable()
-                    ->color(fn (Product $record): string => $record->hasCorrection() ? 'danger' : 'gray')
-                    ->weight(fn (Product $record): string => $record->hasCorrection() ? 'bold' : 'normal'),
+                    ->color(fn (Product $record): string => match (true) {
+                        $record->isRevised() => 'success',
+                        $record->hasCorrection() => 'danger',
+                        default => 'gray'
+                    })
+                    ->weight(fn (Product $record): string => match (true) {
+                        $record->isRevised() || $record->hasCorrection() => 'bold',
+                        default => 'normal'
+                    }),
 
                 Tables\Columns\TextColumn::make('calculated_volume')
                     ->label('Объем')

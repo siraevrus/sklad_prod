@@ -64,6 +64,24 @@ class ProductCorrectionHighlightingTest extends TestCase
         $this->assertNull($product->correction_status);
     }
 
+    public function test_product_with_revised_status_has_green_highlighting(): void
+    {
+        // Создаем товар со статусом revised
+        $product = Product::factory()->create([
+            'name' => 'Скорректированный товар',
+            'status' => Product::STATUS_IN_STOCK,
+            'correction' => 'Было уточнение',
+            'correction_status' => 'revised',
+            'warehouse_id' => Warehouse::first()->id,
+        ]);
+
+        // Проверяем, что метод isRevised() возвращает true
+        $this->assertTrue($product->isRevised());
+        
+        // Проверяем, что товар имеет статус revised
+        $this->assertEquals('revised', $product->correction_status);
+    }
+
     public function test_product_list_shows_correction_status(): void
     {
         // Создаем товары с разными статусами уточнения
@@ -72,6 +90,14 @@ class ProductCorrectionHighlightingTest extends TestCase
             'status' => Product::STATUS_IN_STOCK,
             'correction' => 'Уточнение',
             'correction_status' => 'correction',
+            'warehouse_id' => Warehouse::first()->id,
+        ]);
+
+        $productRevised = Product::factory()->create([
+            'name' => 'Скорректированный товар',
+            'status' => Product::STATUS_IN_STOCK,
+            'correction' => 'Было уточнение',
+            'correction_status' => 'revised',
             'warehouse_id' => Warehouse::first()->id,
         ]);
 
@@ -89,6 +115,7 @@ class ProductCorrectionHighlightingTest extends TestCase
         
         // Проверяем, что товары отображаются
         $response->assertSee('Товар с уточнением');
+        $response->assertSee('Скорректированный товар');
         $response->assertSee('Обычный товар');
     }
 }
