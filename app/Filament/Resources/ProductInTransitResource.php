@@ -20,6 +20,8 @@ use Filament\Forms\Set;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\Filter;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 
@@ -421,6 +423,37 @@ class ProductInTransitResource extends Resource
                     ->label('Сотрудник')
                     ->sortable(),
 
+            ])
+            ->filters([
+                SelectFilter::make('warehouse')
+                    ->relationship('warehouse', 'name')
+                    ->multiple()
+                    ->label('Склад'),
+
+                SelectFilter::make('producer')
+                    ->relationship('producer', 'name')
+                    ->multiple()
+                    ->label('Производитель'),
+
+                Filter::make('shipping_date')
+                    ->form([
+                        DatePicker::make('shipping_from')
+                            ->label('Дата отгрузки от'),
+
+                        DatePicker::make('shipping_until')
+                            ->label('Дата отгрузки до'),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['shipping_from'],
+                                fn (Builder $query, $date): Builder => $query->whereDate('shipping_date', '>=', $date),
+                            )
+                            ->when(
+                                $data['shipping_until'],
+                                fn (Builder $query, $date): Builder => $query->whereDate('shipping_date', '<=', $date),
+                            );
+                    }),
             ])
             ->emptyStateHeading('Нет товаров в пути')
             ->emptyStateDescription('Создайте первый товар в пути, чтобы начать работу.')
