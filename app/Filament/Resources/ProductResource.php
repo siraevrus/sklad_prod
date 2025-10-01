@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\ProductResource\Pages;
 use App\Models\Product;
+use App\Models\Producer;
 use App\Models\ProductTemplate;
 use App\Models\Warehouse;
 use Filament\Forms;
@@ -741,14 +742,28 @@ class ProductResource extends Resource
             ])
             ->filters([
                 SelectFilter::make('warehouse')
-                    ->relationship('warehouse', 'name')
+                    ->options(fn () => Warehouse::pluck('name', 'id'))
                     ->multiple()
-                    ->label('Склад'),
+                    ->label('Склад')
+                    ->preload()
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query->when(
+                            $data['values'],
+                            fn (Builder $query, $values): Builder => $query->whereIn('warehouse_id', $values)
+                        );
+                    }),
 
                 SelectFilter::make('producer')
-                    ->relationship('producer', 'name')
+                    ->options(fn () => Producer::pluck('name', 'id'))
                     ->multiple()
-                    ->label('Производитель'),
+                    ->label('Производитель')
+                    ->preload()
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query->when(
+                            $data['values'],
+                            fn (Builder $query, $values): Builder => $query->whereIn('producer_id', $values)
+                        );
+                    }),
 
                 Filter::make('arrival_date')
                     ->form([
