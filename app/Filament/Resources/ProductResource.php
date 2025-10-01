@@ -761,25 +761,6 @@ class ProductResource extends Resource
                             );
                     }),
 
-                Filter::make('status')
-                    ->form([
-                        Select::make('status')
-                            ->label('Статус')
-                            ->options([
-                                'ordered' => 'Заказан',
-                                'in_transit' => 'В пути',
-                                'arrived' => 'Прибыл',
-                                'received' => 'Получен',
-                                'cancelled' => 'Отменен',
-                            ])
-                            ->multiple(),
-                    ])
-                    ->query(function (Builder $query, array $data): Builder {
-                        return $query->when(
-                            $data['status'],
-                            fn (Builder $query, $status): Builder => $query->whereIn('status', $status),
-                        );
-                    }),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make()
