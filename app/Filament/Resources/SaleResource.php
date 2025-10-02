@@ -537,11 +537,11 @@ class SaleResource extends Resource
                         return \App\Models\User::pluck('name', 'id')->toArray();
                     }),
 
-                Filter::make('active')
-                    ->label('Только активные')
-                    ->query(function (Builder $query): Builder {
-                        return $query->where('is_active', true);
-                    }),
+                // Filter::make('active')
+                //     ->label('Только активные')
+                //     ->query(function (Builder $query): Builder {
+                //         return $query->where('is_active', true);
+                //     }),
 
                 Filter::make('date_range')
                     ->label('Период продаж')
