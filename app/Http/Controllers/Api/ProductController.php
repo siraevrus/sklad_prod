@@ -60,6 +60,9 @@ class ProductController extends Controller
             }
         }
 
+        // Сортировка по дате обновления (новые сначала)
+        $query->orderBy('updated_at', 'desc');
+
         $products = $query->paginate($request->get('per_page', 15));
 
         return response()->json([
