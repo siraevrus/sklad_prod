@@ -93,6 +93,66 @@ class Product extends Model
     }
 
     /**
+     * Получить URL документов
+     */
+    public function getDocumentUrlsAttribute(): array
+    {
+        return collect($this->document_path)->map(function ($path) {
+            return asset('storage/' . $path);
+        })->toArray();
+    }
+
+    /**
+     * Добавить документ к товару
+     */
+    public function addDocument(string $path): bool
+    {
+        $documents = $this->document_path;
+        
+        // Проверяем, что документ еще не добавлен
+        if (!in_array($path, $documents)) {
+            $documents[] = $path;
+            $this->update(['document_path' => $documents]);
+            return true;
+        }
+        
+        return false;
+    }
+
+    /**
+     * Удалить документ из товара
+     */
+    public function removeDocument(string $path): bool
+    {
+        $documents = $this->document_path;
+        $key = array_search($path, $documents);
+        
+        if ($key !== false) {
+            unset($documents[$key]);
+            $this->update(['document_path' => array_values($documents)]);
+            return true;
+        }
+        
+        return false;
+    }
+
+    /**
+     * Проверить, есть ли документы у товара
+     */
+    public function hasDocuments(): bool
+    {
+        return !empty($this->document_path);
+    }
+
+    /**
+     * Получить количество документов
+     */
+    public function getDocumentsCountAttribute(): int
+    {
+        return count($this->document_path);
+    }
+
+    /**
      * Мутатор для calculated_volume - валидация на уровне модели
      */
     public function setCalculatedVolumeAttribute($value)

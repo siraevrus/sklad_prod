@@ -120,7 +120,8 @@ class ProductController extends Controller
             'shipping_date' => 'nullable|date',
             'expected_arrival_date' => 'nullable|date',
             'notes' => 'nullable|string|max:1000',
-            'document_path' => 'nullable|array',
+            'document_path' => 'nullable|array|max:5',
+            'document_path.*' => 'string|max:255',
         ]);
 
         $user = Auth::user();

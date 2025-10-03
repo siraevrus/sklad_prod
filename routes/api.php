@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CompanyController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\DiscrepancyController;
+use App\Http\Controllers\Api\FileController;
 use App\Http\Controllers\Api\ProducerController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\ProductTemplateController;
@@ -182,4 +183,14 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // Инфопанель (агрегированные данные для мобильного клиента)
     Route::get('/dashboard/summary', [DashboardController::class, 'summary']);
     Route::get('/dashboard/revenue', [DashboardController::class, 'revenue']);
+
+    // Загрузка файлов
+    Route::prefix('files')->group(function () {
+        Route::post('/upload', [FileController::class, 'uploadDocument'])->name('api.files.upload');
+        Route::post('/upload-multiple', [FileController::class, 'uploadMultipleDocuments'])->name('api.files.upload-multiple');
+        Route::get('/list', [FileController::class, 'listDocuments'])->name('api.files.list');
+        Route::get('/{file}/info', [FileController::class, 'getDocumentInfo'])->name('api.files.info');
+        Route::get('/{file}/download', [FileController::class, 'downloadDocument'])->name('api.files.download');
+        Route::delete('/{file}', [FileController::class, 'deleteDocument'])->name('api.files.delete');
+    });
 });
