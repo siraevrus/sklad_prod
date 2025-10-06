@@ -51,6 +51,36 @@ class ProductController extends Controller
                 $query->where('is_active', true);
             });
 
+        // Фильтры по датам (диапазоны)
+        // created_at
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->input('date_from'));
+        }
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->input('date_to'));
+        }
+        // shipping_date
+        if ($request->filled('shipping_date_from')) {
+            $query->whereDate('shipping_date', '>=', $request->input('shipping_date_from'));
+        }
+        if ($request->filled('shipping_date_to')) {
+            $query->whereDate('shipping_date', '<=', $request->input('shipping_date_to'));
+        }
+        // expected_arrival_date
+        if ($request->filled('expected_arrival_date_from')) {
+            $query->whereDate('expected_arrival_date', '>=', $request->input('expected_arrival_date_from'));
+        }
+        if ($request->filled('expected_arrival_date_to')) {
+            $query->whereDate('expected_arrival_date', '<=', $request->input('expected_arrival_date_to'));
+        }
+        // actual_arrival_date
+        if ($request->filled('actual_arrival_date_from')) {
+            $query->whereDate('actual_arrival_date', '>=', $request->input('actual_arrival_date_from'));
+        }
+        if ($request->filled('actual_arrival_date_to')) {
+            $query->whereDate('actual_arrival_date', '<=', $request->input('actual_arrival_date_to'));
+        }
+
         // Применяем права доступа: не админ видит только свой склад
         if (! $user->isAdmin()) {
             if ($user->warehouse_id) {
