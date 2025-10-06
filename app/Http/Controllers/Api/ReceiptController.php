@@ -212,6 +212,35 @@ class ReceiptController extends Controller
         if ($request->filled('shipping_location')) {
             $query->where('shipping_location', $request->input('shipping_location'));
         }
+        // Фильтр по датам (диапазоны)
+        // created_at
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->input('date_from'));
+        }
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->input('date_to'));
+        }
+        // shipping_date
+        if ($request->filled('shipping_date_from')) {
+            $query->whereDate('shipping_date', '>=', $request->input('shipping_date_from'));
+        }
+        if ($request->filled('shipping_date_to')) {
+            $query->whereDate('shipping_date', '<=', $request->input('shipping_date_to'));
+        }
+        // expected_arrival_date
+        if ($request->filled('expected_arrival_date_from')) {
+            $query->whereDate('expected_arrival_date', '>=', $request->input('expected_arrival_date_from'));
+        }
+        if ($request->filled('expected_arrival_date_to')) {
+            $query->whereDate('expected_arrival_date', '<=', $request->input('expected_arrival_date_to'));
+        }
+        // actual_arrival_date (актуально для принятого товара)
+        if ($request->filled('actual_arrival_date_from')) {
+            $query->whereDate('actual_arrival_date', '>=', $request->input('actual_arrival_date_from'));
+        }
+        if ($request->filled('actual_arrival_date_to')) {
+            $query->whereDate('actual_arrival_date', '<=', $request->input('actual_arrival_date_to'));
+        }
         if ($request->filled('search')) {
             $search = $request->input('search');
             $query->where(function ($q) use ($search) {
