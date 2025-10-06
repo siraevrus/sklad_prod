@@ -712,17 +712,47 @@ GET /api/products-in-transit/1
 
 ## 3. ПРИЕМКА (Receipts API)
 
-### 3.1 Получение списка товаров для приемки
+### 3.1 Получение списка товаров для приемки и товаров в пути
 
-**Endpoint:** `GET /api/receipts`
+**Endpoint:**
+- `GET /api/receipts` — приемка
+- `GET /api/products-in-transit` — товары в пути (алиас того же контроллера)
 
-**Описание:** Получение списка товаров готовых к приемке (статус "in_transit")
+**Описание:** Получение списка товаров для приемки. По умолчанию возвращаются товары со статусом `in_transit`. Можно явно указать статус через параметр `status`. Для «Товаров в пути» используется тот же набор фильтров и формат ответа.
+
+**Query параметры (фильтры):**
+- `warehouse_id` — фильтр по складу
+- `shipping_location` — фильтр по месту отправки
+- `search` — поиск по названию, производителю, месту отправки
+- `status` — статус товара (`in_transit`, `for_receipt`, `in_stock`)
+- `date_from`, `date_to` — дата создания записи (created_at) от/до
+- `shipping_date_from`, `shipping_date_to` — дата отправки от/до
+- `expected_arrival_date_from`, `expected_arrival_date_to` — ожидаемая дата прибытия от/до
+- `actual_arrival_date_from`, `actual_arrival_date_to` — фактическая дата прибытия от/до
+- `sort` — поле сортировки (по умолчанию `created_at`)
+- `order` — порядок сортировки (`asc`/`desc`, по умолчанию `desc`)
+- `per_page`, `page` — пагинация
 
 **Query параметры:** Те же, что и для товаров в пути
 
 **Пример запроса:**
 ```bash
 GET /api/receipts?warehouse_id=1&per_page=10
+```
+
+**Примеры фильтра по датам:**
+```bash
+# По дате создания
+GET /api/receipts?date_from=2025-10-01&date_to=2025-10-06
+
+# По дате отправки
+GET /api/receipts?shipping_date_from=2025-09-01&shipping_date_to=2025-09-30
+
+# По ожидаемой дате прибытия
+GET /api/receipts?expected_arrival_date_from=2025-10-01&expected_arrival_date_to=2025-10-15
+
+# По фактической дате прибытия (для принятых)
+GET /api/receipts?actual_arrival_date_from=2025-10-05&actual_arrival_date_to=2025-10-06
 ```
 
 **Ответ:** Аналогичен ответу для товаров в пути
