@@ -371,4 +371,38 @@ class ReceiptController extends Controller
             'data' => $receipt->load(['template', 'warehouse', 'creator']),
         ]);
     }
+
+    /**
+     * Подтвердить корректировку товара (только смена статуса на revised)
+     */
+    public function confirmCorrection(Product $receipt): JsonResponse
+    {
+        // Проверяем, что товар принят и имеет уточнение
+        if ($receipt->status !== Product::STATUS_IN_STOCK || $receipt->correction_status !== 'correction' || !$receipt->is_active) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Товар не найден или не готов для подтверждения корректировки',
+            ], 404);
+        }
+
+        // Ограничение по складу для не-админа
+        $user = Auth::user();
+        if ($user && !$user->isAdmin()) {
+            if ($user->warehouse_id !== $receipt->warehouse_id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Доступ запрещен',
+                ], 403);
+            }
+        }
+
+        // Подтверждаем корректировку
+        $receipt->markAsRevised();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Корректировка подтверждена',
+            'data' => $receipt->refresh()->load(['template', 'warehouse', 'creator']),
+        ]);
+    }
 }
