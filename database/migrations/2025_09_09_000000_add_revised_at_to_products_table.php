@@ -11,9 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('products', function (Blueprint $table) {
-            $table->timestamp('revised_at')->nullable()->after('correction_status');
-        });
+        // Проверяем, существует ли колонка revised_at
+        if (!Schema::hasColumn('products', 'revised_at')) {
+            Schema::table('products', function (Blueprint $table) {
+                $table->timestamp('revised_at')->nullable()->after('correction_status');
+            });
+        }
     }
 
     /**
@@ -21,8 +24,11 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('products', function (Blueprint $table) {
-            $table->dropColumn('revised_at');
-        });
+        // Проверяем, существует ли колонка revised_at перед удалением
+        if (Schema::hasColumn('products', 'revised_at')) {
+            Schema::table('products', function (Blueprint $table) {
+                $table->dropColumn('revised_at');
+            });
+        }
     }
 };
