@@ -303,7 +303,6 @@ class TestDataSeeder extends Seeder
             ],
             'calculated_volume' => 0.0225, // 6 * 0.15 * 0.025
             'quantity' => 50,
-            'producer' => 'ООО "Лесопилка"',
             'arrival_date' => now()->subDays(30),
             'is_active' => true,
         ]);
@@ -322,7 +321,6 @@ class TestDataSeeder extends Seeder
             ],
             'calculated_volume' => 0.024, // 4 * 0.20 * 0.030
             'quantity' => 30,
-            'producer' => 'ООО "Лесопилка"',
             'arrival_date' => now()->subDays(15),
             'is_active' => true,
         ]);
@@ -341,7 +339,6 @@ class TestDataSeeder extends Seeder
             ],
             'calculated_volume' => 0.135, // 6 * 0.15 * 0.15
             'quantity' => 25,
-            'producer' => 'ООО "Лесопилка"',
             'arrival_date' => now()->subDays(20),
             'is_active' => true,
         ]);
@@ -359,7 +356,6 @@ class TestDataSeeder extends Seeder
             ],
             'calculated_volume' => 0.04, // 4 * 0.10 * 0.10
             'quantity' => 40,
-            'producer' => 'ООО "Лесопилка"',
             'arrival_date' => now()->subDays(10),
             'is_active' => true,
         ]);
@@ -417,7 +413,6 @@ class TestDataSeeder extends Seeder
             ],
             'calculated_volume' => 0.0225,
             'quantity' => 20,
-            'producer' => 'ООО "Лесопилка"',
             'transport_number' => 'TR001',
             'tracking_number' => 'TN12345678',
             'expected_arrival_date' => now()->addDays(5),
@@ -440,7 +435,6 @@ class TestDataSeeder extends Seeder
             ],
             'calculated_volume' => 0.024,
             'quantity' => 15,
-            'producer' => 'ООО "Лесопилка"',
             'transport_number' => null,
             'tracking_number' => null,
             'expected_arrival_date' => now()->addDays(15),
@@ -463,7 +457,6 @@ class TestDataSeeder extends Seeder
             ],
             'calculated_volume' => 0.135,
             'quantity' => 10,
-            'producer' => 'ООО "Лесопилка"',
             'transport_number' => 'TR002',
             'tracking_number' => 'TN87654321',
             'expected_arrival_date' => now()->subDays(2),

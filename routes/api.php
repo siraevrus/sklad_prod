@@ -120,6 +120,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('/{receipt}', [\App\Http\Controllers\Api\ReceiptController::class, 'show']);
         Route::post('/{receipt}/receive', [\App\Http\Controllers\Api\ReceiptController::class, 'receive']);
         Route::post('/{receipt}/correction', [\App\Http\Controllers\Api\ReceiptController::class, 'addCorrection']);
+        Route::post('/{receipt}/correction-confirm', [\App\Http\Controllers\Api\ReceiptController::class, 'confirmCorrection']);
     });
 
     // Склады
