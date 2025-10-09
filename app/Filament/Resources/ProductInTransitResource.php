@@ -322,7 +322,7 @@ class ProductInTransitResource extends Resource
 
                 Tables\Columns\TextColumn::make('shipping_date')
                     ->label('Дата отгрузки')
-                    ->date()
+                    ->date('d.m.Y')
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('producer.name')
@@ -337,7 +337,7 @@ class ProductInTransitResource extends Resource
 
                 Tables\Columns\TextColumn::make('expected_arrival_date')
                     ->label('Ожидаемая дата')
-                    ->date()
+                    ->date('d.m.Y')
                     ->sortable()
                     ->color(function (Product $record): string {
                         $expected = $record->expected_arrival_date;

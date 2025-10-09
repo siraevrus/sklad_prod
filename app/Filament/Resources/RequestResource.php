@@ -155,7 +155,7 @@ class RequestResource extends Resource
 
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Создан')
-                    ->dateTime()
+                    ->date('d.m.Y')
                     ->sortable(),
 
             ])
