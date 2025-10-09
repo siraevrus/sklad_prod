@@ -109,7 +109,7 @@ class ViewReceipt extends ViewRecord
                             ->color('secondary'),
                         TextEntry::make('shipping_date')
                             ->label('Дата отгрузки')
-                            ->date()
+                            ->date('d.m.Y')
                             ->placeholder('—')
                             ->badge()
                             ->color('success'),
@@ -119,7 +119,7 @@ class ViewReceipt extends ViewRecord
                             ->color('warning'),
                         TextEntry::make('expected_arrival_date')
                             ->label('Ожидаемая дата')
-                            ->date()
+                            ->date('d.m.Y')
                             ->placeholder('—')
                             ->badge()
                             ->color('danger'),
