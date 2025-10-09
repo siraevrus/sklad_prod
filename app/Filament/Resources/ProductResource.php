@@ -674,7 +674,7 @@ class ProductResource extends Resource
 
                 Tables\Columns\TextColumn::make('arrival_date')
                     ->label('Дата поступления')
-                    ->date()
+                    ->date('d.m.Y')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: false),
 
