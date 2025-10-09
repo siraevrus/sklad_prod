@@ -57,6 +57,7 @@ class ViewProductInTransit extends ViewRecord
                             ->color('secondary'),
                         TextEntry::make('shipping_date')
                             ->label('Дата отгрузки')
+                            ->date('d.m.Y')
                             ->badge()
                             ->color('success'),
                         TextEntry::make('warehouse.name')
@@ -65,6 +66,7 @@ class ViewProductInTransit extends ViewRecord
                             ->color('warning'),
                         TextEntry::make('expected_arrival_date')
                             ->label('Ожидаемая дата')
+                            ->date('d.m.Y')
                             ->badge()
                             ->color('danger'),
                         TextEntry::make('transport_number')

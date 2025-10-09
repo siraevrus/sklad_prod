@@ -126,7 +126,7 @@ class ViewRequest extends ViewRecord
 
                         TextEntry::make('created_at')
                             ->label('Создан')
-                            ->dateTime()
+                            ->date('d.m.Y')
                             ->badge()
                             ->color('gray'),
                     ])
