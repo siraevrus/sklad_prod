@@ -713,6 +713,7 @@ class ProductResource extends Resource
                         'in_transit' => 'warning',
                         'arrived' => 'info',
                         'received' => 'success',
+                        'in_stock' => 'success',
                         'cancelled' => 'danger',
                         default => 'gray',
                     })
@@ -721,6 +722,7 @@ class ProductResource extends Resource
                         'in_transit' => 'В пути',
                         'arrived' => 'Прибыл',
                         'received' => 'Получен',
+                        'in_stock' => 'На складе',
                         'cancelled' => 'Отменен',
                         default => $state,
                     })
