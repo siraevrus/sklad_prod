@@ -73,7 +73,7 @@ class ViewSale extends ViewRecord
                             ->label('Номер продажи'),
                         TextEntry::make('sale_date')
                             ->label('Дата продажи')
-                            ->date(),
+                            ->date('d.m.Y'),
                         TextEntry::make('product.name')
                             ->label('Товар'),
                         TextEntry::make('quantity')

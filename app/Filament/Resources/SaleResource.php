@@ -435,7 +435,7 @@ class SaleResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('sale_date')
                     ->label('Дата продажи')
-                    ->date()
+                    ->date('d.m.Y')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: false),
 
