@@ -15,7 +15,8 @@ class CompanyController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $query = Company::query();
+        $query = Company::query()
+            ->withCount(['employees', 'warehouses']);
 
         // Фильтр по активности (is_active=true => не архивные)
         if ($request->has('is_active')) {
@@ -41,9 +42,16 @@ class CompanyController extends Controller
         $perPage = (int) $request->get('per_page', 15);
         $companies = $query->paginate($perPage);
 
+        // Преобразуем данные для добавления корректных счетчиков
+        $data = $companies->items();
+        foreach ($data as $company) {
+            $company->employees_count = $company->employees_count ?? 0;
+            $company->warehouses_count = $company->warehouses_count ?? 0;
+        }
+
         return response()->json([
             'success' => true,
-            'data' => $companies->items(),
+            'data' => $data,
             'pagination' => [
                 'current_page' => $companies->currentPage(),
                 'last_page' => $companies->lastPage(),
@@ -65,6 +73,11 @@ class CompanyController extends Controller
                 'message' => 'Компания не найдена',
             ], 404);
         }
+
+        // Загружаем количество сотрудников и складов
+        $company->loadCount(['employees', 'warehouses']);
+        $company->employees_count = $company->employees_count ?? 0;
+        $company->warehouses_count = $company->warehouses_count ?? 0;
 
         return response()->json([
             'success' => true,
