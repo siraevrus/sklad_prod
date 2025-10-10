@@ -160,9 +160,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     // Остатки товаров
     Route::prefix('stocks')->group(function () {
-        Route::get('/', [StockController::class, 'index']);
-        Route::get('/{stock}', [StockController::class, 'show']);
-        
         // Агрегация по производителям
         Route::get('/producers', [StockController::class, 'producers']);
         Route::get('/by-producer/{producer}', [StockController::class, 'showProducer']);
