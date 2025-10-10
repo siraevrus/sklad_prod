@@ -162,6 +162,18 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::prefix('stocks')->group(function () {
         Route::get('/', [StockController::class, 'index']);
         Route::get('/{stock}', [StockController::class, 'show']);
+        
+        // Агрегация по производителям
+        Route::get('/producers', [StockController::class, 'producers']);
+        Route::get('/by-producer/{producer}', [StockController::class, 'showProducer']);
+        
+        // Агрегация по складам
+        Route::get('/warehouses', [StockController::class, 'warehouses']);
+        Route::get('/by-warehouse/{warehouse}', [StockController::class, 'showWarehouse']);
+        
+        // Агрегация по компаниям
+        Route::get('/companies', [StockController::class, 'companies']);
+        Route::get('/by-company/{company}', [StockController::class, 'showCompany']);
     });
 
     // Производители
