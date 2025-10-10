@@ -15,12 +15,20 @@ class ProductController extends Controller
     // (helper removed)
 
     /**
-     * Получение списка товаров
+     * Получение списка товаров (агрегированных)
      */
     public function index(Request $request): JsonResponse
     {
         $user = Auth::user();
 
+        // Проверяем, нужна ли агрегация (для остатков на складе)
+        $aggregate = $request->boolean('aggregate', false);
+
+        if ($aggregate && $request->status === 'in_stock') {
+            return $this->getAggregatedProducts($request, $user);
+        }
+
+        // Обычный запрос без агрегации
         $query = Product::with(['template', 'warehouse', 'creator', 'producer'])
             ->when($request->search, function ($query, $search) {
                 $query->where('name', 'like', "%{$search}%")
@@ -97,6 +105,100 @@ class ProductController extends Controller
 
         return response()->json([
             'data' => $products->items(),
+            'links' => [
+                'first' => $products->url(1),
+                'last' => $products->url($products->lastPage()),
+                'prev' => $products->previousPageUrl(),
+                'next' => $products->nextPageUrl(),
+            ],
+            'meta' => [
+                'current_page' => $products->currentPage(),
+                'last_page' => $products->lastPage(),
+                'per_page' => $products->perPage(),
+                'total' => $products->total(),
+            ],
+        ]);
+    }
+
+    /**
+     * Получение агрегированных товаров (по аналогии со StockResource)
+     */
+    private function getAggregatedProducts(Request $request, $user): JsonResponse
+    {
+        $baseQuery = Product::query()
+            ->where('status', Product::STATUS_IN_STOCK)
+            ->where('is_active', true);
+
+        // Применяем права доступа
+        if (! $user->isAdmin()) {
+            if ($user->warehouse_id) {
+                $baseQuery->where('warehouse_id', $user->warehouse_id);
+            } else {
+                $baseQuery->whereRaw('1 = 0');
+            }
+        }
+
+        // Фильтр по складу
+        if ($request->warehouse_id) {
+            $baseQuery->where('warehouse_id', $request->warehouse_id);
+        }
+
+        // Получаем переменные характеристик для группировки (только number и select типы)
+        $groupingVariables = \App\Models\ProductAttribute::query()
+            ->whereIn('type', ['number', 'select'])
+            ->distinct()
+            ->pluck('variable')
+            ->toArray();
+
+        // Создаем GROUP BY условия для группировки по характеристикам
+        $groupByAttributes = [];
+        $jsonExtracts = [];
+
+        foreach ($groupingVariables as $variable) {
+            $groupByAttributes[] = \Illuminate\Support\Facades\DB::raw("JSON_EXTRACT(attributes, \"$.{$variable}\")");
+            $jsonExtracts[] = "COALESCE(JSON_EXTRACT(attributes, \"$.{$variable}\"), \"\")";
+        }
+
+        // Агрегированный запрос
+        $query = $baseQuery
+            ->select([
+                \Illuminate\Support\Facades\DB::raw('MIN(name) as name'),
+                'product_template_id',
+                'warehouse_id',
+                'producer_id',
+                \Illuminate\Support\Facades\DB::raw('MIN(attributes) as attributes'),
+                \Illuminate\Support\Facades\DB::raw('SUM(quantity) as quantity'),
+                \Illuminate\Support\Facades\DB::raw('SUM(quantity - COALESCE(sold_quantity, 0)) as available_quantity'),
+                \Illuminate\Support\Facades\DB::raw('SUM(COALESCE(sold_quantity, 0)) as sold_quantity'),
+                \Illuminate\Support\Facades\DB::raw('SUM(calculated_volume) as total_volume'),
+            ])
+            ->with(['producer', 'productTemplate', 'warehouse'])
+            ->groupBy(array_merge([
+                'product_template_id',
+                'warehouse_id',
+                'producer_id',
+            ], $groupByAttributes))
+            ->orderBy('name')
+            ->orderBy('producer_id');
+
+        $perPage = $request->get('per_page', 15);
+        $products = $query->paginate($perPage);
+
+        // Форматируем данные для вывода
+        $formattedData = $products->getCollection()->map(function ($product) {
+            return [
+                'name' => $product->name,
+                'warehouse' => $product->warehouse ? $product->warehouse->name : null,
+                'producer' => $product->producer ? $product->producer->name : null,
+                'quantity' => (float) $product->quantity,
+                'available_quantity' => (float) $product->available_quantity,
+                'sold_quantity' => (float) $product->sold_quantity,
+                'total_volume' => $product->total_volume ? round((float) $product->total_volume, 3) : 0,
+            ];
+        });
+
+        return response()->json([
+            'data' => $formattedData,
             'links' => [
                 'first' => $products->url(1),
                 'last' => $products->url($products->lastPage()),
@@ -236,7 +338,7 @@ class ProductController extends Controller
         ]);
 
         // Рассчитываем объем только если он не был передан вручную
-        if (!$request->has('calculated_volume') || $request->get('calculated_volume') === null) {
+        if (! $request->has('calculated_volume') || $request->get('calculated_volume') === null) {
             $product->updateCalculatedVolume();
         }
 
@@ -303,7 +405,7 @@ class ProductController extends Controller
         $product->update($updateData);
 
         // Пересчитываем объем если изменились атрибуты или количество, но не если передан calculated_volume
-        if (($request->has('attributes') || $request->has('quantity')) && !$request->has('calculated_volume')) {
+        if (($request->has('attributes') || $request->has('quantity')) && ! $request->has('calculated_volume')) {
             $product->updateCalculatedVolume();
         }
 
