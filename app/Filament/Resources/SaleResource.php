@@ -216,7 +216,7 @@ class SaleResource extends Resource
                                                 }
                                             }
 
-                                            $displayName = "{$product->name}{$producerLabel} - Доступно: {$product->available_quantity}";
+                                            $displayName = "{$product->name}{$producerLabel} - Доступно: ".(int) $product->available_quantity;
 
                                             // Используем составной ключ для уникальности
                                             $compositeKey = "{$product->product_template_id}|{$product->warehouse_id}|{$product->producer_id}|{$product->name}";
@@ -508,6 +508,7 @@ class SaleResource extends Resource
                         if (strlen($state) <= 30) {
                             return null;
                         }
+
                         return $state;
                     }),
             ])
