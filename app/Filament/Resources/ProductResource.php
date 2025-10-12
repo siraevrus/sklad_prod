@@ -3,17 +3,14 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\ProductResource\Pages;
-use App\Models\Product;
 use App\Models\Producer;
+use App\Models\Product;
 use App\Models\ProductTemplate;
 use App\Models\Warehouse;
-use Filament\Forms;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
@@ -145,14 +142,12 @@ class ProductResource extends Resource
 
                                 TextInput::make('quantity')
                                     ->label('Количество')
-                                    ->inputMode('decimal')
+                                    ->numeric()
+                                    ->inputMode('numeric')
                                     ->default(1)
-                                    ->maxLength(10)
+                                    ->minValue(0)
+                                    ->maxValue(2147483647)
                                     ->required()
-                                    ->rules(['regex:/^\d*([.,]\d*)?$/'])
-                                    ->validationMessages([
-                                        'regex' => 'Поле должно содержать только цифры и одну запятую или точку',
-                                    ])
                                     ->live(onBlur: true)
                                     ->afterStateUpdated(function (Set $set, Get $get) {
                                         // Пересчитываем объем при изменении количества
@@ -188,10 +183,8 @@ class ProductResource extends Resource
 
                                         // Добавляем количество в атрибуты для формулы
                                         $quantity = $get('quantity') ?? 1;
-                                        // Нормализуем количество: заменяем запятую на точку
-                                        $normalizedQuantity = is_string($quantity) ? str_replace(',', '.', $quantity) : $quantity;
-                                        if (is_numeric($normalizedQuantity) && $normalizedQuantity > 0) {
-                                            $numericAttributes['quantity'] = $normalizedQuantity;
+                                        if (is_numeric($quantity) && $quantity > 0) {
+                                            $numericAttributes['quantity'] = (int) $quantity;
                                         }
 
                                         // Если есть заполненные числовые характеристики и формула, рассчитываем объем

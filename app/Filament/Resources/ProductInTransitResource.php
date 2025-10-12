@@ -19,9 +19,9 @@ use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Filament\Resources\Resource;
 use Filament\Tables;
-use Filament\Tables\Table;
-use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 
@@ -145,14 +145,12 @@ class ProductInTransitResource extends Resource
 
                                         TextInput::make('quantity')
                                             ->label('Количество')
-                                            ->inputMode('decimal')
+                                            ->numeric()
+                                            ->inputMode('numeric')
                                             ->default(1)
-                                            ->maxLength(10)
+                                            ->minValue(0)
+                                            ->maxValue(2147483647)
                                             ->required()
-                                            ->rules(['regex:/^\d*([.,]\d*)?$/'])
-                                            ->validationMessages([
-                                                'regex' => 'Поле должно содержать только цифры и одну запятую или точку',
-                                            ])
                                             ->live(debounce: 30)
                                             ->afterStateUpdated(function (Set $set, Get $get) {
                                                 self::calculateVolumeForItem($set, $get);
@@ -531,10 +529,8 @@ class ProductInTransitResource extends Resource
 
         // Добавляем количество
         $quantity = $get('quantity') ?? 1;
-        // Нормализуем количество: заменяем запятую на точку
-        $normalizedQuantity = is_string($quantity) ? str_replace(',', '.', $quantity) : $quantity;
-        if (is_numeric($normalizedQuantity) && $normalizedQuantity > 0) {
-            $attributes['quantity'] = $normalizedQuantity;
+        if (is_numeric($quantity) && $quantity > 0) {
+            $attributes['quantity'] = (int) $quantity;
         }
 
         // Формируем наименование из характеристик с правильным разделителем

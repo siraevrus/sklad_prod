@@ -54,7 +54,7 @@ class Product extends Model
     protected $casts = [
         'attributes' => 'array',
         'calculated_volume' => 'decimal:4',
-        'quantity' => 'decimal:3',
+        'quantity' => 'integer',
         'sold_quantity' => 'integer',
         'arrival_date' => 'date',
         'status' => 'string',
@@ -79,16 +79,17 @@ class Product extends Model
         if ($value === null) {
             return [];
         }
-        
+
         if (is_string($value)) {
             $decoded = json_decode($value, true);
+
             return is_array($decoded) ? $decoded : [];
         }
-        
+
         if (is_array($value)) {
             return $value;
         }
-        
+
         return [];
     }
 
@@ -98,7 +99,7 @@ class Product extends Model
     public function getDocumentUrlsAttribute(): array
     {
         return collect($this->document_path)->map(function ($path) {
-            return asset('storage/' . $path);
+            return asset('storage/'.$path);
         })->toArray();
     }
 
@@ -108,14 +109,15 @@ class Product extends Model
     public function addDocument(string $path): bool
     {
         $documents = $this->document_path;
-        
+
         // Проверяем, что документ еще не добавлен
-        if (!in_array($path, $documents)) {
+        if (! in_array($path, $documents)) {
             $documents[] = $path;
             $this->update(['document_path' => $documents]);
+
             return true;
         }
-        
+
         return false;
     }
 
@@ -126,13 +128,14 @@ class Product extends Model
     {
         $documents = $this->document_path;
         $key = array_search($path, $documents);
-        
+
         if ($key !== false) {
             unset($documents[$key]);
             $this->update(['document_path' => array_values($documents)]);
+
             return true;
         }
-        
+
         return false;
     }
 
@@ -141,7 +144,7 @@ class Product extends Model
      */
     public function hasDocuments(): bool
     {
-        return !empty($this->document_path);
+        return ! empty($this->document_path);
     }
 
     /**

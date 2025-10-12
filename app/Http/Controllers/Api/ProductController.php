@@ -308,12 +308,6 @@ class ProductController extends Controller
             }
         }
 
-        // Нормализуем десятичный разделитель quantity
-        $quantity = $request->quantity;
-        if (is_string($quantity)) {
-            $quantity = str_replace(',', '.', $quantity);
-        }
-
         $product = Product::create([
             'product_template_id' => $request->product_template_id,
             'warehouse_id' => $request->warehouse_id,
@@ -321,7 +315,7 @@ class ProductController extends Controller
             'name' => $name ?? 'Товар без названия',
             'description' => $request->description,
             'attributes' => $request->get('attributes', []),
-            'quantity' => (float) $quantity,
+            'quantity' => (int) $request->quantity,
             'calculated_volume' => $request->get('calculated_volume'),
             'transport_number' => $request->get('transport_number'), // Номер транспортного средства
             'producer_id' => $request->producer_id, // Используем producer_id
