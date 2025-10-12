@@ -334,7 +334,7 @@ class ReceiptController extends Controller
     public function addCorrection(Request $request, Product $receipt): JsonResponse
     {
         // Проверяем, что товар в пути или готов к приемке
-        if (!in_array($receipt->status, [Product::STATUS_IN_TRANSIT, Product::STATUS_FOR_RECEIPT]) || !$receipt->is_active) {
+        if (! in_array($receipt->status, [Product::STATUS_IN_TRANSIT, Product::STATUS_FOR_RECEIPT]) || ! $receipt->is_active) {
             return response()->json([
                 'success' => false,
                 'message' => 'Товар не найден или не находится в пути/готов к приемке',
@@ -343,7 +343,7 @@ class ReceiptController extends Controller
 
         // Ограничение по складу для не-админа
         $user = Auth::user();
-        if ($user && !$user->isAdmin()) {
+        if ($user && ! $user->isAdmin()) {
             if ($user->warehouse_id !== $receipt->warehouse_id) {
                 return response()->json([
                     'success' => false,
@@ -375,10 +375,10 @@ class ReceiptController extends Controller
     /**
      * Подтвердить корректировку товара (только смена статуса на revised)
      */
-    public function confirmCorrection(Product $receipt): JsonResponse
+    public function confirmCorrection(Product $product): JsonResponse
     {
         // Проверяем, что товар принят и имеет уточнение
-        if ($receipt->status !== Product::STATUS_IN_STOCK || $receipt->correction_status !== 'correction' || !$receipt->is_active) {
+        if ($product->status !== Product::STATUS_IN_STOCK || $product->correction_status !== 'correction' || ! $product->is_active) {
             return response()->json([
                 'success' => false,
                 'message' => 'Товар не найден или не готов для подтверждения корректировки',
@@ -387,8 +387,8 @@ class ReceiptController extends Controller
 
         // Ограничение по складу для не-админа
         $user = Auth::user();
-        if ($user && !$user->isAdmin()) {
-            if ($user->warehouse_id !== $receipt->warehouse_id) {
+        if ($user && ! $user->isAdmin()) {
+            if ($user->warehouse_id !== $product->warehouse_id) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Доступ запрещен',
@@ -397,12 +397,12 @@ class ReceiptController extends Controller
         }
 
         // Подтверждаем корректировку
-        $receipt->markAsRevised();
+        $product->markAsRevised();
 
         return response()->json([
             'success' => true,
             'message' => 'Корректировка подтверждена',
-            'data' => $receipt->refresh()->load(['template', 'warehouse', 'creator']),
+            'data' => $product->refresh()->load(['template', 'warehouse', 'creator']),
         ]);
     }
 }
