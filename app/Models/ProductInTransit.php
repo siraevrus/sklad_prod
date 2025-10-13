@@ -210,7 +210,7 @@ class ProductInTransit extends Model
                 'calculated_volume' => $this->calculated_volume,
                 'quantity' => $this->quantity,
                 'producer_id' => $this->producer_id, // Используем ID производителя
-                'arrival_date' => $this->actual_arrival_date ?? now(),
+                'arrival_date' => now(),
                 'is_active' => true,
             ]);
 
