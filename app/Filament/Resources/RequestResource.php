@@ -12,8 +12,6 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
-use Filament\Forms\Get;
-use Filament\Forms\Set;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Filters\SelectFilter;
@@ -120,7 +118,6 @@ class RequestResource extends Resource
                             }),
                     ]),
 
-
             ]);
     }
 
@@ -140,6 +137,15 @@ class RequestResource extends Resource
 
                 Tables\Columns\TextColumn::make('warehouse.name')
                     ->label('Склад')
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('productTemplate.name')
+                    ->label('Шаблон товара')
+                    ->searchable()
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('quantity')
+                    ->label('Количество')
                     ->sortable(),
 
                 Tables\Columns\BadgeColumn::make('status')
