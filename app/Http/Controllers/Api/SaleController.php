@@ -96,7 +96,7 @@ class SaleController extends Controller
     public function store(Request $request): JsonResponse
     {
         $request->validate([
-            'product_id' => 'required|exists:products,id',
+            'composite_product_key' => 'required|string',
             'warehouse_id' => 'required|exists:warehouses,id',
             'customer_name' => 'required|string|max:255',
             'customer_phone' => 'nullable|string|max:255',
@@ -127,15 +127,38 @@ class SaleController extends Controller
             }
         }
 
-        // Проверяем наличие товара
-        $product = Product::find($request->product_id);
-        if (! $product || $product->quantity < $request->quantity) {
-            return response()->json(['message' => 'Недостаточно товара на складе'], 400);
+        // Обрабатываем составной ключ товара
+        $compositeKey = $request->composite_product_key;
+
+        if (! str_contains($compositeKey, '|')) {
+            return response()->json(['message' => 'Неверный формат ключа товара'], 400);
+        }
+
+        $parts = explode('|', $compositeKey, 4);
+        if (count($parts) !== 4) {
+            return response()->json(['message' => 'Неверный формат составного ключа товара'], 400);
+        }
+
+        [$productTemplateId, $warehouseId, $producerId, $name] = $parts;
+
+        // Находим конкретный товар для списания
+        $product = Product::where('product_template_id', $productTemplateId)
+            ->where('warehouse_id', $warehouseId)
+            ->where('producer_id', $producerId)
+            ->where('name', $name)
+            ->where('status', Product::STATUS_IN_STOCK)
+            ->where('is_active', true)
+            ->whereRaw('(quantity - COALESCE(sold_quantity, 0)) >= ?', [$request->quantity])
+            ->first();
+
+        if (! $product) {
+            return response()->json(['message' => 'Товар не найден или недостаточно на складе'], 400);
         }
 
         try {
             $sale = Sale::create([
-                'product_id' => $request->product_id,
+                'product_id' => $product->id,
+                'composite_product_key' => $compositeKey,
                 'warehouse_id' => $request->warehouse_id,
                 'user_id' => $user->id,
                 'sale_number' => Sale::generateSaleNumber(),
@@ -166,7 +189,7 @@ class SaleController extends Controller
             if ($e->getCode() == 23000 && str_contains($e->getMessage(), 'sale_number')) {
                 return response()->json([
                     'message' => 'Ошибка генерации номера продажи. Попробуйте еще раз.',
-                    'error' => 'duplicate_sale_number'
+                    'error' => 'duplicate_sale_number',
                 ], 409);
             }
             throw $e;

@@ -268,7 +268,7 @@ POST /api/sales
 **Обязательные поля:**
 ```json
 {
-  "product_id": 268,
+  "composite_product_key": "1|13|1|Название товара",
   "warehouse_id": 13,
   "customer_name": "Имя клиента",
   "quantity": 5,
@@ -277,6 +277,19 @@ POST /api/sales
   "sale_date": "2025-09-30"
 }
 ```
+
+**Формат `composite_product_key`:**
+- `product_template_id|warehouse_id|producer_id|name`
+- Пример: `"38|13|1|Труба стальная: 100x100x1000"`
+
+**Описание полей:**
+- `composite_product_key` — составной ключ товара для группировки (обязательное)
+- `warehouse_id` — ID склада (обязательное)
+- `customer_name` — имя клиента (обязательное)
+- `quantity` — количество товара (обязательное)
+- `unit_price` — цена за единицу (обязательное)
+- `payment_method` — способ оплаты (обязательное)
+- `sale_date` — дата продажи (обязательное)
 
 **Дополнительные поля:**
 ```json
