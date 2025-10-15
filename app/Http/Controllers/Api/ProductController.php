@@ -188,6 +188,7 @@ class ProductController extends Controller
         $formattedData = $products->getCollection()->map(function ($product) {
             return [
                 'product_template_id' => $product->product_template_id,
+                'composite_product_key' => "{$product->product_template_id}|{$product->warehouse_id}|{$product->producer_id}|{$product->name}",
                 'name' => $product->name,
                 'warehouse' => $product->warehouse ? $product->warehouse->name : null,
                 'producer' => $product->producer ? $product->producer->name : null,
