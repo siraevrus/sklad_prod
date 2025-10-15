@@ -105,7 +105,7 @@ class StockOverview extends Page implements HasTable
         $query = Product::query()
             ->with('producer')
             ->where('status', Product::STATUS_IN_STOCK)
-            ->where('is_active', true);
+            ->where('products.is_active', true);
 
         // Фильтрация по компании пользователя
         if ($user->company_id) {
@@ -156,7 +156,7 @@ class StockOverview extends Page implements HasTable
         $user = Auth::user();
         $query = Product::query()
             ->where('status', Product::STATUS_IN_STOCK)
-            ->where('is_active', true);
+            ->where('products.is_active', true);
 
         // Фильтрация по компании пользователя
         if ($user->company_id) {
@@ -199,7 +199,7 @@ class StockOverview extends Page implements HasTable
     {
         $producers = \App\Models\Producer::with(['products' => function ($query) {
             $query->where('status', Product::STATUS_IN_STOCK)
-                ->where('is_active', true);
+                ->where('products.is_active', true);
         }])->get();
 
         $result = [];
@@ -223,7 +223,7 @@ class StockOverview extends Page implements HasTable
         $user = Auth::user();
         $query = Product::query()
             ->where('status', Product::STATUS_IN_STOCK)
-            ->where('is_active', true);
+            ->where('products.is_active', true);
 
         // Фильтрация по компании пользователя
         if ($user->company_id) {
@@ -259,7 +259,7 @@ class StockOverview extends Page implements HasTable
         $user = Auth::user();
         $query = Product::query()
             ->where('status', Product::STATUS_IN_STOCK)
-            ->where('is_active', true);
+            ->where('products.is_active', true);
 
         // Фильтрация по компании пользователя (если не админ)
         if ($user->company_id) {
