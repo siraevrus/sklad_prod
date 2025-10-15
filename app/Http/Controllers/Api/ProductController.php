@@ -187,6 +187,7 @@ class ProductController extends Controller
         // Форматируем данные для вывода
         $formattedData = $products->getCollection()->map(function ($product) {
             return [
+                'product_template_id' => $product->product_template_id,
                 'name' => $product->name,
                 'warehouse' => $product->warehouse ? $product->warehouse->name : null,
                 'producer' => $product->producer ? $product->producer->name : null,
