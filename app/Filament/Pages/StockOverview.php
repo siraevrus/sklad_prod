@@ -102,7 +102,10 @@ class StockOverview extends Page implements HasTable
             return Product::query()->whereRaw('1 = 0');
         }
 
-        $query = Product::query()->with('producer');
+        $query = Product::query()
+            ->with('producer')
+            ->where('status', Product::STATUS_IN_STOCK)
+            ->where('is_active', true);
 
         // Фильтрация по компании пользователя
         if ($user->company_id) {
@@ -151,7 +154,9 @@ class StockOverview extends Page implements HasTable
     public function getProducers(): array
     {
         $user = Auth::user();
-        $query = Product::query();
+        $query = Product::query()
+            ->where('status', Product::STATUS_IN_STOCK)
+            ->where('is_active', true);
 
         // Фильтрация по компании пользователя
         if ($user->company_id) {
@@ -193,7 +198,8 @@ class StockOverview extends Page implements HasTable
     public function getProducerStats(): array
     {
         $producers = \App\Models\Producer::with(['products' => function ($query) {
-            $query->where('status', 'in_stock');
+            $query->where('status', Product::STATUS_IN_STOCK)
+                ->where('is_active', true);
         }])->get();
 
         $result = [];
@@ -215,7 +221,9 @@ class StockOverview extends Page implements HasTable
     public function getWarehouseStats(): array
     {
         $user = Auth::user();
-        $query = Product::query();
+        $query = Product::query()
+            ->where('status', Product::STATUS_IN_STOCK)
+            ->where('is_active', true);
 
         // Фильтрация по компании пользователя
         if ($user->company_id) {
@@ -249,7 +257,9 @@ class StockOverview extends Page implements HasTable
     public function getCompanyStats(): array
     {
         $user = Auth::user();
-        $query = Product::query();
+        $query = Product::query()
+            ->where('status', Product::STATUS_IN_STOCK)
+            ->where('is_active', true);
 
         // Фильтрация по компании пользователя (если не админ)
         if ($user->company_id) {
