@@ -184,6 +184,8 @@ class SaleController extends Controller
                 'notes' => $request->notes,
                 'sale_date' => $request->sale_date,
                 'is_active' => $request->get('is_active', true),
+                'vat_rate' => $request->get('vat_rate', 0.20), // Добавляем vat_rate
+                'vat_amount' => $request->get('vat_amount', 0.00), // Добавляем vat_amount
             ]);
         } catch (\Illuminate\Database\QueryException $e) {
             // Обработка ошибки дубликата номера продажи
