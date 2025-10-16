@@ -208,7 +208,9 @@ class StockOverview extends Page implements HasTable
                 'name' => $producer->name,
                 'total_products' => $producer->products->count(),
                 'total_quantity' => $producer->products->sum('quantity'),
-                'total_volume' => $producer->products->sum('calculated_volume'),
+                'total_volume' => $producer->products->sum(function ($product) {
+                    return ($product->quantity - ($product->sold_quantity ?? 0)) * $product->calculated_volume;
+                }),
             ];
         }
 
