@@ -128,7 +128,7 @@ class StockResource extends Resource
                     ),
 
                 Tables\Columns\TextColumn::make('total_volume')
-                    ->label('Объем (м³)')
+                    ->label('Остаток Объем (м³)')
                     ->formatStateUsing(function ($state) {
                         return $state ? number_format($state, 3, '.', ' ') : '0.000';
                     })
@@ -239,7 +239,7 @@ class StockResource extends Resource
                 DB::raw('MIN(attributes) as attributes'),
                 DB::raw('SUM(quantity - COALESCE(sold_quantity, 0)) as total_quantity'),
                 DB::raw('SUM(COALESCE(sold_quantity, 0)) as total_sold_quantity'),
-                DB::raw('SUM(calculated_volume * quantity) as total_volume'),
+                DB::raw('SUM((quantity - COALESCE(sold_quantity, 0)) * calculated_volume) as total_volume'),
                 DB::raw('COUNT(*) as product_count'),
                 DB::raw('MAX(arrival_date) as last_arrival_date'),
                 DB::raw('MIN(created_at) as first_created_at'),
