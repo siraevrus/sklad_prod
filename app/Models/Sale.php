@@ -31,6 +31,7 @@ class Sale extends Model
         'price_without_vat',
         'currency',
         'exchange_rate',
+        'payment_method',
         'payment_status',
         'notes',
         'invoice_number',

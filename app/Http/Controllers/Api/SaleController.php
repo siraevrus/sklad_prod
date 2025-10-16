@@ -103,9 +103,9 @@ class SaleController extends Controller
             'customer_email' => 'nullable|email|max:255',
             'customer_address' => 'nullable|string',
             'quantity' => 'required|integer|min:1',
-            'unit_price' => 'required|numeric|min:0',
+            'unit_price' => 'nullable|numeric|min:0',
             'vat_rate' => 'nullable|numeric|min:0|max:100',
-            'payment_method' => 'required|string|in:cash,card,bank_transfer,other',
+            'payment_method' => 'nullable|string|in:cash,card,bank_transfer,other',
             'payment_status' => 'nullable|string|in:pending,paid,partially_paid,cancelled',
             'currency' => 'nullable|string|max:3',
             'exchange_rate' => 'nullable|numeric|min:0',
@@ -155,6 +155,16 @@ class SaleController extends Controller
             return response()->json(['message' => 'Товар не найден или недостаточно на складе'], 400);
         }
 
+        // Устанавливаем значения по умолчанию для необязательных полей
+        $unitPrice = $request->get('unit_price', 0.00);
+        $vatRate = $request->get('vat_rate', 20.00);
+        $quantity = $request->quantity;
+        
+        // Рассчитываем суммы
+        $priceWithoutVat = $unitPrice * $quantity;
+        $vatAmount = $priceWithoutVat * ($vatRate / 100);
+        $totalPrice = $priceWithoutVat + $vatAmount;
+
         try {
             $sale = Sale::create([
                 'product_id' => $product->id,
@@ -166,17 +176,17 @@ class SaleController extends Controller
                 'customer_phone' => $request->customer_phone,
                 'customer_email' => $request->customer_email,
                 'customer_address' => $request->customer_address,
-                'quantity' => $request->quantity,
-                'unit_price' => $request->unit_price,
-                'price_without_vat' => $request->unit_price * $request->quantity,
-                'vat_rate' => $request->get('vat_rate', 20.00),
-                'vat_amount' => ($request->unit_price * $request->quantity) * ($request->get('vat_rate', 20.00) / 100),
-                'total_price' => ($request->unit_price * $request->quantity) * (1 + ($request->get('vat_rate', 20.00) / 100)),
+                'quantity' => $quantity,
+                'unit_price' => $unitPrice,
+                'price_without_vat' => $priceWithoutVat,
+                'vat_rate' => $vatRate,
+                'vat_amount' => $vatAmount,
+                'total_price' => $totalPrice,
                 'currency' => $request->get('currency', 'RUB'),
                 'exchange_rate' => $request->get('exchange_rate', 1.0000),
                 'cash_amount' => $request->get('cash_amount', 0.00),
                 'nocash_amount' => $request->get('nocash_amount', 0.00),
-                'payment_method' => $request->payment_method,
+                'payment_method' => $request->get('payment_method', 'other'),
                 'payment_status' => $request->get('payment_status', Sale::PAYMENT_STATUS_PENDING),
                 'invoice_number' => $request->invoice_number,
                 'reason_cancellation' => $request->reason_cancellation,
