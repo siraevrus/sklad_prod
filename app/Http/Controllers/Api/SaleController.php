@@ -103,7 +103,6 @@ class SaleController extends Controller
             'customer_email' => 'nullable|email|max:255',
             'customer_address' => 'nullable|string',
             'quantity' => 'required|integer|min:1',
-            'unit_price' => 'nullable|numeric|min:0',
             'total_price' => 'nullable|numeric|min:0',
             'payment_method' => 'nullable|string|in:cash,card,bank_transfer,other',
             'payment_status' => 'nullable|string|in:pending,paid,partially_paid,cancelled',
@@ -155,27 +154,9 @@ class SaleController extends Controller
             return response()->json(['message' => 'Товар не найден или недостаточно на складе'], 400);
         }
 
-        // Устанавливаем значения по умолчанию для необязательных полей
-        $unitPrice = $request->get('unit_price');
-        $totalPrice = $request->get('total_price');
+        // Получаем значения от Flutter как есть - никаких расчетов на бэке
+        $totalPrice = $request->get('total_price', 0.00);
         $quantity = $request->quantity;
-
-        // Если unit_price не указана, рассчитываем из total_price
-        if ($unitPrice === null && $totalPrice !== null) {
-            $unitPrice = $totalPrice / $quantity;
-        } elseif ($unitPrice === null) {
-            $unitPrice = 0.00;
-        }
-
-        // Если total_price не указана, рассчитываем из unit_price
-        if ($totalPrice === null) {
-            $totalPrice = $unitPrice * $quantity;
-        }
-
-        // Упрощенная логика без НДС
-        $priceWithoutVat = $totalPrice;
-        $vatAmount = 0.00;
-        $vatRate = 0.00;
 
         try {
             $sale = Sale::create([
@@ -189,10 +170,8 @@ class SaleController extends Controller
                 'customer_email' => $request->customer_email,
                 'customer_address' => $request->customer_address,
                 'quantity' => $quantity,
-                'unit_price' => $unitPrice,
-                'price_without_vat' => $priceWithoutVat,
-                'vat_rate' => $vatRate,
-                'vat_amount' => $vatAmount,
+                'unit_price' => null,
+                'price_without_vat' => $totalPrice,
                 'total_price' => $totalPrice,
                 'currency' => $request->get('currency', 'RUB'),
                 'exchange_rate' => $request->get('exchange_rate', 1.0000),
@@ -252,7 +231,6 @@ class SaleController extends Controller
             'customer_email' => 'nullable|email|max:255',
             'customer_address' => 'nullable|string',
             'quantity' => 'sometimes|integer|min:1',
-            'unit_price' => 'sometimes|numeric|min:0',
             'total_price' => 'sometimes|numeric|min:0',
             'currency' => 'nullable|string|max:3',
             'exchange_rate' => 'nullable|numeric|min:0',
@@ -269,15 +247,14 @@ class SaleController extends Controller
 
         $sale->update($request->only([
             'customer_name', 'customer_phone', 'customer_email', 'customer_address',
-            'quantity', 'unit_price', 'total_price', 'currency', 'exchange_rate',
+            'quantity', 'total_price', 'currency', 'exchange_rate',
             'cash_amount', 'nocash_amount', 'payment_method', 'payment_status',
             'invoice_number', 'reason_cancellation', 'notes', 'sale_date', 'is_active',
         ]));
 
-        // Пересчитываем цены если изменились количество или цена
-        if ($request->has('quantity') || $request->has('unit_price') || $request->has('total_price')) {
-            $sale->calculatePrices();
-            $sale->save();
+        // Обновляем price_without_vat при изменении total_price
+        if ($request->has('total_price')) {
+            $sale->update(['price_without_vat' => $request->total_price]);
         }
 
         return response()->json([

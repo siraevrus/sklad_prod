@@ -23,35 +23,35 @@ Content-Type: application/json
 
 ### Модель Sale (Продажа)
 
-| Поле | Тип | Обязательное | Описание |
-|------|-----|--------------|----------|
-| `id` | integer | Нет | Уникальный идентификатор продажи |
-| `product_id` | integer | Да | ID товара для продажи |
-| `composite_product_key` | string | Да | Составной ключ товара для идентификации |
-| `warehouse_id` | integer | Да | ID склада |
-| `user_id` | integer | Да | ID пользователя, создавшего продажу |
-| `sale_number` | string | Да | Автоматически генерируемый номер продажи (формат: SALE-YYYYMM-XXXX) |
-| `customer_name` | string | Да | Имя клиента (макс. 255 символов) |
-| `customer_phone` | string | Нет | Телефон клиента (макс. 255 символов) |
-| `customer_email` | string | Нет | Email клиента (валидный email, макс. 255) |
-| `customer_address` | string | Нет | Адрес клиента |
-| `quantity` | integer | Да | Количество товара (минимум: 1) |
-| `unit_price` | decimal | Нет | Цена за единицу (минимум: 0, по умолчанию: 0.00) |
-| `total_price` | decimal | Нет | Общая сумма (по умолчанию: рассчитывается из unit_price × quantity) |
-| `price_without_vat` | decimal | Да | Сумма без НДС (равна total_price, так как НДС не используется) |
-| `currency` | string | Нет | Код валюты (по умолчанию: RUB) |
-| `exchange_rate` | decimal | Нет | Курс обмена (по умолчанию: 1.0000) |
-| `payment_status` | enum | Да | Статус оплаты |
-| `payment_method` | enum | Нет | Метод оплаты (по умолчанию: other) |
-| `cash_amount` | decimal | Нет | Сумма наличными (по умолчанию: 0.00) |
-| `nocash_amount` | decimal | Нет | Сумма безналичными (по умолчанию: 0.00) |
-| `invoice_number` | string | Нет | Номер счета/инвойса (макс. 255 символов) |
-| `reason_cancellation` | string | Нет | Причина отмены (макс. 500 символов) |
-| `notes` | string | Нет | Примечания |
-| `sale_date` | date | Да | Дата продажи (формат: YYYY-MM-DD) |
-| `is_active` | boolean | Да | Активна ли продажа (по умолчанию: true) |
-| `created_at` | timestamp | Нет | Дата создания |
-| `updated_at` | timestamp | Нет | Дата последнего обновления |
+|| Поле | Тип | Обязательное | Описание |
+||------|-----|--------------|----------|
+|| `id` | integer | Нет | Уникальный идентификатор продажи |
+|| `product_id` | integer | Да | ID товара для продажи |
+|| `composite_product_key` | string | Да | Составной ключ товара для идентификации |
+|| `warehouse_id` | integer | Да | ID склада |
+|| `user_id` | integer | Да | ID пользователя, создавшего продажу |
+|| `sale_number` | string | Да | Автоматически генерируемый номер продажи (формат: SALE-YYYYMM-XXXX) |
+|| `customer_name` | string | Да | Имя клиента (макс. 255 символов) |
+|| `customer_phone` | string | Нет | Телефон клиента (макс. 255 символов) |
+|| `customer_email` | string | Нет | Email клиента (валидный email, макс. 255) |
+|| `customer_address` | string | Нет | Адрес клиента |
+|| `quantity` | integer | Да | Количество товара (минимум: 1) |
+|| `unit_price` | decimal | Нет | Цена за единицу (используется в Filament, может быть null) |
+|| `total_price` | decimal | Нет | Общая сумма (по умолчанию: 0.00) |
+|| `price_without_vat` | decimal | Нет | Равна total_price (НДС не используется) |
+|| `currency` | string | Нет | Код валюты (по умолчанию: RUB) |
+|| `exchange_rate` | decimal | Нет | Курс обмена (по умолчанию: 1.0000) |
+|| `payment_status` | enum | Нет | Статус оплаты (по умолчанию: pending) |
+|| `payment_method` | enum | Нет | Метод оплаты (по умолчанию: other) |
+|| `cash_amount` | decimal | Нет | Сумма наличными (по умолчанию: 0.00) |
+|| `nocash_amount` | decimal | Нет | Сумма безналичными (по умолчанию: 0.00) |
+|| `invoice_number` | string | Нет | Номер счета/инвойса (макс. 255 символов) |
+|| `reason_cancellation` | string | Нет | Причина отмены (макс. 500 символов) |
+|| `notes` | string | Нет | Примечания |
+|| `sale_date` | date | Да | Дата продажи (формат: YYYY-MM-DD) |
+|| `is_active` | boolean | Нет | Активна ли продажа (по умолчанию: true) |
+|| `created_at` | timestamp | Нет | Дата создания |
+|| `updated_at` | timestamp | Нет | Дата последнего обновления |
 
 ### Статусы оплаты (payment_status)
 

@@ -46,57 +46,21 @@ class SalesApiOptionalFieldsTest extends TestCase
                 'sale' => [
                     'id',
                     'sale_number',
-                    'unit_price',
-                    'payment_method',
+                    'quantity',
                     'total_price',
                     'price_without_vat',
                 ],
             ]);
 
-        // Проверяем, что значения по умолчанию установлены корректно
+        // Проверяем, что данные сохранены корректно
         $sale = Sale::latest()->first();
-        $this->assertEquals(0.00, $sale->unit_price);
+        $this->assertEquals(5, $sale->quantity);
+        $this->assertEquals(0.00, $sale->total_price); // По умолчанию 0 если не отправлено
         $this->assertEquals('other', $sale->payment_method);
-        $this->assertEquals(0.00, $sale->total_price);
-        $this->assertEquals(0.00, $sale->price_without_vat);
     }
 
     /**
-     * Тест создания продажи с указанными unit_price и payment_method
-     */
-    public function test_can_create_sale_with_specified_optional_fields(): void
-    {
-        $user = User::first();
-        $product = Product::first();
-
-        if (! $product) {
-            $this->markTestSkipped('Нет товаров для тестирования');
-        }
-
-        $compositeKey = $product->product_template_id.'|'.$product->warehouse_id.'|'.$product->producer_id.'|'.$product->name;
-
-        $response = $this->actingAs($user, 'sanctum')->postJson('/api/sales', [
-            'composite_product_key' => $compositeKey,
-            'warehouse_id' => $product->warehouse_id,
-            'customer_name' => 'Тестовый клиент',
-            'quantity' => 10,
-            'unit_price' => 1500.00,
-            'payment_method' => 'cash',
-            'sale_date' => now()->format('Y-m-d'),
-        ]);
-
-        $response->assertStatus(201);
-
-        // Проверяем, что указанные значения сохранились
-        $sale = Sale::latest()->first();
-        $this->assertEquals(1500.00, $sale->unit_price);
-        $this->assertEquals('cash', $sale->payment_method);
-        $this->assertEquals(15000.00, $sale->price_without_vat); // 1500 * 10
-        $this->assertEquals(15000.00, $sale->total_price); // equals to price_without_vat
-    }
-
-    /**
-     * Тест создания продажи с указанным total_price
+     * Тест создания продажи с указанием общей суммы
      */
     public function test_can_create_sale_with_total_price(): void
     {
@@ -115,16 +79,54 @@ class SalesApiOptionalFieldsTest extends TestCase
             'customer_name' => 'Тестовый клиент',
             'quantity' => 5,
             'total_price' => 121.00,
+            'cash_amount' => 121.00,
+            'payment_method' => 'cash',
             'sale_date' => now()->format('Y-m-d'),
         ]);
 
         $response->assertStatus(201);
 
-        // Проверяем, что total_price был правильно установлен
+        // Проверяем, что сумма была сохранена как есть
         $sale = Sale::latest()->first();
         $this->assertEquals(121.00, $sale->total_price);
-        $this->assertEquals(121.00, $sale->price_without_vat);
-        $this->assertEquals(24.20, $sale->unit_price); // 121 / 5
+        $this->assertEquals(121.00, $sale->price_without_vat); // Равна total_price
+        $this->assertEquals(121.00, $sale->cash_amount);
+        $this->assertEquals('cash', $sale->payment_method);
+    }
+
+    /**
+     * Тест создания продажи со смешанными платежами
+     */
+    public function test_can_create_sale_with_mixed_payments(): void
+    {
+        $user = User::first();
+        $product = Product::first();
+
+        if (! $product) {
+            $this->markTestSkipped('Нет товаров для тестирования');
+        }
+
+        $compositeKey = $product->product_template_id.'|'.$product->warehouse_id.'|'.$product->producer_id.'|'.$product->name;
+
+        $response = $this->actingAs($user, 'sanctum')->postJson('/api/sales', [
+            'composite_product_key' => $compositeKey,
+            'warehouse_id' => $product->warehouse_id,
+            'customer_name' => 'Тестовый клиент',
+            'quantity' => 10,
+            'total_price' => 1000.00,
+            'cash_amount' => 500.00,
+            'nocash_amount' => 500.00,
+            'payment_method' => 'card',
+            'sale_date' => now()->format('Y-m-d'),
+        ]);
+
+        $response->assertStatus(201);
+
+        // Проверяем, что все суммы сохранены как есть
+        $sale = Sale::latest()->first();
+        $this->assertEquals(1000.00, $sale->total_price);
+        $this->assertEquals(500.00, $sale->cash_amount);
+        $this->assertEquals(500.00, $sale->nocash_amount);
     }
 
     /**
