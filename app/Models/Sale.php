@@ -99,40 +99,21 @@ class Sale extends Model
         $prefix = 'SALE';
         $year = now()->format('Y');
         $month = now()->format('m');
-        $maxAttempts = 10; // Максимальное количество попыток
-        $attempt = 0;
 
-        do {
-            $attempt++;
+        // Используем комбинацию: микросекунды + случайное число для уникальности
+        $microtime = (string) microtime(true);
+        $uniquePart = str_replace('.', '', $microtime);
+        $uniquePart = substr($uniquePart, -8); // Берем последние 8 символов
 
-            // Получаем последний номер за этот месяц
-            $lastSale = static::where('sale_number', 'like', "{$prefix}-{$year}{$month}-%")
-                ->orderBy('sale_number', 'desc')
-                ->first();
+        $saleNumber = sprintf('%s-%s%s-%s', $prefix, $year, $month, $uniquePart);
 
-            if ($lastSale) {
-                $lastNumber = (int) substr($lastSale->sale_number, -4);
-                $newNumber = $lastNumber + 1;
-            } else {
-                $newNumber = 1;
-            }
+        // На случай если вдруг совпадет, пробуем с добавлением случайного числа
+        if (static::where('sale_number', $saleNumber)->exists()) {
+            $random = random_int(1000, 9999);
+            $saleNumber = sprintf('%s-%s%s-%s%d', $prefix, $year, $month, $uniquePart, $random);
+        }
 
-            $saleNumber = sprintf('%s-%s%s-%04d', $prefix, $year, $month, $newNumber);
-
-            // Проверяем, не существует ли уже такой номер
-            $exists = static::where('sale_number', $saleNumber)->exists();
-
-            if (! $exists) {
-                return $saleNumber;
-            }
-
-            // Если номер существует, ждем немного и пробуем снова
-            usleep(1000); // 1 миллисекунда
-
-        } while ($attempt < $maxAttempts);
-
-        // Если не удалось сгенерировать уникальный номер, используем timestamp
-        return sprintf('%s-%s%s-%s', $prefix, $year, $month, time());
+        return $saleNumber;
     }
 
     /**
