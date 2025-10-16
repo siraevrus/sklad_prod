@@ -26,7 +26,7 @@ class StockController extends Controller
             ->select([
                 'producer_id',
                 DB::raw('COUNT(DISTINCT CONCAT(product_template_id, "_", name)) as positions_count'),
-                DB::raw('SUM(calculated_volume) as total_volume'),
+                DB::raw('SUM(calculated_volume * quantity) as total_volume'),
             ])
             ->where('status', Product::STATUS_IN_STOCK)
             ->where('is_active', true)
@@ -71,7 +71,7 @@ class StockController extends Controller
             ->select([
                 'warehouse_id',
                 DB::raw('COUNT(DISTINCT CONCAT(product_template_id, "_", producer_id, "_", name)) as positions_count'),
-                DB::raw('SUM(calculated_volume) as total_volume'),
+                DB::raw('SUM(calculated_volume * quantity) as total_volume'),
             ])
             ->where('status', Product::STATUS_IN_STOCK)
             ->where('is_active', true)
@@ -142,7 +142,7 @@ class StockController extends Controller
             $stats = Product::query()
                 ->select([
                     DB::raw('COUNT(DISTINCT CONCAT(product_template_id, "_", producer_id, "_", name)) as positions_count'),
-                    DB::raw('SUM(calculated_volume) as total_volume'),
+                    DB::raw('SUM(calculated_volume * quantity) as total_volume'),
                 ])
                 ->where('status', Product::STATUS_IN_STOCK)
                 ->where('is_active', true)
@@ -192,7 +192,7 @@ class StockController extends Controller
                 DB::raw('SUM(quantity) as quantity'),
                 DB::raw('SUM(quantity - COALESCE(sold_quantity, 0)) as available_quantity'),
                 DB::raw('SUM(COALESCE(sold_quantity, 0)) as sold_quantity'),
-                DB::raw('SUM(calculated_volume) as total_volume'),
+                DB::raw('SUM(calculated_volume * quantity) as total_volume'),
             ])
             ->where('status', Product::STATUS_IN_STOCK)
             ->where('is_active', true)
@@ -269,7 +269,7 @@ class StockController extends Controller
                 DB::raw('SUM(quantity) as quantity'),
                 DB::raw('SUM(quantity - COALESCE(sold_quantity, 0)) as available_quantity'),
                 DB::raw('SUM(COALESCE(sold_quantity, 0)) as sold_quantity'),
-                DB::raw('SUM(calculated_volume) as total_volume'),
+                DB::raw('SUM(calculated_volume * quantity) as total_volume'),
             ])
             ->where('status', Product::STATUS_IN_STOCK)
             ->where('is_active', true)
@@ -355,7 +355,7 @@ class StockController extends Controller
                 DB::raw('SUM(quantity) as quantity'),
                 DB::raw('SUM(quantity - COALESCE(sold_quantity, 0)) as available_quantity'),
                 DB::raw('SUM(COALESCE(sold_quantity, 0)) as sold_quantity'),
-                DB::raw('SUM(calculated_volume) as total_volume'),
+                DB::raw('SUM(calculated_volume * quantity) as total_volume'),
             ])
             ->where('status', Product::STATUS_IN_STOCK)
             ->where('is_active', true)
@@ -402,7 +402,7 @@ class StockController extends Controller
             ->select([
                 'producer_id',
                 DB::raw('COUNT(DISTINCT CONCAT(product_template_id, "_", name)) as positions_count'),
-                DB::raw('SUM(calculated_volume) as total_volume'),
+                DB::raw('SUM(calculated_volume * quantity) as total_volume'),
             ])
             ->where('status', Product::STATUS_IN_STOCK)
             ->where('is_active', true)
@@ -447,7 +447,7 @@ class StockController extends Controller
             ->select([
                 'warehouse_id',
                 DB::raw('COUNT(DISTINCT CONCAT(product_template_id, "_", producer_id, "_", name)) as positions_count'),
-                DB::raw('SUM(calculated_volume) as total_volume'),
+                DB::raw('SUM(calculated_volume * quantity) as total_volume'),
             ])
             ->where('status', Product::STATUS_IN_STOCK)
             ->where('is_active', true)
@@ -518,7 +518,7 @@ class StockController extends Controller
             $stats = Product::query()
                 ->select([
                     DB::raw('COUNT(DISTINCT CONCAT(product_template_id, "_", producer_id, "_", name)) as positions_count'),
-                    DB::raw('SUM(calculated_volume) as total_volume'),
+                    DB::raw('SUM(calculated_volume * quantity) as total_volume'),
                 ])
                 ->where('status', Product::STATUS_IN_STOCK)
                 ->where('is_active', true)

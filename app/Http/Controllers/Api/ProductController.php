@@ -170,7 +170,7 @@ class ProductController extends Controller
                 \Illuminate\Support\Facades\DB::raw('SUM(quantity) as quantity'),
                 \Illuminate\Support\Facades\DB::raw('SUM(quantity - COALESCE(sold_quantity, 0)) as available_quantity'),
                 \Illuminate\Support\Facades\DB::raw('SUM(COALESCE(sold_quantity, 0)) as sold_quantity'),
-                \Illuminate\Support\Facades\DB::raw('SUM(calculated_volume) as total_volume'),
+                \Illuminate\Support\Facades\DB::raw('SUM(calculated_volume * quantity) as total_volume'),
             ])
             ->with(['producer', 'productTemplate', 'warehouse'])
             ->groupBy(array_merge([
