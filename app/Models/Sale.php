@@ -26,8 +26,6 @@ class Sale extends Model
         'total_price',
         'cash_amount',
         'nocash_amount',
-        'vat_rate',
-        'vat_amount',
         'price_without_vat',
         'currency',
         'exchange_rate',
@@ -46,8 +44,6 @@ class Sale extends Model
         'total_price' => 'decimal:2',
         'cash_amount' => 'decimal:2',
         'nocash_amount' => 'decimal:2',
-        'vat_rate' => 'decimal:2',
-        'vat_amount' => 'decimal:2',
         'price_without_vat' => 'decimal:2',
         'exchange_rate' => 'decimal:4',
         'sale_date' => 'date',
@@ -108,7 +104,7 @@ class Sale extends Model
 
         do {
             $attempt++;
-            
+
             // Получаем последний номер за этот месяц
             $lastSale = static::where('sale_number', 'like', "{$prefix}-{$year}{$month}-%")
                 ->orderBy('sale_number', 'desc')
@@ -122,17 +118,17 @@ class Sale extends Model
             }
 
             $saleNumber = sprintf('%s-%s%s-%04d', $prefix, $year, $month, $newNumber);
-            
+
             // Проверяем, не существует ли уже такой номер
             $exists = static::where('sale_number', $saleNumber)->exists();
-            
-            if (!$exists) {
+
+            if (! $exists) {
                 return $saleNumber;
             }
-            
+
             // Если номер существует, ждем немного и пробуем снова
             usleep(1000); // 1 миллисекунда
-            
+
         } while ($attempt < $maxAttempts);
 
         // Если не удалось сгенерировать уникальный номер, используем timestamp
@@ -145,8 +141,7 @@ class Sale extends Model
     public function calculatePrices(): void
     {
         $this->price_without_vat = $this->unit_price * $this->quantity;
-        $this->vat_amount = $this->price_without_vat * ($this->vat_rate / 100);
-        $this->total_price = $this->price_without_vat + $this->vat_amount;
+        $this->total_price = $this->price_without_vat;
     }
 
     /**

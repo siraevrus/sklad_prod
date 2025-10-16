@@ -2,7 +2,7 @@
 
 ## Обзор
 
-API для управления продажами товаров со склада с полной поддержкой учета остатков, расчета НДС, статистики и экспорта данных.
+API для управления продажами товаров со склада с полной поддержкой учета остатков и статистики.
 
 **Base URL:** `https://your-domain.com/api`
 
@@ -37,10 +37,8 @@ Content-Type: application/json
 | `customer_address` | string | Нет | Адрес клиента |
 | `quantity` | integer | Да | Количество товара (минимум: 1) |
 | `unit_price` | decimal | Нет | Цена за единицу (минимум: 0, по умолчанию: 0.00) |
-| `total_price` | decimal | Да | Общая сумма с НДС |
-| `price_without_vat` | decimal | Да | Сумма без НДС |
-| `vat_rate` | decimal | Нет | Ставка НДС в % (по умолчанию: 20.00) |
-| `vat_amount` | decimal | Да | Сумма НДС |
+| `total_price` | decimal | Нет | Общая сумма (по умолчанию: рассчитывается из unit_price × quantity) |
+| `price_without_vat` | decimal | Да | Сумма без НДС (равна total_price, так как НДС не используется) |
 | `currency` | string | Нет | Код валюты (по умолчанию: RUB) |
 | `exchange_rate` | decimal | Нет | Курс обмена (по умолчанию: 1.0000) |
 | `payment_status` | enum | Да | Статус оплаты |
@@ -151,9 +149,6 @@ curl -X GET "https://your-domain.com/api/sales?payment_status=paid&per_page=20&d
       "total_price": "862500.00",
       "cash_amount": "0.00",
       "nocash_amount": "862500.00",
-      "vat_rate": "15.00",
-      "vat_amount": "112500.00",
-      "price_without_vat": "750000.00",
       "currency": "UZS",
       "exchange_rate": "1.0000",
       "payment_status": "paid",
@@ -254,9 +249,6 @@ curl -X GET "https://your-domain.com/api/sales/102" \
   "total_price": "862500.00",
   "cash_amount": "0.00",
   "nocash_amount": "862500.00",
-  "vat_rate": "15.00",
-  "vat_amount": "112500.00",
-  "price_without_vat": "750000.00",
   "currency": "UZS",
   "exchange_rate": "1.0000",
   "payment_status": "paid",
@@ -345,12 +337,14 @@ template_id|warehouse_id|producer_id|product_name
 
 **Автоматические расчеты и значения по умолчанию:**
 - `sale_number` - Генерируется автоматически в формате `SALE-YYYYMM-XXXX`
-- `unit_price` - По умолчанию: 0.00 (если не указано)
+- `unit_price` - По умолчанию: 0.00 (если не указано и не указан total_price)
 - `payment_method` - По умолчанию: "other" (если не указано)
-- `vat_rate` - По умолчанию: 20.00% (если не указано)
-- `price_without_vat` = `unit_price` × `quantity`
-- `vat_amount` = `price_without_vat` × (`vat_rate` / 100)
-- `total_price` = `price_without_vat` + `vat_amount`
+- **Гибкая логика расчетов:**
+  - Если указан `unit_price` → `total_price` = `unit_price` × `quantity`
+  - Если указан `total_price` (без `unit_price`) → `unit_price` = `total_price` / `quantity`
+  - Если указаны оба → используется `total_price`, `unit_price` переписывается
+  - Если не указан ни один → оба равны 0.00
+- `price_without_vat` = `total_price` (НДС не используется в системе)
 
 **Права доступа:**
 - Администраторы могут создавать продажи на любом складе
@@ -371,13 +365,12 @@ curl -X POST "https://your-domain.com/api/sales" \
     "customer_address": "Ташкент, ул. Лесная, д. 45",
     "quantity": 10,
     "unit_price": 200000,
-    "vat_rate": 15,
     "payment_method": "bank_transfer",
     "payment_status": "pending",
     "currency": "UZS",
     "exchange_rate": 1.0,
     "cash_amount": 0,
-    "nocash_amount": 2300000,
+    "nocash_amount": 2000000,
     "notes": "Срочный заказ, доставка до 15.10.2025",
     "sale_date": "2025-10-12"
   }'
@@ -399,6 +392,27 @@ curl -X POST "https://your-domain.com/api/sales" \
 ```
 
 > **Примечание:** В минимальном запросе `unit_price` и `payment_method` не указаны, поэтому будут использованы значения по умолчанию: `unit_price = 0.00` и `payment_method = "other"`.
+
+**Пример запроса (с указанием total_price вместо unit_price):**
+```bash
+curl -X POST "https://your-domain.com/api/sales" \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Accept: application/json" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "composite_product_key": "1|13|1|Пиломатериалы: 3 x 33 x 3",
+    "warehouse_id": 13,
+    "customer_name": "ООО Строй-Сервис",
+    "customer_phone": "+998901234567",
+    "quantity": 5,
+    "total_price": 121.00,
+    "payment_method": "cash",
+    "payment_status": "paid",
+    "sale_date": "2025-10-16"
+  }'
+```
+
+> **Примечание:** Когда указан `total_price` без `unit_price`, система автоматически рассчитает `unit_price = 121.00 / 5 = 24.20`.
 
 **Пример ответа (201 Created):**
 ```json

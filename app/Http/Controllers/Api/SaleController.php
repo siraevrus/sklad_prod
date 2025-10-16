@@ -104,7 +104,7 @@ class SaleController extends Controller
             'customer_address' => 'nullable|string',
             'quantity' => 'required|integer|min:1',
             'unit_price' => 'nullable|numeric|min:0',
-            'vat_rate' => 'nullable|numeric|min:0|max:100',
+            'total_price' => 'nullable|numeric|min:0',
             'payment_method' => 'nullable|string|in:cash,card,bank_transfer,other',
             'payment_status' => 'nullable|string|in:pending,paid,partially_paid,cancelled',
             'currency' => 'nullable|string|max:3',
@@ -156,14 +156,26 @@ class SaleController extends Controller
         }
 
         // Устанавливаем значения по умолчанию для необязательных полей
-        $unitPrice = $request->get('unit_price', 0.00);
-        $vatRate = $request->get('vat_rate', 20.00);
+        $unitPrice = $request->get('unit_price');
+        $totalPrice = $request->get('total_price');
         $quantity = $request->quantity;
-        
-        // Рассчитываем суммы
-        $priceWithoutVat = $unitPrice * $quantity;
-        $vatAmount = $priceWithoutVat * ($vatRate / 100);
-        $totalPrice = $priceWithoutVat + $vatAmount;
+
+        // Если unit_price не указана, рассчитываем из total_price
+        if ($unitPrice === null && $totalPrice !== null) {
+            $unitPrice = $totalPrice / $quantity;
+        } elseif ($unitPrice === null) {
+            $unitPrice = 0.00;
+        }
+
+        // Если total_price не указана, рассчитываем из unit_price
+        if ($totalPrice === null) {
+            $totalPrice = $unitPrice * $quantity;
+        }
+
+        // Упрощенная логика без НДС
+        $priceWithoutVat = $totalPrice;
+        $vatAmount = 0.00;
+        $vatRate = 0.00;
 
         try {
             $sale = Sale::create([
@@ -206,12 +218,13 @@ class SaleController extends Controller
         }
 
         // Обновляем sold_quantity товара
-        if (!$sale->processSale()) {
+        if (! $sale->processSale()) {
             // Если не удалось обновить sold_quantity, удаляем созданную продажу
             $sale->delete();
+
             return response()->json([
                 'message' => 'Ошибка при обновлении остатков товара',
-                'error' => 'failed_to_process_sale'
+                'error' => 'failed_to_process_sale',
             ], 500);
         }
 
@@ -240,7 +253,7 @@ class SaleController extends Controller
             'customer_address' => 'nullable|string',
             'quantity' => 'sometimes|integer|min:1',
             'unit_price' => 'sometimes|numeric|min:0',
-            'vat_rate' => 'nullable|numeric|min:0|max:100',
+            'total_price' => 'sometimes|numeric|min:0',
             'currency' => 'nullable|string|max:3',
             'exchange_rate' => 'nullable|numeric|min:0',
             'cash_amount' => 'nullable|numeric|min:0',
@@ -256,13 +269,13 @@ class SaleController extends Controller
 
         $sale->update($request->only([
             'customer_name', 'customer_phone', 'customer_email', 'customer_address',
-            'quantity', 'unit_price', 'vat_rate', 'currency', 'exchange_rate',
+            'quantity', 'unit_price', 'total_price', 'currency', 'exchange_rate',
             'cash_amount', 'nocash_amount', 'payment_method', 'payment_status',
             'invoice_number', 'reason_cancellation', 'notes', 'sale_date', 'is_active',
         ]));
 
         // Пересчитываем цены если изменились количество или цена
-        if ($request->has('quantity') || $request->has('unit_price') || $request->has('vat_rate')) {
+        if ($request->has('quantity') || $request->has('unit_price') || $request->has('total_price')) {
             $sale->calculatePrices();
             $sale->save();
         }
@@ -287,7 +300,7 @@ class SaleController extends Controller
 
         // Возвращаем товар на склад перед удалением продажи
         $sale->cancelSale('Продажа удалена');
-        
+
         $sale->delete();
 
         return response()->json([
