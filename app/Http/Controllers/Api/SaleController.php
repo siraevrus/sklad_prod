@@ -205,7 +205,15 @@ class SaleController extends Controller
             throw $e;
         }
 
-        // Пересчёт не требуется, значения уже установлены
+        // Обновляем sold_quantity товара
+        if (!$sale->processSale()) {
+            // Если не удалось обновить sold_quantity, удаляем созданную продажу
+            $sale->delete();
+            return response()->json([
+                'message' => 'Ошибка при обновлении остатков товара',
+                'error' => 'failed_to_process_sale'
+            ], 500);
+        }
 
         return response()->json([
             'message' => 'Продажа создана',
@@ -277,6 +285,9 @@ class SaleController extends Controller
             return response()->json(['message' => 'Доступ запрещен'], 403);
         }
 
+        // Возвращаем товар на склад перед удалением продажи
+        $sale->cancelSale('Продажа удалена');
+        
         $sale->delete();
 
         return response()->json([
