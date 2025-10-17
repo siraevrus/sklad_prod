@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\ProductTemplate;
+use App\Support\AttributeNormalizer;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -99,7 +100,7 @@ class ReceiptController extends Controller
                     'producer' => $item['producer'] ?? null,
                     'description' => $item['description'] ?? null,
                     'name' => $item['name'] ?? null,
-                    'attributes' => $item['attributes'] ?? [],
+                    'attributes' => AttributeNormalizer::normalize($item['attributes'] ?? []),
                 ]);
 
                 // Генерация имени и объёма по формуле шаблона

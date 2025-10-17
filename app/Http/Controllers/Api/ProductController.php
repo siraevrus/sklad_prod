@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\ProductTemplate;
+use App\Support\AttributeNormalizer;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -316,7 +317,7 @@ class ProductController extends Controller
             'created_by' => $user->id,
             'name' => $name ?? 'Товар без названия',
             'description' => $request->description,
-            'attributes' => $request->get('attributes', []),
+            'attributes' => AttributeNormalizer::normalize($request->get('attributes', [])),
             'quantity' => (int) $request->quantity,
             'calculated_volume' => $request->get('calculated_volume'),
             'transport_number' => $request->get('transport_number'), // Номер транспортного средства
@@ -396,6 +397,11 @@ class ProductController extends Controller
                 $q = str_replace(',', '.', $q);
             }
             $updateData['quantity'] = (float) $q;
+        }
+
+        // Нормализуем атрибуты для консистентности
+        if (array_key_exists('attributes', $updateData) && is_array($updateData['attributes'])) {
+            $updateData['attributes'] = AttributeNormalizer::normalize($updateData['attributes']);
         }
 
         $product->update($updateData);
