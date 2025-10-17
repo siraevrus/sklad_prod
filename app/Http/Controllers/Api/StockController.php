@@ -15,17 +15,41 @@ use Illuminate\Support\Facades\DB;
 class StockController extends Controller
 {
     /**
+     * Получить переменные характеристик для группировки
+     */
+    private function getGroupingVariables(): array
+    {
+        return \App\Models\ProductAttribute::query()
+            ->whereIn('type', ['number', 'select'])
+            ->distinct()
+            ->pluck('variable')
+            ->toArray();
+    }
+
+    /**
+     * Построить GROUP BY условия для атрибутов
+     */
+    private function buildGroupByAttributes(array $variables): array
+    {
+        return array_map(function ($variable) {
+            return DB::raw("JSON_EXTRACT(attributes, \"$.{$variable}\")");
+        }, $variables);
+    }
+
+    /**
      * Агрегация по производителям
      * GET /api/stocks/by-producer
      */
     public function byProducer(Request $request): JsonResponse
     {
         $user = Auth::user();
+        $groupingVariables = $this->getGroupingVariables();
+        $groupByAttributes = $this->buildGroupByAttributes($groupingVariables);
 
         $query = Product::query()
             ->select([
                 'producer_id',
-                DB::raw('COUNT(DISTINCT CONCAT(product_template_id, "_", name)) as positions_count'),
+                DB::raw('COUNT(DISTINCT CONCAT(product_template_id, "_", name, "_", COALESCE(MD5(JSON_EXTRACT(attributes, "$")), ""))) as positions_count'),
                 DB::raw('SUM((quantity - COALESCE(sold_quantity, 0)) * calculated_volume) as total_volume'),
             ])
             ->where('status', Product::STATUS_IN_STOCK)
@@ -66,11 +90,13 @@ class StockController extends Controller
     public function byWarehouse(Request $request): JsonResponse
     {
         $user = Auth::user();
+        $groupingVariables = $this->getGroupingVariables();
+        $groupByAttributes = $this->buildGroupByAttributes($groupingVariables);
 
         $query = Product::query()
             ->select([
                 'warehouse_id',
-                DB::raw('COUNT(DISTINCT CONCAT(product_template_id, "_", producer_id, "_", name)) as positions_count'),
+                DB::raw('COUNT(DISTINCT CONCAT(product_template_id, "_", producer_id, "_", name, "_", COALESCE(MD5(JSON_EXTRACT(attributes, "$")), ""))) as positions_count'),
                 DB::raw('SUM((quantity - COALESCE(sold_quantity, 0)) * calculated_volume) as total_volume'),
             ])
             ->where('status', Product::STATUS_IN_STOCK)
@@ -141,7 +167,7 @@ class StockController extends Controller
             // Агрегируем товары по складам этой компании
             $stats = Product::query()
                 ->select([
-                    DB::raw('COUNT(DISTINCT CONCAT(product_template_id, "_", producer_id, "_", name)) as positions_count'),
+                    DB::raw('COUNT(DISTINCT CONCAT(product_template_id, "_", producer_id, "_", name, "_", COALESCE(MD5(JSON_EXTRACT(attributes, "$")), ""))) as positions_count'),
                     DB::raw('SUM((quantity - COALESCE(sold_quantity, 0)) * calculated_volume) as total_volume'),
                 ])
                 ->where('status', Product::STATUS_IN_STOCK)
@@ -183,12 +209,16 @@ class StockController extends Controller
             ], 404);
         }
 
+        $groupingVariables = $this->getGroupingVariables();
+        $groupByAttributes = $this->buildGroupByAttributes($groupingVariables);
+
         $query = Product::query()
             ->select([
                 DB::raw('MIN(name) as name'),
                 'product_template_id',
                 'warehouse_id',
                 'producer_id',
+                DB::raw('MIN(attributes) as attributes'),
                 DB::raw('SUM(quantity) as quantity'),
                 DB::raw('SUM(quantity - COALESCE(sold_quantity, 0)) as available_quantity'),
                 DB::raw('SUM(COALESCE(sold_quantity, 0)) as sold_quantity'),
@@ -198,7 +228,11 @@ class StockController extends Controller
             ->where('is_active', true)
             ->where('producer_id', $producerId)
             ->with(['producer', 'productTemplate', 'warehouse'])
-            ->groupBy(['product_template_id', 'warehouse_id', 'producer_id']);
+            ->groupBy(array_merge([
+                'product_template_id',
+                'warehouse_id',
+                'producer_id',
+            ], $groupByAttributes));
 
         // Применяем права доступа
         if (! $user->isAdmin()) {
@@ -260,12 +294,16 @@ class StockController extends Controller
             ], 403);
         }
 
+        $groupingVariables = $this->getGroupingVariables();
+        $groupByAttributes = $this->buildGroupByAttributes($groupingVariables);
+
         $query = Product::query()
             ->select([
                 DB::raw('MIN(name) as name'),
                 'product_template_id',
                 'warehouse_id',
                 'producer_id',
+                DB::raw('MIN(attributes) as attributes'),
                 DB::raw('SUM(quantity) as quantity'),
                 DB::raw('SUM(quantity - COALESCE(sold_quantity, 0)) as available_quantity'),
                 DB::raw('SUM(COALESCE(sold_quantity, 0)) as sold_quantity'),
@@ -275,7 +313,11 @@ class StockController extends Controller
             ->where('is_active', true)
             ->where('warehouse_id', $warehouseId)
             ->with(['producer', 'productTemplate', 'warehouse'])
-            ->groupBy(['product_template_id', 'warehouse_id', 'producer_id']);
+            ->groupBy(array_merge([
+                'product_template_id',
+                'warehouse_id',
+                'producer_id',
+            ], $groupByAttributes));
 
         $perPage = $request->get('per_page', 15);
         $products = $query->paginate($perPage);
@@ -346,12 +388,16 @@ class StockController extends Controller
             ]);
         }
 
+        $groupingVariables = $this->getGroupingVariables();
+        $groupByAttributes = $this->buildGroupByAttributes($groupingVariables);
+
         $query = Product::query()
             ->select([
                 DB::raw('MIN(name) as name'),
                 'product_template_id',
                 'warehouse_id',
                 'producer_id',
+                DB::raw('MIN(attributes) as attributes'),
                 DB::raw('SUM(quantity) as quantity'),
                 DB::raw('SUM(quantity - COALESCE(sold_quantity, 0)) as available_quantity'),
                 DB::raw('SUM(COALESCE(sold_quantity, 0)) as sold_quantity'),
@@ -361,7 +407,11 @@ class StockController extends Controller
             ->where('is_active', true)
             ->whereIn('warehouse_id', $warehouseIds)
             ->with(['producer', 'productTemplate', 'warehouse'])
-            ->groupBy(['product_template_id', 'warehouse_id', 'producer_id']);
+            ->groupBy(array_merge([
+                'product_template_id',
+                'warehouse_id',
+                'producer_id',
+            ], $groupByAttributes));
 
         $perPage = $request->get('per_page', 15);
         $products = $query->paginate($perPage);
@@ -401,7 +451,7 @@ class StockController extends Controller
         $query = Product::query()
             ->select([
                 'producer_id',
-                DB::raw('COUNT(DISTINCT CONCAT(product_template_id, "_", name)) as positions_count'),
+                DB::raw('COUNT(DISTINCT CONCAT(product_template_id, "_", name, "_", COALESCE(MD5(JSON_EXTRACT(attributes, "$")), ""))) as positions_count'),
                 DB::raw('SUM((quantity - COALESCE(sold_quantity, 0)) * calculated_volume) as total_volume'),
             ])
             ->where('status', Product::STATUS_IN_STOCK)
@@ -446,7 +496,7 @@ class StockController extends Controller
         $query = Product::query()
             ->select([
                 'warehouse_id',
-                DB::raw('COUNT(DISTINCT CONCAT(product_template_id, "_", producer_id, "_", name)) as positions_count'),
+                DB::raw('COUNT(DISTINCT CONCAT(product_template_id, "_", producer_id, "_", name, "_", COALESCE(MD5(JSON_EXTRACT(attributes, "$")), ""))) as positions_count'),
                 DB::raw('SUM((quantity - COALESCE(sold_quantity, 0)) * calculated_volume) as total_volume'),
             ])
             ->where('status', Product::STATUS_IN_STOCK)
@@ -517,7 +567,7 @@ class StockController extends Controller
             // Агрегируем товары по складам этой компании
             $stats = Product::query()
                 ->select([
-                    DB::raw('COUNT(DISTINCT CONCAT(product_template_id, "_", producer_id, "_", name)) as positions_count'),
+                    DB::raw('COUNT(DISTINCT CONCAT(product_template_id, "_", producer_id, "_", name, "_", COALESCE(MD5(JSON_EXTRACT(attributes, "$")), ""))) as positions_count'),
                     DB::raw('SUM((quantity - COALESCE(sold_quantity, 0)) * calculated_volume) as total_volume'),
                 ])
                 ->where('status', Product::STATUS_IN_STOCK)
