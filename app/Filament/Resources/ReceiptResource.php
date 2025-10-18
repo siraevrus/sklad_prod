@@ -192,7 +192,7 @@ class ReceiptResource extends Resource
                                             ->minValue(1)
                                             ->required()
                                             ->live()
-                                            ->debounce(50)
+                                            ->debounce(400)
                                             ->afterStateUpdated(function (Set $set, Get $get) {
                                                 $templateId = $get('product_template_id');
                                                 $quantity = $get('quantity');
@@ -273,7 +273,7 @@ class ReceiptResource extends Resource
                                                         ->numeric()
                                                         ->required($attribute->is_required)
                                                         ->live()
-                                                        ->debounce(30)
+                                                        ->debounce(400)
                                                         ->readOnly() // Характеристики только для чтения на странице приемки
                                                         ->dehydrated(false) // Не отправляем значения на сервер
                                                         ->formatStateUsing(function ($state, $record) use ($attribute) {
@@ -300,7 +300,7 @@ class ReceiptResource extends Resource
                                                         ->label($attribute->name)
                                                         ->required($attribute->is_required)
                                                         ->live()
-                                                        ->debounce(30)
+                                                        ->debounce(400)
                                                         ->readOnly() // Характеристики только для чтения на странице приемки
                                                         ->dehydrated(false) // Не отправляем значения на сервер
                                                         ->formatStateUsing(function ($state, $record) use ($attribute) {
@@ -329,7 +329,7 @@ class ReceiptResource extends Resource
                                                         ->options($options)
                                                         ->required($attribute->is_required)
                                                         ->live()
-                                                        ->debounce(30)
+                                                        ->debounce(400)
                                                         ->disabled() // Select не поддерживает readOnly, используем disabled
                                                         ->dehydrated(false) // Не отправляем значения на сервер
                                                         ->formatStateUsing(function ($state, $record) use ($attribute) {

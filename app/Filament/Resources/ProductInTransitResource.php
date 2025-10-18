@@ -152,7 +152,7 @@ class ProductInTransitResource extends Resource
                                             ->minValue(0)
                                             ->maxValue(2147483647)
                                             ->required()
-                                            ->live(debounce: 30)
+                                            ->live(debounce: 400)
                                             ->afterStateUpdated(function (Set $set, Get $get) {
                                                 self::calculateVolumeForItem($set, $get);
                                             })
@@ -189,7 +189,7 @@ class ProductInTransitResource extends Resource
                                                             'regex' => 'Поле должно содержать только цифры и одну запятую или точку',
                                                         ])
                                                         ->key("number_attr_{$attribute->id}_{$attribute->variable}")
-                                                        ->live(debounce: 30)
+                                                        ->live(debounce: 400)
                                                         ->afterStateUpdated(function (Set $set, Get $get) {
                                                             self::calculateVolumeForItem($set, $get);
                                                         })
@@ -202,7 +202,7 @@ class ProductInTransitResource extends Resource
                                                         ->maxLength(255)
                                                         ->required($attribute->is_required)
                                                         ->key("text_attr_{$attribute->id}_{$attribute->variable}")
-                                                        ->live(debounce: 30)
+                                                        ->live(debounce: 400)
                                                         ->afterStateUpdated(function (Set $set, Get $get) {
                                                             self::calculateVolumeForItem($set, $get);
                                                         });
@@ -215,7 +215,7 @@ class ProductInTransitResource extends Resource
                                                         ->options($options)
                                                         ->required($attribute->is_required)
                                                         ->key("select_attr_{$attribute->id}_{$attribute->variable}")
-                                                        ->live(debounce: 500)
+                                                        ->live(debounce: 400)
                                                         ->afterStateUpdated(function (Set $set, Get $get) {
                                                             self::calculateVolumeForItem($set, $get);
                                                         });
