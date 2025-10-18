@@ -6,6 +6,7 @@ use App\Filament\Resources\ProductInTransitResource\Pages;
 use App\Models\Product;
 use App\Models\ProductTemplate;
 use App\Models\Warehouse;
+use App\Support\ProductAttributeCalculator;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Grid;
@@ -495,103 +496,10 @@ class ProductInTransitResource extends Resource
     private static function calculateVolumeForItem(Set $set, Get $get): void
     {
         $templateId = $get('product_template_id');
-        if (! $templateId) {
-            $set('calculated_volume', 'Выберите шаблон');
-
-            return;
-        }
-
-        // Используем кэш для шаблона с атрибутами, чтобы избежать повторных запросов к БД
-        static $templateCache = [];
-        if (! isset($templateCache[$templateId])) {
-            $templateCache[$templateId] = ProductTemplate::with('attributes')->find($templateId);
-        }
-
-        $template = $templateCache[$templateId];
-        if (! $template) {
-            $set('calculated_volume', 'Шаблон не найден');
-
-            return;
-        }
-
-        // Собираем все значения характеристик
-        $attributes = [];
+        $quantity = $get('quantity');
         $formData = $get();
 
-        foreach ($formData as $key => $value) {
-            if (str_starts_with($key, 'attribute_') && $value !== null && $value !== '') {
-                $attributeName = str_replace('attribute_', '', $key);
-                // Нормализуем числовые значения: заменяем запятую на точку
-                $normalizedValue = is_string($value) ? str_replace(',', '.', $value) : $value;
-                $attributes[$attributeName] = $normalizedValue;
-            }
-        }
-
-        // Добавляем количество
-        $quantity = $get('quantity') ?? 1;
-        if (is_numeric($quantity) && $quantity > 0) {
-            $attributes['quantity'] = (int) $quantity;
-        }
-
-        // Формируем наименование из характеристик с правильным разделителем
-        $formulaParts = [];
-        $regularParts = [];
-
-        foreach ($template->attributes as $templateAttribute) {
-            $attributeKey = $templateAttribute->variable;
-            if ($templateAttribute->type !== 'text' && isset($attributes[$attributeKey]) && $attributes[$attributeKey] !== null && $attributes[$attributeKey] !== '') {
-                if ($templateAttribute->is_in_formula) {
-                    $formulaParts[] = $attributes[$attributeKey];
-                } else {
-                    $regularParts[] = $attributes[$attributeKey];
-                }
-            }
-        }
-
-        if (! empty($formulaParts) || ! empty($regularParts)) {
-            $templateName = $template->name ?? 'Товар';
-            $generatedName = $templateName;
-
-            if (! empty($formulaParts)) {
-                $generatedName .= ': '.implode(' x ', $formulaParts);
-            }
-
-            if (! empty($regularParts)) {
-                if (! empty($formulaParts)) {
-                    $generatedName .= ', '.implode(', ', $regularParts);
-                } else {
-                    $generatedName .= ': '.implode(', ', $regularParts);
-                }
-            }
-
-            $set('name', $generatedName);
-        } else {
-            $set('name', $template->name ?? 'Товар');
-        }
-
-        // Рассчитываем объем только если есть формула
-        if ($template->formula && ! empty($attributes)) {
-            // Рассчитываем объем только для числовых характеристик
-            $numericAttributes = [];
-            foreach ($attributes as $key => $value) {
-                if (is_numeric($value) && $value > 0) {
-                    $numericAttributes[$key] = (float) $value;
-                }
-            }
-
-            if (! empty($numericAttributes)) {
-                $testResult = $template->testFormula($numericAttributes);
-                if ($testResult['success']) {
-                    $set('calculated_volume', $testResult['result']);
-                } else {
-                    $set('calculated_volume', 'Ошибка формулы: '.($testResult['error'] ?? 'Неизвестная ошибка'));
-                }
-            } else {
-                $set('calculated_volume', 'Заполните числовые характеристики');
-            }
-        } else {
-            $set('calculated_volume', $template->formula ? 'Заполните характеристики' : 'Формула не задана');
-        }
+        ProductAttributeCalculator::calculateAndUpdate($set, $formData, $templateId, $quantity);
     }
 
     public static function getEloquentQuery(): Builder
