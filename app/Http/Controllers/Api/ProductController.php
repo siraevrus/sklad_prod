@@ -231,6 +231,11 @@ class ProductController extends Controller
             return response()->json(['message' => 'Доступ запрещен'], 403);
         }
 
+        // Переупорядочиваем атрибуты согласно sort_order из шаблона
+        if ($product->attributes && $product->template) {
+            $product->attributes = $this->orderAttributesByTemplate($product->attributes, $product->template);
+        }
+
         return response()->json($product);
     }
 
@@ -584,5 +589,35 @@ class ProductController extends Controller
             'data' => $exportData,
             'total' => $exportData->count(),
         ]);
+    }
+
+    /**
+     * Переупорядочить атрибуты согласно sort_order из шаблона
+     */
+    private function orderAttributesByTemplate(array $attributes, ProductTemplate $template): array
+    {
+        $ordered = [];
+
+        // Получаем атрибуты шаблона отсортированные по sort_order
+        $templateAttributes = $template->attributes()
+            ->orderBy('sort_order')
+            ->get()
+            ->keyBy('variable');
+
+        // Проходим по атрибутам шаблона и добавляем их в нужном порядке
+        foreach ($templateAttributes as $variable => $attr) {
+            if (isset($attributes[$variable])) {
+                $ordered[$variable] = $attributes[$variable];
+            }
+        }
+
+        // Добавляем остальные атрибуты, которых нет в шаблоне (если они есть)
+        foreach ($attributes as $variable => $value) {
+            if (! isset($ordered[$variable])) {
+                $ordered[$variable] = $value;
+            }
+        }
+
+        return $ordered;
     }
 }
