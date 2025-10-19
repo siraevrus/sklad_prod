@@ -22,8 +22,8 @@ class FileController extends Controller
         ]);
 
         $user = Auth::user();
-        
-        if (!$user) {
+
+        if (! $user) {
             return response()->json([
                 'success' => false,
                 'message' => 'Не авторизован',
@@ -34,13 +34,13 @@ class FileController extends Controller
             $file = $request->file('file');
             $originalName = $file->getClientOriginalName();
             $extension = $file->getClientOriginalExtension();
-            
+
             // Генерируем уникальное имя файла
-            $fileName = Str::uuid() . '.' . $extension;
-            
+            $fileName = Str::uuid().'.'.$extension;
+
             // Сохраняем файл в директории documents
             $path = $file->storeAs('documents', $fileName, 'public');
-            
+
             // Получаем информацию о файле
             $fileInfo = [
                 'path' => $path,
@@ -58,7 +58,7 @@ class FileController extends Controller
                 'message' => 'Документ успешно загружен',
                 'data' => [
                     'file_info' => $fileInfo,
-                    'url' => asset('storage/' . $path),
+                    'url' => asset('storage/'.$path),
                     'download_url' => route('api.files.download', ['file' => $fileName]),
                 ],
             ], 201);
@@ -84,8 +84,8 @@ class FileController extends Controller
         ]);
 
         $user = Auth::user();
-        
-        if (!$user) {
+
+        if (! $user) {
             return response()->json([
                 'success' => false,
                 'message' => 'Не авторизован',
@@ -99,13 +99,13 @@ class FileController extends Controller
             try {
                 $originalName = $file->getClientOriginalName();
                 $extension = $file->getClientOriginalExtension();
-                
+
                 // Генерируем уникальное имя файла
-                $fileName = Str::uuid() . '.' . $extension;
-                
+                $fileName = Str::uuid().'.'.$extension;
+
                 // Сохраняем файл в директории documents
                 $path = $file->storeAs('documents', $fileName, 'public');
-                
+
                 $fileInfo = [
                     'path' => $path,
                     'original_name' => $originalName,
@@ -119,7 +119,7 @@ class FileController extends Controller
 
                 $uploadedFiles[] = [
                     'file_info' => $fileInfo,
-                    'url' => asset('storage/' . $path),
+                    'url' => asset('storage/'.$path),
                     'download_url' => route('api.files.download', ['file' => $fileName]),
                 ];
 
@@ -133,7 +133,7 @@ class FileController extends Controller
 
         return response()->json([
             'success' => count($uploadedFiles) > 0,
-            'message' => count($uploadedFiles) . ' файлов загружено успешно',
+            'message' => count($uploadedFiles).' файлов загружено успешно',
             'data' => [
                 'uploaded_files' => $uploadedFiles,
                 'errors' => $errors,
@@ -149,14 +149,14 @@ class FileController extends Controller
     public function downloadDocument(string $file): \Symfony\Component\HttpFoundation\StreamedResponse
     {
         $user = Auth::user();
-        
-        if (!$user) {
+
+        if (! $user) {
             abort(401, 'Не авторизован');
         }
 
-        $filePath = 'documents/' . $file;
-        
-        if (!Storage::disk('public')->exists($filePath)) {
+        $filePath = 'documents/'.$file;
+
+        if (! Storage::disk('public')->exists($filePath)) {
             abort(404, 'Файл не найден');
         }
 
@@ -169,17 +169,17 @@ class FileController extends Controller
     public function deleteDocument(string $file): JsonResponse
     {
         $user = Auth::user();
-        
-        if (!$user) {
+
+        if (! $user) {
             return response()->json([
                 'success' => false,
                 'message' => 'Не авторизован',
             ], 401);
         }
 
-        $filePath = 'documents/' . $file;
-        
-        if (!Storage::disk('public')->exists($filePath)) {
+        $filePath = 'documents/'.$file;
+
+        if (! Storage::disk('public')->exists($filePath)) {
             return response()->json([
                 'success' => false,
                 'message' => 'Файл не найден',
@@ -188,7 +188,7 @@ class FileController extends Controller
 
         try {
             Storage::disk('public')->delete($filePath);
-            
+
             return response()->json([
                 'success' => true,
                 'message' => 'Документ успешно удален',
@@ -209,17 +209,17 @@ class FileController extends Controller
     public function getDocumentInfo(string $file): JsonResponse
     {
         $user = Auth::user();
-        
-        if (!$user) {
+
+        if (! $user) {
             return response()->json([
                 'success' => false,
                 'message' => 'Не авторизован',
             ], 401);
         }
 
-        $filePath = 'documents/' . $file;
-        
-        if (!Storage::disk('public')->exists($filePath)) {
+        $filePath = 'documents/'.$file;
+
+        if (! Storage::disk('public')->exists($filePath)) {
             return response()->json([
                 'success' => false,
                 'message' => 'Файл не найден',
@@ -232,7 +232,7 @@ class FileController extends Controller
                 'size' => Storage::disk('public')->size($filePath),
                 'mime_type' => Storage::disk('public')->mimeType($filePath),
                 'last_modified' => Storage::disk('public')->lastModified($filePath),
-                'url' => asset('storage/' . $filePath),
+                'url' => asset('storage/'.$filePath),
                 'download_url' => route('api.files.download', ['file' => $file]),
             ];
 
@@ -256,8 +256,8 @@ class FileController extends Controller
     public function listDocuments(Request $request): JsonResponse
     {
         $user = Auth::user();
-        
-        if (!$user) {
+
+        if (! $user) {
             return response()->json([
                 'success' => false,
                 'message' => 'Не авторизован',
@@ -276,7 +276,7 @@ class FileController extends Controller
                     'size' => Storage::disk('public')->size($file),
                     'mime_type' => Storage::disk('public')->mimeType($file),
                     'last_modified' => Storage::disk('public')->lastModified($file),
-                    'url' => asset('storage/' . $file),
+                    'url' => asset('storage/'.$file),
                     'download_url' => route('api.files.download', ['file' => $fileName]),
                 ];
             }

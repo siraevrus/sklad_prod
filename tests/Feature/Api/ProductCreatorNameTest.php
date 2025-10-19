@@ -19,7 +19,7 @@ class ProductCreatorNameTest extends TestCase
         // Создаем склад и шаблон продукта
         $warehouse = Warehouse::factory()->create();
         $template = ProductTemplate::factory()->create();
-        
+
         // Создаем пользователя с заполненными first_name и last_name, но пустым name
         $creator = User::factory()->create([
             'role' => UserRole::WAREHOUSE_WORKER,
@@ -54,7 +54,7 @@ class ProductCreatorNameTest extends TestCase
         $this->assertArrayHasKey('creator', $firstProduct);
         $this->assertArrayHasKey('name', $firstProduct['creator']);
         $this->assertNotEmpty($firstProduct['creator']['name']);
-        
+
         // Проверяем, что name сформировано правильно из first_name и last_name
         $this->assertEquals('Администратор Системы', $firstProduct['creator']['name']);
     }
@@ -64,7 +64,7 @@ class ProductCreatorNameTest extends TestCase
         // Создаем склад и шаблон продукта
         $warehouse = Warehouse::factory()->create();
         $template = ProductTemplate::factory()->create();
-        
+
         // Создаем пользователя только с username, без имен
         $creator = User::factory()->create([
             'role' => UserRole::WAREHOUSE_WORKER,
@@ -106,7 +106,7 @@ class ProductCreatorNameTest extends TestCase
         // Создаем склад и шаблон продукта
         $warehouse = Warehouse::factory()->create();
         $template = ProductTemplate::factory()->create();
-        
+
         // Создаем пользователя только с email
         $creator = User::factory()->create([
             'role' => UserRole::WAREHOUSE_WORKER,

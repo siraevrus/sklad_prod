@@ -13,9 +13,9 @@ return new class extends Migration
     {
         Schema::table('sales', function (Blueprint $table) {
             $table->enum('payment_method', ['cash', 'card', 'bank_transfer', 'other'])
-                  ->default('other')
-                  ->after('exchange_rate')
-                  ->comment('Способ оплаты');
+                ->default('other')
+                ->after('exchange_rate')
+                ->comment('Способ оплаты');
         });
     }
 

@@ -11,14 +11,14 @@ trait HasLoadingIndicator
     {
         // Dispatch event to show loading indicator
         $this->dispatch('formSubmitting');
-        
+
         // Call parent create method
         parent::create($another);
-        
+
         // Dispatch event to hide loading indicator
         $this->dispatch('formSubmitted');
     }
-    
+
     /**
      * Override the edit method to add loading indicator functionality
      */
@@ -26,10 +26,10 @@ trait HasLoadingIndicator
     {
         // Dispatch event to show loading indicator
         $this->dispatch('formSubmitting');
-        
+
         // Call parent save method
         parent::save($another);
-        
+
         // Dispatch event to hide loading indicator
         $this->dispatch('formSubmitted');
     }

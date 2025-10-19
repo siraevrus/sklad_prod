@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         // Проверяем, существует ли колонка revised_at
-        if (!Schema::hasColumn('products', 'revised_at')) {
+        if (! Schema::hasColumn('products', 'revised_at')) {
             Schema::table('products', function (Blueprint $table) {
                 $table->timestamp('revised_at')->nullable()->after('correction_status');
             });

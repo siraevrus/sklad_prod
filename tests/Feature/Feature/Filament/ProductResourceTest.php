@@ -2,15 +2,10 @@
 
 namespace Tests\Feature\Feature\Filament;
 
-use App\Models\Product;
-use App\Models\User;
-use App\Models\Warehouse;
-use App\Models\Producer;
-use App\Models\ProductTemplate;
 use App\Filament\Resources\ProductResource\Pages\CreateProduct;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
-use Livewire\Livewire;
 
 class ProductResourceTest extends TestCase
 {

@@ -19,7 +19,7 @@ class ReceiptCorrectionStatusTest extends TestCase
         // Создаем склад и шаблон продукта
         $warehouse = Warehouse::factory()->create();
         $template = ProductTemplate::factory()->create();
-        
+
         // Создаем пользователя
         $user = User::factory()->create([
             'role' => UserRole::WAREHOUSE_WORKER,
@@ -39,13 +39,13 @@ class ReceiptCorrectionStatusTest extends TestCase
 
         // Тестируем correction с товаром в статусе in_transit
         $response = $this->postJson("/api/receipts/{$product->id}/correction", [
-            'correction' => 'Уточнение для товара в пути'
+            'correction' => 'Уточнение для товара в пути',
         ]);
 
         $response->assertOk()
             ->assertJson([
                 'success' => true,
-                'message' => 'Уточнение сохранено и товар принят'
+                'message' => 'Уточнение сохранено и товар принят',
             ]);
 
         // Проверяем, что товар переведен в статус in_stock
@@ -60,7 +60,7 @@ class ReceiptCorrectionStatusTest extends TestCase
         // Создаем склад и шаблон продукта
         $warehouse = Warehouse::factory()->create();
         $template = ProductTemplate::factory()->create();
-        
+
         // Создаем пользователя
         $user = User::factory()->create([
             'role' => UserRole::WAREHOUSE_WORKER,
@@ -80,13 +80,13 @@ class ReceiptCorrectionStatusTest extends TestCase
 
         // Тестируем correction с товаром в статусе for_receipt
         $response = $this->postJson("/api/receipts/{$product->id}/correction", [
-            'correction' => 'Уточнение для товара готового к приемке'
+            'correction' => 'Уточнение для товара готового к приемке',
         ]);
 
         $response->assertOk()
             ->assertJson([
                 'success' => true,
-                'message' => 'Уточнение сохранено и товар принят'
+                'message' => 'Уточнение сохранено и товар принят',
             ]);
 
         // Проверяем, что товар переведен в статус in_stock
@@ -101,7 +101,7 @@ class ReceiptCorrectionStatusTest extends TestCase
         // Создаем склад и шаблон продукта
         $warehouse = Warehouse::factory()->create();
         $template = ProductTemplate::factory()->create();
-        
+
         // Создаем пользователя
         $user = User::factory()->create([
             'role' => UserRole::WAREHOUSE_WORKER,
@@ -121,13 +121,13 @@ class ReceiptCorrectionStatusTest extends TestCase
 
         // Тестируем correction с товаром в статусе in_stock
         $response = $this->postJson("/api/receipts/{$product->id}/correction", [
-            'correction' => 'Уточнение для товара в остатках'
+            'correction' => 'Уточнение для товара в остатках',
         ]);
 
         $response->assertStatus(404)
             ->assertJson([
                 'success' => false,
-                'message' => 'Товар не найден или не находится в пути/готов к приемке'
+                'message' => 'Товар не найден или не находится в пути/готов к приемке',
             ]);
     }
 
@@ -136,7 +136,7 @@ class ReceiptCorrectionStatusTest extends TestCase
         // Создаем склад и шаблон продукта
         $warehouse = Warehouse::factory()->create();
         $template = ProductTemplate::factory()->create();
-        
+
         // Создаем пользователя
         $user = User::factory()->create([
             'role' => UserRole::WAREHOUSE_WORKER,
@@ -156,13 +156,13 @@ class ReceiptCorrectionStatusTest extends TestCase
 
         // Тестируем correction с неактивным товаром
         $response = $this->postJson("/api/receipts/{$product->id}/correction", [
-            'correction' => 'Уточнение для неактивного товара'
+            'correction' => 'Уточнение для неактивного товара',
         ]);
 
         $response->assertStatus(404)
             ->assertJson([
                 'success' => false,
-                'message' => 'Товар не найден или не находится в пути/готов к приемке'
+                'message' => 'Товар не найден или не находится в пути/готов к приемке',
             ]);
     }
 }

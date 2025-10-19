@@ -3,9 +3,9 @@
 namespace Tests\Feature\Api;
 
 use App\Models\Product;
+use App\Models\ProductTemplate;
 use App\Models\User;
 use App\Models\Warehouse;
-use App\Models\ProductTemplate;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -16,12 +16,12 @@ class ProductCorrectionFieldsTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         // Создаем тестовые данные
         $warehouse = Warehouse::factory()->create();
         $template = ProductTemplate::factory()->create();
         $user = User::factory()->create(['role' => 'admin']);
-        
+
         $this->actingAs($user);
     }
 
@@ -39,7 +39,7 @@ class ProductCorrectionFieldsTest extends TestCase
         // Проверяем API ответ
         $response = $this->getJson('/api/products');
         $response->assertStatus(200);
-        
+
         $response->assertJsonStructure([
             'data' => [
                 '*' => [
@@ -51,15 +51,15 @@ class ProductCorrectionFieldsTest extends TestCase
                     'status',
                     'warehouse',
                     'template',
-                    'creator'
-                ]
-            ]
+                    'creator',
+                ],
+            ],
         ]);
 
         // Проверяем, что поля correction присутствуют в ответе
         $response->assertJsonFragment([
             'correction' => 'Это уточнение для товара',
-            'correction_status' => 'correction'
+            'correction_status' => 'correction',
         ]);
     }
 
@@ -77,11 +77,11 @@ class ProductCorrectionFieldsTest extends TestCase
         // Проверяем API ответ
         $response = $this->getJson('/api/products');
         $response->assertStatus(200);
-        
+
         // Проверяем, что поля correction присутствуют в ответе
         $response->assertJsonFragment([
             'correction' => 'Было уточнение',
-            'correction_status' => 'revised'
+            'correction_status' => 'revised',
         ]);
     }
 
@@ -99,11 +99,11 @@ class ProductCorrectionFieldsTest extends TestCase
         // Проверяем API ответ
         $response = $this->getJson('/api/products');
         $response->assertStatus(200);
-        
+
         // Проверяем, что поля correction присутствуют в ответе как null
         $response->assertJsonFragment([
             'correction' => null,
-            'correction_status' => null
+            'correction_status' => null,
         ]);
     }
 
@@ -121,7 +121,7 @@ class ProductCorrectionFieldsTest extends TestCase
         // Проверяем API ответ для одного товара
         $response = $this->getJson("/api/products/{$product->id}");
         $response->assertStatus(200);
-        
+
         $response->assertJsonStructure([
             'id',
             'name',
@@ -131,14 +131,14 @@ class ProductCorrectionFieldsTest extends TestCase
             'status',
             'warehouse',
             'template',
-            'creator'
+            'creator',
         ]);
 
         // Проверяем конкретные значения
         $response->assertJson([
             'id' => $product->id,
             'correction' => 'Детальное уточнение',
-            'correction_status' => 'correction'
+            'correction_status' => 'correction',
         ]);
     }
 }

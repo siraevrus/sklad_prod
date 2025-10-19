@@ -35,11 +35,11 @@ class DocumentPathJsonTest extends TestCase
         $response->assertStatus(200);
 
         $responseData = $response->json();
-        
+
         // Проверяем, что document_path присутствует и является массивом
         $this->assertArrayHasKey('data', $responseData);
         $this->assertNotEmpty($responseData['data']);
-        
+
         $productData = $responseData['data'][0];
         $this->assertArrayHasKey('document_path', $productData);
         $this->assertIsArray($productData['document_path']);
@@ -68,11 +68,11 @@ class DocumentPathJsonTest extends TestCase
         $response->assertStatus(200);
 
         $responseData = $response->json();
-        
+
         // Проверяем, что document_path присутствует и является пустым массивом
         $this->assertArrayHasKey('data', $responseData);
         $this->assertNotEmpty($responseData['data']);
-        
+
         $productData = $responseData['data'][0];
         $this->assertArrayHasKey('document_path', $productData);
         $this->assertIsArray($productData['document_path']);
@@ -101,11 +101,11 @@ class DocumentPathJsonTest extends TestCase
         $response->assertStatus(200);
 
         $responseData = $response->json();
-        
+
         // Проверяем, что document_path правильно декодирован
         $this->assertArrayHasKey('data', $responseData);
         $this->assertNotEmpty($responseData['data']);
-        
+
         $productData = $responseData['data'][0];
         $this->assertArrayHasKey('document_path', $productData);
         $this->assertIsArray($productData['document_path']);
@@ -136,7 +136,7 @@ class DocumentPathJsonTest extends TestCase
         // Проверяем, что ответ является валидным JSON
         $jsonString = $response->getContent();
         $this->assertJson($jsonString);
-        
+
         // Проверяем, что можно декодировать JSON без ошибок
         $decoded = json_decode($jsonString, true);
         $this->assertNotNull($decoded);

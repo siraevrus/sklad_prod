@@ -3,11 +3,10 @@
 namespace Tests\Feature;
 
 use App\Models\Product;
+use App\Models\ProductTemplate;
 use App\Models\User;
 use App\Models\Warehouse;
-use App\Models\ProductTemplate;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Livewire\Livewire;
 use Tests\TestCase;
 
 class ProductCorrectionHighlightingTest extends TestCase
@@ -17,12 +16,12 @@ class ProductCorrectionHighlightingTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         // Создаем тестовые данные
         $warehouse = Warehouse::factory()->create();
         $template = ProductTemplate::factory()->create();
         $user = User::factory()->create(['role' => 'admin']);
-        
+
         $this->actingAs($user);
     }
 
@@ -39,7 +38,7 @@ class ProductCorrectionHighlightingTest extends TestCase
 
         // Проверяем, что метод hasCorrection() возвращает true
         $this->assertTrue($product->hasCorrection());
-        
+
         // Проверяем, что товар имеет уточнение
         $this->assertNotNull($product->correction);
         $this->assertEquals('correction', $product->correction_status);
@@ -58,7 +57,7 @@ class ProductCorrectionHighlightingTest extends TestCase
 
         // Проверяем, что метод hasCorrection() возвращает false
         $this->assertFalse($product->hasCorrection());
-        
+
         // Проверяем, что товар не имеет уточнения
         $this->assertNull($product->correction);
         $this->assertNull($product->correction_status);
@@ -77,7 +76,7 @@ class ProductCorrectionHighlightingTest extends TestCase
 
         // Проверяем, что метод isRevised() возвращает true
         $this->assertTrue($product->isRevised());
-        
+
         // Проверяем, что товар имеет статус revised
         $this->assertEquals('revised', $product->correction_status);
     }
@@ -112,7 +111,7 @@ class ProductCorrectionHighlightingTest extends TestCase
         // Проверяем доступ к списку товаров
         $response = $this->get('/admin/products');
         $response->assertStatus(200);
-        
+
         // Проверяем, что товары отображаются
         $response->assertSee('Товар с уточнением');
         $response->assertSee('Скорректированный товар');

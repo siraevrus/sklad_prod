@@ -5,8 +5,8 @@ namespace Tests\Feature\Integration;
 use App\Filament\Resources\ReceiptResource\Pages\ViewReceipt;
 use App\Models\Product;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Filament\Facades\Filament;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
 
