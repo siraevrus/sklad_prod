@@ -356,7 +356,7 @@ class SaleResource extends Resource
                                     ->numeric()
                                     ->required()
                                     ->mask(RawJs::make('$number($input, { decimalPlaces: 2, thousandsSeparator: " ", decimalSeparator: "," })'))
-                                    ->live(onBlur: true)
+                                    ->live(debounce: 400)
                                     ->afterStateUpdated(function (Set $set, Get $get) {
                                         static::calculateTotalPrice($set, $get);
                                     }),
@@ -366,7 +366,7 @@ class SaleResource extends Resource
                                     ->numeric()
                                     ->required()
                                     ->mask(RawJs::make('$number($input, { decimalPlaces: 2, thousandsSeparator: " ", decimalSeparator: "," })'))
-                                    ->live(onBlur: true)
+                                    ->live(debounce: 400)
                                     ->afterStateUpdated(function (Set $set, Get $get) {
                                         static::calculateTotalPrice($set, $get);
                                     }),
