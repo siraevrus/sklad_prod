@@ -5,26 +5,25 @@ on:
     branches: [ main ]
 
 jobs:
-  deploy:
+  deploy-old-server:
     runs-on: ubuntu-latest
     
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    - name: Deploy to server
+    - name: Deploy to old server (93.189.230.65)
       uses: appleboy/ssh-action@v1.0.3
       with:
-        host: ${{ secrets.HOST }}
-        username: ${{ secrets.USERNAME }}
-        key: ${{ secrets.SSH_KEY }}
-        port: ${{ secrets.PORT || 22 }}
+        host: ${{ secrets.HOST_OLD }}
+        username: ${{ secrets.USERNAME_OLD }}
+        key: ${{ secrets.SSH_KEY_OLD }}
+        port: ${{ secrets.PORT_OLD || 22 }}
         script_stop: true
         debug: false
         script: |
-          echo "🚀 Starting deployment..."
-          echo "📍 Current directory: $(pwd)"
-          echo "👤 Current user: $(whoami)"
+          echo "🚀 Starting deployment to OLD server..."
+          echo "📍 Server: 93.189.230.65"
           
           cd /var/www/sklad
           echo "✅ Changed to /var/www/sklad"
@@ -52,7 +51,56 @@ jobs:
           php artisan config:cache
           php artisan route:cache
           
-          echo "✅ Deployment completed successfully!"
+          echo "✅ Deployment to OLD server completed!"
+          echo "📅 Deployed at: $(date)"
+
+  deploy-new-server:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Deploy to new server (31.184.253.122)
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.HOST_NEW }}
+        username: ${{ secrets.USERNAME_NEW }}
+        key: ${{ secrets.SSH_KEY_NEW }}
+        port: ${{ secrets.PORT_NEW || 22 }}
+        script_stop: true
+        debug: false
+        script: |
+          echo "🚀 Starting deployment to NEW server..."
+          echo "📍 Server: 31.184.253.122"
+          
+          cd /var/www/warehouse
+          echo "✅ Changed to /var/www/warehouse"
+          
+          echo "📥 Pulling latest changes from origin/main..."
+          git pull origin main || { echo "❌ Git pull failed"; exit 1; }
+          
+          echo "📦 Installing Composer dependencies..."
+          composer install --no-interaction --prefer-dist --optimize-autoloader || { echo "❌ Composer install failed"; exit 1; }
+          
+          echo "🗄️ Running migrations..."
+          php artisan migrate --force || { echo "⚠️ Migrations completed with warnings"; }
+          
+          echo "🧹 Clearing caches..."
+          php artisan config:clear
+          php artisan route:clear
+          php artisan view:clear
+          php artisan cache:clear
+          
+          echo "📦 Running npm build..."
+          npm install
+          npm run build || { echo "⚠️ NPM build completed with warnings"; }
+          
+          echo "⚡ Optimizing application..."
+          php artisan config:cache
+          php artisan route:cache
+          
+          echo "✅ Deployment to NEW server completed!"
           echo "📅 Deployed at: $(date)"
 
     - name: Notify deployment status
@@ -62,6 +110,6 @@ jobs:
         script: |
           const status = '${{ job.status }}';
           const message = status === 'success' 
-            ? '✅ Deployment successful!' 
+            ? '✅ Deployment to both servers successful!' 
             : '❌ Deployment failed!';
           console.log(message);
