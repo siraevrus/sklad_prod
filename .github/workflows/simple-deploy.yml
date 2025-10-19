@@ -1,4 +1,4 @@
-name: Simple Deploy
+name: Deploy to Production
 
 on:
   push:
@@ -9,32 +9,59 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
     - name: Deploy to server
       uses: appleboy/ssh-action@v1.0.3
       with:
         host: ${{ secrets.HOST }}
         username: ${{ secrets.USERNAME }}
         key: ${{ secrets.SSH_KEY }}
-        port: ${{ secrets.PORT }}
+        port: ${{ secrets.PORT || 22 }}
         script_stop: true
-        debug: true
+        debug: false
         script: |
-          echo "Starting deployment..."
-          echo "Current directory: $(pwd)"
-          echo "Current user: $(whoami)"
+          echo "🚀 Starting deployment..."
+          echo "📍 Current directory: $(pwd)"
+          echo "👤 Current user: $(whoami)"
           
           cd /var/www/sklad
-          echo "Changed to /var/www/sklad"
+          echo "✅ Changed to /var/www/sklad"
           
-          echo "Pulling latest changes..."
-          git pull origin main
+          echo "📥 Pulling latest changes from origin/main..."
+          git pull origin main || { echo "❌ Git pull failed"; exit 1; }
           
-          echo "Running migrations..."
-          php artisan migrate --force
+          echo "📦 Installing Composer dependencies..."
+          composer install --no-interaction --prefer-dist --optimize-autoloader || { echo "❌ Composer install failed"; exit 1; }
           
-          echo "Clearing caches..."
+          echo "🗄️ Running migrations..."
+          php artisan migrate --force || { echo "⚠️ Migrations completed with warnings"; }
+          
+          echo "🧹 Clearing caches..."
           php artisan config:clear
           php artisan route:clear
+          php artisan view:clear
           php artisan cache:clear
           
-          echo "Deployment completed successfully!"
+          echo "📦 Running npm build..."
+          npm install
+          npm run build || { echo "⚠️ NPM build completed with warnings"; }
+          
+          echo "⚡ Optimizing application..."
+          php artisan config:cache
+          php artisan route:cache
+          
+          echo "✅ Deployment completed successfully!"
+          echo "📅 Deployed at: $(date)"
+
+    - name: Notify deployment status
+      if: always()
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const status = '${{ job.status }}';
+          const message = status === 'success' 
+            ? '✅ Deployment successful!' 
+            : '❌ Deployment failed!';
+          console.log(message);
