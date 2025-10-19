@@ -21,8 +21,16 @@ class DatabaseConfigServiceProvider extends ServiceProvider
     public function boot(): void
     {
         // Отключаем ONLY_FULL_GROUP_BY для MySQL
-        if (config('database.default') === 'mysql') {
-            DB::statement("SET sql_mode = (SELECT REPLACE(@@sql_mode, 'ONLY_FULL_GROUP_BY', ''))");
+        // Обёрнуто в try-catch для случаев, когда БД недоступна
+        try {
+            if (config('database.default') === 'mysql') {
+                DB::statement("SET sql_mode = (SELECT REPLACE(@@sql_mode, 'ONLY_FULL_GROUP_BY', ''))");
+            }
+        } catch (\Exception $e) {
+            // БД недоступна - игнорируем ошибку (может быть при разработке или миграциях)
+            if (config('app.debug')) {
+                \Log::debug('Database config initialization skipped', ['error' => $e->getMessage()]);
+            }
         }
     }
 }
