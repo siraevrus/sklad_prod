@@ -8,6 +8,7 @@ use Filament\Infolists;
 use Filament\Infolists\Components\KeyValueEntry;
 use Filament\Infolists\Infolist;
 use Filament\Resources\Pages\ViewRecord;
+use App\Models\Product;
 
 class ViewProduct extends ViewRecord
 {
@@ -142,6 +143,16 @@ class ViewProduct extends ViewRecord
                             ->numeric()
                             ->badge()
                             ->color('success');
+
+                        // Добавляем объем за единицу (calculated_volume)
+                        $components[] = Infolists\Components\TextEntry::make('calculated_volume')
+                            ->label('Объем (за ед.)')
+                            ->badge()
+                            ->color('warning')
+                            ->formatStateUsing(function ($state, Product $record) {
+                                $unit = $record->productTemplate->unit ?? '';
+                                return is_numeric($state) ? number_format($state, 3, '.', ' ').($unit ? ' '.$unit : '') : '0.000';
+                            });
 
                         // Добавляем общий объем (динамический: quantity * calculated_volume)
                         $totalVolume = ($this->record->calculated_volume ?? 0) * ($this->record->quantity ?? 0);
