@@ -684,6 +684,14 @@ class ProductResource extends Resource
                         return (string) $state;  // Выводим как строку, без форматирования
                     }),
 
+                Tables\Columns\TextColumn::make('calculated_volume')
+                    ->label('Объем')
+                    ->formatStateUsing(function ($state) {
+                        return $state ? number_format($state, 3, '.', ' ').' м³' : '-';
+                    })
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: false),
+
                 Tables\Columns\TextColumn::make('transport_number')
                     ->label('Номер транспорта')
                     ->sortable()
