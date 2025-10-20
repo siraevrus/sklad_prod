@@ -75,7 +75,7 @@ class PopularProducts extends BaseWidget
 
                 Tables\Columns\TextColumn::make('total_revenue')
                     ->label('Выручка')
-                    ->money('RUB')
+                    ->formatStateUsing(fn ($state) => $state ? number_format($state, 2, '.', ' ').' ₽' : '0.00 ₽')
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('producer.name')
