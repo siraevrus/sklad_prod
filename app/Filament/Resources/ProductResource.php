@@ -652,14 +652,6 @@ class ProductResource extends Resource
                         default => 'normal'
                     }),
 
-                Tables\Columns\TextColumn::make('calculated_volume')
-                    ->label('Объем')
-                    ->formatStateUsing(function ($state) {
-                        return $state ? number_format($state, 3).' м³' : '-';
-                    })
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: false),
-
                 Tables\Columns\TextColumn::make('warehouse.name')
                     ->label('Склад')
                     ->sortable()

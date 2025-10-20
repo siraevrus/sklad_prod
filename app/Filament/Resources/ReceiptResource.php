@@ -429,17 +429,10 @@ class ReceiptResource extends Resource
                     ->sortable()
                     ->badge(),
 
-                Tables\Columns\TextColumn::make('calculated_volume')
-                    ->label('Объем')
-                    ->formatStateUsing(function ($state) {
-                        return $state ? number_format($state, 3, '.', ' ') : '0.000';
-                    })
-                    ->suffix(function (Product $record): string {
-                        return $record->template?->unit ?? '';
-                    })
+                Tables\Columns\TextColumn::make('status')
+                    ->label('Статус')
                     ->sortable(),
 
-                // Ожидаемая дата скрыта
                 Tables\Columns\TextColumn::make('actual_arrival_date')
                     ->label('Фактическая дата')
                     ->date()

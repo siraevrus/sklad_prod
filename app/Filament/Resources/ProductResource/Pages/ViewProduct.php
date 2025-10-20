@@ -143,19 +143,6 @@ class ViewProduct extends ViewRecord
                             ->badge()
                             ->color('success');
 
-                        // Добавляем объем
-                        $components[] = Infolists\Components\TextEntry::make('calculated_volume')
-                            ->label('Объем (за ед.)')
-                            ->badge()
-                            ->color('warning')
-                            ->formatStateUsing(function ($state) {
-                                if (is_numeric($state)) {
-                                    return number_format($state, 3, '.', ' ').' '.($this->record->productTemplate->unit ?? '');
-                                }
-
-                                return e($state ?: '0.000');
-                            });
-
                         // Добавляем общий объем (динамический: quantity * calculated_volume)
                         $totalVolume = ($this->record->calculated_volume ?? 0) * ($this->record->quantity ?? 0);
                         $components[] = Infolists\Components\TextEntry::make('total_volume_calc')

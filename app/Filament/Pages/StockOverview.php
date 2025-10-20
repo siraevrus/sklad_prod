@@ -58,19 +58,6 @@ class StockOverview extends Page implements HasTable
                         Tables\Columns\Summarizers\Sum::make()
                             ->label('Итого')
                     ),
-                Tables\Columns\TextColumn::make('calculated_volume')
-                    ->label('Объем (м³)')
-                    ->formatStateUsing(function ($state) {
-                        return number_format((float) $state, 3, '.', ' ');
-                    })
-                    ->sortable()
-                    ->summarize(
-                        Tables\Columns\Summarizers\Sum::make()
-                            ->label('Итого (м³)')
-                            ->formatStateUsing(function ($state) {
-                                return number_format((float) $state, 3, '.', ' ');
-                            })
-                    ),
                 Tables\Columns\TextColumn::make('productTemplate.name')
                     ->label('Шаблон')
                     ->sortable(),

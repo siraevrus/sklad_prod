@@ -303,13 +303,6 @@ class ProductInTransitResource extends Resource
                     ->searchable()
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('calculated_volume')
-                    ->label('Объем')
-                    ->formatStateUsing(function ($state) {
-                        return $state ? number_format($state, 3).' м³' : '-';
-                    })
-                    ->sortable(),
-
                 Tables\Columns\TextColumn::make('warehouse.name')
                     ->label('Склад')
                     ->sortable(),
