@@ -21,6 +21,7 @@ class LatestSales extends BaseWidget
             ->query(
                 Sale::query()
                     ->with(['product', 'warehouse', 'user'])
+                    ->where('payment_status', '!=', Sale::PAYMENT_STATUS_CANCELLED)
                     ->latest('sale_date')
                     ->limit(10)
             )

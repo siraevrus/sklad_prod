@@ -48,6 +48,7 @@ class DashboardController extends Controller
 
         $latestSales = Sale::query()
             ->with(['product'])
+            ->where('payment_status', '!=', Sale::PAYMENT_STATUS_CANCELLED)
             ->when(schema_has_column('sales', 'sale_date'), fn ($q) => $q->latest('sale_date'), fn ($q) => $q->latest())
             ->limit(10)
             ->get()
