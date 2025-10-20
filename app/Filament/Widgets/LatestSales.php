@@ -49,7 +49,34 @@ class LatestSales extends BaseWidget
 
                 Tables\Columns\TextColumn::make('total_price')
                     ->label('Сумма')
-                    ->money('RUB')
+                    ->formatStateUsing(function (Sale $record): string {
+                        $currency = $record->currency ?? 'RUB';
+                        $amount = number_format($record->total_price, 2, '.', ' ');
+
+                        return match ($currency) {
+                            'USD' => $amount.' $',
+                            'UZS' => $amount.' UZS',
+                            'RUB' => $amount.' ₽',
+                            default => $amount.' '.$currency,
+                        };
+                    })
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('currency')
+                    ->label('Валюта')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'USD' => 'blue',
+                        'RUB' => 'red',
+                        'UZS' => 'green',
+                        default => 'gray',
+                    })
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'USD' => 'USD',
+                        'RUB' => 'Рубли',
+                        'UZS' => 'Сумы',
+                        default => $state,
+                    })
                     ->sortable(),
 
                 Tables\Columns\BadgeColumn::make('payment_status')

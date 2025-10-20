@@ -62,6 +62,7 @@ class DashboardController extends Controller
                     'client_name' => $client,
                     'quantity' => $sale->quantity,
                     'total_amount' => $total,
+                    'currency' => $sale->currency ?? 'RUB',
                     'sale_date' => $sale->sale_date ?? ($sale->created_at ? $sale->created_at->toDateTimeString() : null),
                 ];
             });
