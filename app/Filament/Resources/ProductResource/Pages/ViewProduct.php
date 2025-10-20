@@ -154,14 +154,6 @@ class ViewProduct extends ViewRecord
                                 return is_numeric($state) ? number_format($state, 3, '.', ' ').($unit ? ' '.$unit : '') : '0.000';
                             });
 
-                        // Добавляем общий объем (динамический: quantity * calculated_volume)
-                        $totalVolume = ($this->record->calculated_volume ?? 0) * ($this->record->quantity ?? 0);
-                        $components[] = Infolists\Components\TextEntry::make('total_volume_calc')
-                            ->label('Общий объем')
-                            ->badge()
-                            ->color('info')
-                            ->state(number_format($totalVolume, 3, '.', ' ').' '.($this->record->productTemplate->unit ?? ''));
-
                         // Добавляем характеристики в табличном виде
                         $components[] = KeyValueEntry::make('attributes')
                             ->label('Характеристики')
