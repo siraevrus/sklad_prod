@@ -13,6 +13,8 @@ class PopularProducts extends BaseWidget
 {
     protected static ?int $sort = 4;
 
+    protected static bool $isHidden = true;
+
     protected int|string|array $columnSpan = 'full';
 
     protected static ?string $heading = 'Популярные товары';
