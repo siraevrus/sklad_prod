@@ -1,0 +1,1452 @@
+{
+  "info": {
+    "_postman_id": "sklad-warehouse-api",
+    "name": "Sklad - Warehouse Management System API",
+    "description": "Complete API collection for warehouse management system with all endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://31.184.253.122",
+      "type": "string"
+    },
+    {
+      "key": "api_token",
+      "value": "your_bearer_token_here",
+      "type": "string"
+    },
+    {
+      "key": "company_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "warehouse_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "product_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "user_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "sale_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "receipt_id",
+      "value": "1",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "🔐 Authentication",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\": \"John Doe\",\"username\": \"johndoe\",\"email\": \"john@example.com\",\"password\": \"password123\",\"password_confirmation\": \"password123\"}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/register",
+              "protocol": "http",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"username\": \"johndoe\",\"password\": \"password123\"}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "protocol": "http",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Get Current User",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{api_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/auth/me",
+              "protocol": "http",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "me"]
+            }
+          }
+        },
+        {
+          "name": "Update Profile",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{api_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\": \"Updated Name\",\"email\": \"newemail@example.com\"}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/profile",
+              "protocol": "http",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "profile"]
+            }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{api_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/api/auth/logout",
+              "protocol": "http",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "logout"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📦 Products",
+      "item": [
+        {
+          "name": "List Products",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{api_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/products?per_page=15",
+              "protocol": "http",
+              "host": ["{{base_url}}"],
+              "path": ["api", "products"],
+              "query": [
+                {
+                  "key": "per_page",
+                  "value": "15"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Product",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{api_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/products/{{product_id}}",
+              "protocol": "http",
+              "host": ["{{base_url}}"],
+              "path": ["api", "products", "{{product_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Create Product",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{api_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\": \"New Product\",\"product_template_id\": 1,\"warehouse_id\": {{warehouse_id}},\"quantity\": 100,\"unit_price\": 50.00}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/products",
+              "protocol": "http",
+              "host": ["{{base_url}}"],
+              "path": ["api", "products"]
+            }
+          }
+        },
+        {
+          "name": "Update Product",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{api_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\": \"Updated Product Name\",\"quantity\": 150,\"unit_price\": 55.00}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/products/{{product_id}}",
+              "protocol": "http",
+              "host": ["{{base_url}}"],
+              "path": ["api", "products", "{{product_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Product Stats",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{api_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/products/stats",
+              "protocol": "http",
+              "host": ["{{base_url}}"],
+              "path": ["api", "products", "stats"]
+            }
+          }
+        },
+        {
+          "name": "Popular Products",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{api_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/products/popular",
+              "protocol": "http",
+              "host": ["{{base_url}}"],
+              "path": ["api", "products", "popular"]
+            }
+          }
+        },
+        {
+          "name": "Export Products",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{api_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/products/export",
+              "protocol": "http",
+              "host": ["{{base_url}}"],
+              "path": ["api", "products", "export"]
+            }
+          }
+        },
+        {
+          "name": "Delete Product",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{api_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/api/products/{{product_id}}",
+              "protocol": "http",
+              "host": ["{{base_url}}"],
+              "path": ["api", "products", "{{product_id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "💰 Sales",
+      "item": [
+        {
+          "name": "List Sales",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{api_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/sales?per_page=15",
+              "protocol": "http",
+              "host": ["{{base_url}}"],
+              "path": ["api", "sales"],
+              "query": [
+                {
+                  "key": "per_page",
+                  "value": "15"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Sale",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{api_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/sales/{{sale_id}}",
+              "protocol": "http",
+              "host": ["{{base_url}}"],
+              "path": ["api", "sales", "{{sale_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Create Sale",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{api_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"product_id\": {{product_id}},\"warehouse_id\": {{warehouse_id}},\"quantity\": 10,\"unit_price\": 50.00,\"customer_name\": \"John Client\",\"payment_status\": \"paid\"}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/sales",
+              "protocol": "http",
+              "host": ["{{base_url}}"],
+              "path": ["api", "sales"]
+            }
+          }
+        },
+        {
+          "name": "Update Sale",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{api_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"quantity\": 15,\"customer_name\": \"Updated Customer\"}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/sales/{{sale_id}}",
+              "protocol": "http",
+              "host": ["{{base_url}}"],
+              "path": ["api", "sales", "{{sale_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Process Sale",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{api_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/api/sales/{{sale_id}}/process",
+              "protocol": "http",
+              "host": ["{{base_url}}"],
+              "path": ["api", "sales", "{{sale_id}}", "process"]
+            }
+          }
+        },
+        {
+          "name": "Cancel Sale",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{api_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"reason\": \"Customer request\"}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/sales/{{sale_id}}/cancel",
+              "protocol": "http",
+              "host": ["{{base_url}}"],
+              "path": ["api", "sales", "{{sale_id}}", "cancel"]
+            }
+          }
+        },
+        {
+          "name": "Sales Stats",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{api_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/sales/stats",
+              "protocol": "http",
+              "host": ["{{base_url}}"],
+              "path": ["api", "sales", "stats"]
+            }
+          }
+        },
+        {
+          "name": "Export Sales",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{api_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/sales/export",
+              "protocol": "http",
+              "host": ["{{base_url}}"],
+              "path": ["api", "sales", "export"]
+            }
+          }
+        },
+        {
+          "name": "Delete Sale",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{api_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/api/sales/{{sale_id}}",
+              "protocol": "http",
+              "host": ["{{base_url}}"],
+              "path": ["api", "sales", "{{sale_id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🏢 Companies",
+      "item": [
+        {
+          "name": "List Companies",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{api_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/companies",
+              "protocol": "http",
+              "host": ["{{base_url}}"],
+              "path": ["api", "companies"]
+            }
+          }
+        },
+        {
+          "name": "Get Company",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{api_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/companies/{{company_id}}",
+              "protocol": "http",
+              "host": ["{{base_url}}"],
+              "path": ["api", "companies", "{{company_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Create Company",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{api_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\": \"New Company\",\"contact_person\": \"John Doe\",\"email\": \"company@example.com\",\"phone\": \"+1234567890\"}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/companies",
+              "protocol": "http",
+              "host": ["{{base_url}}"],
+              "path": ["api", "companies"]
+            }
+          }
+        },
+        {
+          "name": "Update Company",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{api_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\": \"Updated Company\",\"contact_person\": \"Jane Doe\"}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/companies/{{company_id}}",
+              "protocol": "http",
+              "host": ["{{base_url}}"],
+              "path": ["api", "companies", "{{company_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Archive Company",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{api_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/api/companies/{{company_id}}/archive",
+              "protocol": "http",
+              "host": ["{{base_url}}"],
+              "path": ["api", "companies", "{{company_id}}", "archive"]
+            }
+          }
+        },
+        {
+          "name": "Restore Company",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{api_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/api/companies/{{company_id}}/restore",
+              "protocol": "http",
+              "host": ["{{base_url}}"],
+              "path": ["api", "companies", "{{company_id}}", "restore"]
+            }
+          }
+        },
+        {
+          "name": "Delete Company",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{api_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/api/companies/{{company_id}}",
+              "protocol": "http",
+              "host": ["{{base_url}}"],
+              "path": ["api", "companies", "{{company_id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🏭 Warehouses",
+      "item": [
+        {
+          "name": "List Warehouses",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{api_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/warehouses",
+              "protocol": "http",
+              "host": ["{{base_url}}"],
+              "path": ["api", "warehouses"]
+            }
+          }
+        },
+        {
+          "name": "Get Warehouse",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{api_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/warehouses/{{warehouse_id}}",
+              "protocol": "http",
+              "host": ["{{base_url}}"],
+              "path": ["api", "warehouses", "{{warehouse_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Create Warehouse",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{api_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\": \"New Warehouse\",\"company_id\": {{company_id}},\"location\": \"123 Main St\",\"manager\": \"John Manager\"}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/warehouses",
+              "protocol": "http",
+              "host": ["{{base_url}}"],
+              "path": ["api", "warehouses"]
+            }
+          }
+        },
+        {
+          "name": "Update Warehouse",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{api_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\": \"Updated Warehouse\",\"location\": \"456 Oak Ave\"}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/warehouses/{{warehouse_id}}",
+              "protocol": "http",
+              "host": ["{{base_url}}"],
+              "path": ["api", "warehouses", "{{warehouse_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Warehouse Stats",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{api_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/warehouses/stats",
+              "protocol": "http",
+              "host": ["{{base_url}}"],
+              "path": ["api", "warehouses", "stats"]
+            }
+          }
+        },
+        {
+          "name": "Delete Warehouse",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{api_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/api/warehouses/{{warehouse_id}}",
+              "protocol": "http",
+              "host": ["{{base_url}}"],
+              "path": ["api", "warehouses", "{{warehouse_id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📊 Dashboard & Stats",
+      "item": [
+        {
+          "name": "Dashboard Summary",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{api_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/dashboard/summary",
+              "protocol": "http",
+              "host": ["{{base_url}}"],
+              "path": ["api", "dashboard", "summary"]
+            }
+          }
+        },
+        {
+          "name": "Dashboard Revenue",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{api_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/dashboard/revenue",
+              "protocol": "http",
+              "host": ["{{base_url}}"],
+              "path": ["api", "dashboard", "revenue"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "👥 Users",
+      "item": [
+        {
+          "name": "List Users",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{api_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/users",
+              "protocol": "http",
+              "host": ["{{base_url}}"],
+              "path": ["api", "users"]
+            }
+          }
+        },
+        {
+          "name": "Get User",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{api_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/users/{{user_id}}",
+              "protocol": "http",
+              "host": ["{{base_url}}"],
+              "path": ["api", "users", "{{user_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Create User",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{api_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\": \"New User\",\"username\": \"newuser\",\"email\": \"newuser@example.com\",\"password\": \"password123\",\"password_confirmation\": \"password123\",\"warehouse_id\": {{warehouse_id}}}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/users",
+              "protocol": "http",
+              "host": ["{{base_url}}"],
+              "path": ["api", "users"]
+            }
+          }
+        },
+        {
+          "name": "Update User",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{api_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\": \"Updated User\",\"email\": \"updated@example.com\"}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/users/{{user_id}}",
+              "protocol": "http",
+              "host": ["{{base_url}}"],
+              "path": ["api", "users", "{{user_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Block User",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{api_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/api/users/{{user_id}}/block",
+              "protocol": "http",
+              "host": ["{{base_url}}"],
+              "path": ["api", "users", "{{user_id}}", "block"]
+            }
+          }
+        },
+        {
+          "name": "Unblock User",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{api_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/api/users/{{user_id}}/unblock",
+              "protocol": "http",
+              "host": ["{{base_url}}"],
+              "path": ["api", "users", "{{user_id}}", "unblock"]
+            }
+          }
+        },
+        {
+          "name": "Delete User",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{api_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/api/users/{{user_id}}",
+              "protocol": "http",
+              "host": ["{{base_url}}"],
+              "path": ["api", "users", "{{user_id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📦 Receipts & Stock",
+      "item": [
+        {
+          "name": "List Receipts",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{api_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/receipts",
+              "protocol": "http",
+              "host": ["{{base_url}}"],
+              "path": ["api", "receipts"]
+            }
+          }
+        },
+        {
+          "name": "Get Receipt",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{api_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/receipts/{{receipt_id}}",
+              "protocol": "http",
+              "host": ["{{base_url}}"],
+              "path": ["api", "receipts", "{{receipt_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Create Receipt",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{api_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"product_id\": {{product_id}},\"warehouse_id\": {{warehouse_id}},\"quantity\": 50,\"unit_price\": 45.00}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/receipts",
+              "protocol": "http",
+              "host": ["{{base_url}}"],
+              "path": ["api", "receipts"]
+            }
+          }
+        },
+        {
+          "name": "Receive Receipt",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{api_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/api/receipts/{{receipt_id}}/receive",
+              "protocol": "http",
+              "host": ["{{base_url}}"],
+              "path": ["api", "receipts", "{{receipt_id}}", "receive"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🏷️ Product Templates",
+      "item": [
+        {
+          "name": "List Templates",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{api_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/product-templates",
+              "protocol": "http",
+              "host": ["{{base_url}}"],
+              "path": ["api", "product-templates"]
+            }
+          }
+        },
+        {
+          "name": "Get Template",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{api_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/product-templates/1",
+              "protocol": "http",
+              "host": ["{{base_url}}"],
+              "path": ["api", "product-templates", "1"]
+            }
+          }
+        },
+        {
+          "name": "Create Template",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{api_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\": \"Template Name\",\"unit\": \"pcs\",\"category\": \"Electronics\"}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/product-templates",
+              "protocol": "http",
+              "host": ["{{base_url}}"],
+              "path": ["api", "product-templates"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📍 Producers",
+      "item": [
+        {
+          "name": "List Producers",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{api_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/producers",
+              "protocol": "http",
+              "host": ["{{base_url}}"],
+              "path": ["api", "producers"]
+            }
+          }
+        },
+        {
+          "name": "Get Producer",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{api_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/producers/1",
+              "protocol": "http",
+              "host": ["{{base_url}}"],
+              "path": ["api", "producers", "1"]
+            }
+          }
+        },
+        {
+          "name": "Create Producer",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{api_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\": \"Producer Name\",\"country\": \"Russia\",\"contact_email\": \"producer@example.com\"}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/producers",
+              "protocol": "http",
+              "host": ["{{base_url}}"],
+              "path": ["api", "producers"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
