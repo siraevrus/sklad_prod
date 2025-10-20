@@ -146,7 +146,7 @@ class ViewProduct extends ViewRecord
 
                         // Добавляем объем за единицу (calculated_volume)
                         $components[] = Infolists\Components\TextEntry::make('calculated_volume')
-                            ->label('Объем (за ед.)')
+                            ->label('Объем')
                             ->badge()
                             ->color('warning')
                             ->formatStateUsing(function ($state, Product $record) {
