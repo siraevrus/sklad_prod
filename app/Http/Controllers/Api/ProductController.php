@@ -112,6 +112,16 @@ class ProductController extends Controller
 
         $products = $query->paginate($request->get('per_page', 15));
 
+        // Log response statuses
+        if ($products->count() > 0) {
+            $statuses = array_unique(array_column($products->items(), 'status'));
+            \Log::info('Products API response', [
+                'requested_status' => $request->get('status'),
+                'returned_statuses' => $statuses,
+                'total_count' => $products->total(),
+            ]);
+        }
+
         return response()->json([
             'data' => $products->items(),
             'links' => [
