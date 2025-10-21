@@ -280,6 +280,9 @@ class CreateProduct extends CreateRecord
                 'name' => $data['name'] ?? null,
                 'quantity' => $data['quantity'] ?? null,
                 'calculated_volume' => $data['calculated_volume'] ?? null,
+                'volume_per_unit' => isset($data['quantity']) && $data['quantity'] > 0 && isset($data['calculated_volume']) 
+                    ? round($data['calculated_volume'] / $data['quantity'], 4)
+                    : null,
                 'attributes' => $data['attributes'] ?? [],
                 'producer_id' => $data['producer_id'] ?? null,
                 'warehouse_id' => $data['warehouse_id'] ?? null,

@@ -33,6 +33,7 @@ class Product extends Model
         'attributes',
 
         'calculated_volume',
+        'volume_per_unit',
         'quantity',
         'sold_quantity',
         'transport_number',
@@ -54,6 +55,7 @@ class Product extends Model
     protected $casts = [
         'attributes' => 'array',
         'calculated_volume' => 'decimal:4',
+        'volume_per_unit' => 'decimal:4',
         'quantity' => 'integer',
         'sold_quantity' => 'integer',
         'arrival_date' => 'date',
@@ -380,13 +382,50 @@ class Product extends Model
     }
 
     /**
-     * Обновить рассчитанный объем
+     * Рассчитать объём за одну единицу товара (calculated_volume / quantity)
+     */
+    public function calculateVolumePerUnit(): ?float
+    {
+        if ($this->calculated_volume === null || $this->quantity <= 0) {
+            return null;
+        }
+
+        return round($this->calculated_volume / $this->quantity, 4);
+    }
+
+    /**
+     * Обновить рассчитанный объем и объём за единицу
      */
     public function updateCalculatedVolume(): void
     {
         $volume = $this->calculateVolume();
         $this->calculated_volume = $volume;
+        
+        // Пересчитываем объём за единицу
+        if ($volume !== null && $this->quantity > 0) {
+            $this->volume_per_unit = $this->calculateVolumePerUnit();
+        } else {
+            $this->volume_per_unit = null;
+        }
+        
         $this->save();
+    }
+
+    /**
+     * Boot метод для автоматического расчета volume_per_unit при сохранении
+     */
+    protected static function boot(): void
+    {
+        parent::boot();
+
+        static::saving(function (Product $product) {
+            // Если есть calculated_volume и quantity, пересчитаем volume_per_unit
+            if ($product->calculated_volume !== null && $product->quantity > 0) {
+                $product->volume_per_unit = round($product->calculated_volume / $product->quantity, 4);
+            } else {
+                $product->volume_per_unit = null;
+            }
+        });
     }
 
     /**

@@ -24,6 +24,7 @@ class ProductInTransit extends Model
         'description',
         'attributes',
         'calculated_volume',
+        'volume_per_unit',
         'quantity',
         'transport_number',
         'producer',
@@ -42,6 +43,7 @@ class ProductInTransit extends Model
         'attributes' => 'array',
         'document_path' => 'array',
         'calculated_volume' => 'decimal:4',
+        'volume_per_unit' => 'decimal:4',
         'quantity' => 'integer',
         'expected_arrival_date' => 'date',
         'actual_arrival_date' => 'date',
@@ -59,6 +61,23 @@ class ProductInTransit extends Model
     const STATUS_RECEIVED = 'received';
 
     const STATUS_CANCELLED = 'cancelled';
+
+    /**
+     * Boot метод для автоматического расчета volume_per_unit при сохранении
+     */
+    protected static function boot(): void
+    {
+        parent::boot();
+
+        static::saving(function (ProductInTransit $product) {
+            // Если есть calculated_volume и quantity, пересчитаем volume_per_unit
+            if ($product->calculated_volume !== null && $product->quantity > 0) {
+                $product->volume_per_unit = round($product->calculated_volume / $product->quantity, 4);
+            } else {
+                $product->volume_per_unit = null;
+            }
+        });
+    }
 
     /**
      * Связь с шаблоном товара
