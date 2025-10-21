@@ -171,8 +171,24 @@ class StockResource extends Resource
 
                 Tables\Columns\TextColumn::make('total_volume')
                     ->label('Остаток Объем (м³)')
-                    ->formatStateUsing(function ($state) {
-                        return $state ? number_format($state, 3, '.', ' ') : '0.000';
+                    ->formatStateUsing(function ($state, $record) {
+                        // Рассчитываем объём за единицу по формуле с quantity=1
+                        $volumePerUnit = 0;
+                        if ($record->productTemplate && $record->productTemplate->formula) {
+                            $attributes = is_string($record->attributes) 
+                                ? json_decode($record->attributes, true) ?? [] 
+                                : $record->attributes ?? [];
+                            
+                            $attributes['quantity'] = 1;
+                            $testResult = $record->productTemplate->testFormula($attributes);
+                            if ($testResult['success']) {
+                                $volumePerUnit = (float) $testResult['result'];
+                            }
+                        }
+                        
+                        // Рассчитываем остаток объёма: stock_balance × объём за единицу
+                        $totalVolume = ($record->stock_balance ?? 0) * $volumePerUnit;
+                        return number_format($totalVolume, 3, '.', ' ');
                     })
                     ->sortable()
                     ->summarize(
@@ -282,7 +298,6 @@ class StockResource extends Resource
                 DB::raw('SUM(quantity - COALESCE(sold_quantity, 0)) as total_quantity'),
                 DB::raw('SUM(COALESCE(sold_quantity, 0)) as total_sold_quantity'),
                 DB::raw('SUM(quantity - COALESCE(sold_quantity, 0)) as stock_balance'),
-                DB::raw('MIN(calculated_volume) as calculated_volume'),
                 DB::raw('SUM((quantity - COALESCE(sold_quantity, 0)) * calculated_volume) as total_volume'),
                 DB::raw('COUNT(*) as product_count'),
                 DB::raw('MAX(arrival_date) as last_arrival_date'),
