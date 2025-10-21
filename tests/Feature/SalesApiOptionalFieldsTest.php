@@ -155,4 +155,103 @@ class SalesApiOptionalFieldsTest extends TestCase
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['payment_method']);
     }
+
+    /**
+     * Тест включения производителя в API ответ
+     */
+    public function test_sale_response_includes_producer(): void
+    {
+        $user = User::first();
+        $product = Product::with('producer')->first();
+
+        if (! $product) {
+            $this->markTestSkipped('Нет товаров для тестирования');
+        }
+
+        $compositeKey = $product->product_template_id.'|'.$product->warehouse_id.'|'.$product->producer_id.'|'.$product->name;
+
+        $response = $this->actingAs($user, 'sanctum')->postJson('/api/sales', [
+            'composite_product_key' => $compositeKey,
+            'warehouse_id' => $product->warehouse_id,
+            'customer_name' => 'Тестовый клиент',
+            'quantity' => 5,
+            'total_price' => 100.00,
+            'sale_date' => now()->format('Y-m-d'),
+        ]);
+
+        $response->assertStatus(201)
+            ->assertJsonStructure([
+                'message',
+                'sale' => [
+                    'id',
+                    'sale_number',
+                    'product' => [
+                        'id',
+                        'name',
+                        'producer' => [
+                            'id',
+                            'name',
+                        ],
+                    ],
+                ],
+            ]);
+
+        // Проверяем, что производитель присутствует и совпадает
+        $responseData = $response->json('sale.product.producer');
+        $this->assertNotNull($responseData);
+        $this->assertEquals($product->producer->id, $responseData['id']);
+        $this->assertEquals($product->producer->name, $responseData['name']);
+    }
+
+    /**
+     * Тест включения производителя в список продаж
+     */
+    public function test_sales_index_includes_producer(): void
+    {
+        $user = User::first();
+        $product = Product::with('producer')->first();
+
+        if (! $product) {
+            $this->markTestSkipped('Нет товаров для тестирования');
+        }
+
+        // Создаем продажу
+        $compositeKey = $product->product_template_id.'|'.$product->warehouse_id.'|'.$product->producer_id.'|'.$product->name;
+        $this->actingAs($user, 'sanctum')->postJson('/api/sales', [
+            'composite_product_key' => $compositeKey,
+            'warehouse_id' => $product->warehouse_id,
+            'customer_name' => 'Тестовый клиент',
+            'quantity' => 5,
+            'total_price' => 100.00,
+            'sale_date' => now()->format('Y-m-d'),
+        ]);
+
+        // Получаем список продаж
+        $response = $this->actingAs($user, 'sanctum')->getJson('/api/sales');
+
+        $response->assertStatus(200)
+            ->assertJsonStructure([
+                'data' => [
+                    '*' => [
+                        'id',
+                        'sale_number',
+                        'product' => [
+                            'id',
+                            'name',
+                            'producer' => [
+                                'id',
+                                'name',
+                            ],
+                        ],
+                    ],
+                ],
+            ]);
+
+        // Проверяем, что производитель присутствует в каждой продаже
+        $sales = $response->json('data');
+        foreach ($sales as $sale) {
+            $this->assertArrayHasKey('producer', $sale['product']);
+            $this->assertNotNull($sale['product']['producer']);
+        }
+    }
 }

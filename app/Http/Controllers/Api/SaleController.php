@@ -18,7 +18,7 @@ class SaleController extends Controller
     {
         $user = Auth::user();
 
-        $query = Sale::with(['product', 'warehouse', 'user'])
+        $query = Sale::with(['product.producer', 'warehouse', 'user'])
             ->when($request->search, function ($query, $search) {
                 $query->where('sale_number', 'like', "%{$search}%")
                     ->orWhere('customer_name', 'like', "%{$search}%")
@@ -78,7 +78,7 @@ class SaleController extends Controller
     public function showById(int $id): JsonResponse
     {
         $user = Auth::user();
-        $sale = Sale::with(['product', 'warehouse', 'user'])->find($id);
+        $sale = Sale::with(['product.producer', 'warehouse', 'user'])->find($id);
         if (! $sale) {
             return response()->json(['message' => 'Продажа не найдена'], 404);
         }
@@ -211,7 +211,7 @@ class SaleController extends Controller
 
         return response()->json([
             'message' => 'Продажа создана',
-            'sale' => $sale->load(['product', 'warehouse', 'user']),
+            'sale' => $sale->load(['product.producer', 'warehouse', 'user']),
         ], 201);
     }
 
@@ -261,7 +261,7 @@ class SaleController extends Controller
 
         return response()->json([
             'message' => 'Продажа обновлена',
-            'sale' => $sale->load(['product', 'warehouse', 'user']),
+            'sale' => $sale->load(['product.producer', 'warehouse', 'user']),
         ]);
     }
 
@@ -311,7 +311,7 @@ class SaleController extends Controller
         if ($sale->processSale()) {
             return response()->json([
                 'message' => 'Продажа оформлена',
-                'sale' => $sale->load(['product', 'warehouse', 'user']),
+                'sale' => $sale->load(['product.producer', 'warehouse', 'user']),
             ]);
         }
 
@@ -333,7 +333,7 @@ class SaleController extends Controller
         if ($sale->cancelSale()) {
             return response()->json([
                 'message' => 'Продажа отменена',
-                'sale' => $sale->load(['product', 'warehouse', 'user']),
+                'sale' => $sale->load(['product.producer', 'warehouse', 'user']),
             ]);
         }
 
@@ -395,7 +395,7 @@ class SaleController extends Controller
     {
         $user = Auth::user();
 
-        $query = Sale::with(['product', 'warehouse', 'user'])
+        $query = Sale::with(['product.producer', 'warehouse', 'user'])
             ->when($request->search, function ($query, $search) {
                 $query->where('sale_number', 'like', "%{$search}%")
                     ->orWhere('customer_name', 'like', "%{$search}%")
@@ -440,6 +440,7 @@ class SaleController extends Controller
                 'customer_phone' => $sale->customer_phone,
                 'customer_email' => $sale->customer_email,
                 'product_name' => $sale->product->name ?? '',
+                'producer' => $sale->product?->producer?->name ?? '',
                 'warehouse' => $sale->warehouse->name ?? '',
                 'quantity' => $sale->quantity,
                 'unit_price' => $sale->unit_price,
