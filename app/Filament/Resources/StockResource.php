@@ -283,7 +283,26 @@ class StockResource extends Resource
                 'producer_id',
             ], $groupByAttributes))
             ->orderBy('name')
-            ->orderBy('producer_id');
+            ->orderBy('producer_id')
+            ->get()
+            ->map(function ($item) {
+                // Рассчитываем объём за единицу через формулу с quantity=1
+                if ($item->productTemplate && $item->productTemplate->formula) {
+                    $attributes = is_string($item->attributes) 
+                        ? json_decode($item->attributes, true) ?? [] 
+                        : $item->attributes ?? [];
+                    
+                    // Подставляем quantity = 1 для расчёта объёма за единицу
+                    $attributes['quantity'] = 1;
+                    
+                    $testResult = $item->productTemplate->testFormula($attributes);
+                    if ($testResult['success']) {
+                        $item->calculated_volume = (float) $testResult['result'];
+                    }
+                }
+                
+                return $item;
+            });
     }
 
     public static function getRelations(): array
