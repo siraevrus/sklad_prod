@@ -81,6 +81,27 @@ class StockResource extends Resource
     {
         return $table
             ->recordCheckboxPosition(null)
+            ->modifyQueryUsing(function (Builder $query) {
+                // После получения результатов применяем трансформацию
+                return $query->get()->map(function ($item) {
+                    // Рассчитываем объём за единицу через формулу с quantity=1
+                    if ($item->productTemplate && $item->productTemplate->formula) {
+                        $attributes = is_string($item->attributes) 
+                            ? json_decode($item->attributes, true) ?? [] 
+                            : $item->attributes ?? [];
+                        
+                        // Подставляем quantity = 1 для расчёта объёма за единицу
+                        $attributes['quantity'] = 1;
+                        
+                        $testResult = $item->productTemplate->testFormula($attributes);
+                        if ($testResult['success']) {
+                            $item->calculated_volume = (float) $testResult['result'];
+                        }
+                    }
+                    
+                    return $item;
+                });
+            })
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->label('Наименование')
@@ -283,26 +304,7 @@ class StockResource extends Resource
                 'producer_id',
             ], $groupByAttributes))
             ->orderBy('name')
-            ->orderBy('producer_id')
-            ->get()
-            ->map(function ($item) {
-                // Рассчитываем объём за единицу через формулу с quantity=1
-                if ($item->productTemplate && $item->productTemplate->formula) {
-                    $attributes = is_string($item->attributes) 
-                        ? json_decode($item->attributes, true) ?? [] 
-                        : $item->attributes ?? [];
-                    
-                    // Подставляем quantity = 1 для расчёта объёма за единицу
-                    $attributes['quantity'] = 1;
-                    
-                    $testResult = $item->productTemplate->testFormula($attributes);
-                    if ($testResult['success']) {
-                        $item->calculated_volume = (float) $testResult['result'];
-                    }
-                }
-                
-                return $item;
-            });
+            ->orderBy('producer_id');
     }
 
     public static function getRelations(): array
