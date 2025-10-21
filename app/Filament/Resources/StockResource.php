@@ -279,7 +279,7 @@ class StockResource extends Resource
                 'warehouse_id',
                 'producer_id',
                 DB::raw('MIN(attributes) as attributes'),
-                DB::raw('SUM(quantity - COALESCE(sold_quantity, 0)) as total_quantity'),
+                DB::raw('SUM(quantity) as total_quantity'),
                 DB::raw('SUM(COALESCE(sold_quantity, 0)) as total_sold_quantity'),
                 DB::raw('SUM(quantity - COALESCE(sold_quantity, 0)) as stock_balance'),
                 DB::raw('MIN(calculated_volume) as calculated_volume'),
