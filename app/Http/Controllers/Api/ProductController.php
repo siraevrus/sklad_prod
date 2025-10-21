@@ -223,7 +223,28 @@ class ProductController extends Controller
     public function showById(int $id): JsonResponse
     {
         $user = Auth::user();
-        $product = Product::with(['template', 'warehouse', 'creator'])->find($id);
+        
+        // Определяем какие связи загружать
+        $with = ['template', 'warehouse', 'creator'];
+        
+        // Проверяем include параметр
+        if ($request = request()) {
+            $include = $request->query('include');
+            if ($include) {
+                $includeRelations = explode(',', $include);
+                $allowed = ['producer', 'template', 'warehouse', 'creator'];
+                
+                // Фильтруем только разрешённые связи
+                $includeRelations = array_filter($includeRelations, function ($relation) use ($allowed) {
+                    return in_array(trim($relation), $allowed);
+                });
+                
+                // Объединяем с обязательными связями и убираем дубликаты
+                $with = array_unique(array_merge($with, $includeRelations));
+            }
+        }
+        
+        $product = Product::with($with)->find($id);
         if (! $product) {
             return response()->json(['message' => 'Товар не найден'], 404);
         }
