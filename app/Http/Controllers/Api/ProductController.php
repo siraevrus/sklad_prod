@@ -58,6 +58,9 @@ class ProductController extends Controller
             ->when($request->status, function ($query, $status) {
                 $query->where('status', $status);
             })
+            ->tap(function ($query) {
+                \Log::info('SQL Query after status filter', ['query' => $query->toSql(), 'bindings' => $query->getBindings()]);
+            })
             ->when($request->in_stock, function ($query) {
                 $query->where('quantity', '>', 0);
             })
@@ -590,6 +593,9 @@ class ProductController extends Controller
             })
             ->when($request->status, function ($query, $status) {
                 $query->where('status', $status);
+            })
+            ->tap(function ($query) {
+                \Log::info('SQL Query after status filter', ['query' => $query->toSql(), 'bindings' => $query->getBindings()]);
             })
             ->when($request->in_stock, function ($query) {
                 $query->where('quantity', '>', 0);
