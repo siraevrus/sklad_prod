@@ -29,6 +29,13 @@ class ProductController extends Controller
             return $this->getAggregatedProducts($request, $user);
         }
 
+        // Логируем параметры для отладки
+        \Log::info('Products API request', [
+            'search' => $request->get('search'),
+            'status' => $request->get('status'),
+            'aggregate' => $aggregate,
+        ]);
+
         // Обычный запрос без агрегации
         $query = Product::with(['template', 'warehouse', 'creator', 'producer'])
             ->when($request->search, function ($query, $search) {
