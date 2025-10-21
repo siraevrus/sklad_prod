@@ -127,6 +127,28 @@ class StockResource extends Resource
                             ->label('Итого')
                     ),
 
+                Tables\Columns\TextColumn::make('stock_balance')
+                    ->label('Остаток')
+                    ->numeric()
+                    ->sortable()
+                    ->badge()
+                    ->color(function ($state): string {
+                        if ($state > 10) {
+                            return 'success';
+                        }
+                        if ($state > 0) {
+                            return 'warning';
+                        }
+                        return 'danger';
+                    })
+                    ->formatStateUsing(function ($state) {
+                        return (string) $state;
+                    })
+                    ->summarize(
+                        Tables\Columns\Summarizers\Sum::make()
+                            ->label('Итого')
+                    ),
+
                 Tables\Columns\TextColumn::make('total_volume')
                     ->label('Остаток Объем (м³)')
                     ->formatStateUsing(function ($state) {
@@ -239,6 +261,7 @@ class StockResource extends Resource
                 DB::raw('MIN(attributes) as attributes'),
                 DB::raw('SUM(quantity - COALESCE(sold_quantity, 0)) as total_quantity'),
                 DB::raw('SUM(COALESCE(sold_quantity, 0)) as total_sold_quantity'),
+                DB::raw('SUM(quantity - COALESCE(sold_quantity, 0)) as stock_balance'),
                 DB::raw('SUM((quantity - COALESCE(sold_quantity, 0)) * calculated_volume) as total_volume'),
                 DB::raw('COUNT(*) as product_count'),
                 DB::raw('MAX(arrival_date) as last_arrival_date'),
