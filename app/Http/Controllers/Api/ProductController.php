@@ -34,6 +34,7 @@ class ProductController extends Controller
             ->when($request->search, function ($query, $search) {
                 $query->where('name', 'like', "%{$search}%")
                     ->orWhere('description', 'like', "%{$search}%")
+                    ->orWhere('transport_number', 'like', "%{$search}%")
                     ->orWhereHas('producer', function ($q) use ($search) {
                         $q->where('name', 'like', "%{$search}%");
                     });
@@ -144,7 +145,7 @@ class ProductController extends Controller
             $baseQuery->where('warehouse_id', $request->warehouse_id);
         }
 
-        // Получаем переменные характеристик для группировки (только number и select типы)
+        // Get grouping variables for characteristics (only number and select types)
         $groupingVariables = \App\Models\ProductAttribute::query()
             ->whereIn('type', ['number', 'select'])
             ->distinct()
