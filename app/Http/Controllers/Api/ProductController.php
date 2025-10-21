@@ -39,12 +39,14 @@ class ProductController extends Controller
         // Обычный запрос без агрегации
         $query = Product::with(['template', 'warehouse', 'creator', 'producer'])
             ->when($request->search, function ($query, $search) {
-                $query->where('name', 'like', "%{$search}%")
-                    ->orWhere('description', 'like', "%{$search}%")
-                    ->orWhere('transport_number', 'like', "%{$search}%")
-                    ->orWhereHas('producer', function ($q) use ($search) {
-                        $q->where('name', 'like', "%{$search}%");
-                    });
+                $query->where(function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                        ->orWhere('description', 'like', "%{$search}%")
+                        ->orWhere('transport_number', 'like', "%{$search}%")
+                        ->orWhereHas('producer', function ($q) use ($search) {
+                            $q->where('name', 'like', "%{$search}%");
+                        });
+                });
             })
             ->when($request->warehouse_id, function ($query, $warehouseId) {
                 $query->where('warehouse_id', $warehouseId);
