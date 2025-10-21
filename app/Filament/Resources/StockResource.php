@@ -100,6 +100,7 @@ class StockResource extends Resource
                     ->label('Доступно')
                     ->numeric()
                     ->sortable()
+                    ->hidden()
                     ->badge()
                     ->color(function (string $state): string {
                         if ($state > 10) {
@@ -120,6 +121,7 @@ class StockResource extends Resource
                     ->label('Продано')
                     ->numeric()
                     ->sortable()
+                    ->hidden()
                     ->badge()
                     ->color('danger')
                     ->summarize(
@@ -151,6 +153,7 @@ class StockResource extends Resource
 
                 Tables\Columns\TextColumn::make('calculated_volume')
                     ->label('Объем (за ед.)')
+                    ->hidden()
                     ->formatStateUsing(function ($state, $record) {
                         if ($record->productTemplate && $record->productTemplate->formula) {
                             $attributes = is_string($record->attributes) 
