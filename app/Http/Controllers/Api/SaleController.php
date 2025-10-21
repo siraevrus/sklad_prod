@@ -55,17 +55,8 @@ class SaleController extends Controller
         $sales = $query->orderBy('created_at', 'desc')
             ->paginate($request->get('per_page', 15));
 
-        // Форматируем названия товаров с производителем
-        $formattedSales = collect($sales->items())->map(function ($sale) {
-            if ($sale->product && $sale->product->producer) {
-                $sale->product->name = $sale->product->name.' , '.$sale->product->producer->name;
-            }
-
-            return $sale;
-        });
-
         return response()->json([
-            'data' => $formattedSales,
+            'data' => $sales->items(),
             'links' => [
                 'first' => $sales->url(1),
                 'last' => $sales->url($sales->lastPage()),
@@ -94,11 +85,6 @@ class SaleController extends Controller
 
         if (! $user->isAdmin() && $user->warehouse_id !== $sale->warehouse_id) {
             return response()->json(['message' => 'Доступ запрещен'], 403);
-        }
-
-        // Добавляем производителя в название товара
-        if ($sale->product && $sale->product->producer) {
-            $sale->product->name = $sale->product->name.' , '.$sale->product->producer->name;
         }
 
         return response()->json($sale);
@@ -225,7 +211,7 @@ class SaleController extends Controller
 
         return response()->json([
             'message' => 'Продажа создана',
-            'sale' => $this->formatSaleProduct($sale->load(['product.producer', 'warehouse', 'user'])),
+            'sale' => $sale->load(['product.producer', 'warehouse', 'user']),
         ], 201);
     }
 
@@ -275,7 +261,7 @@ class SaleController extends Controller
 
         return response()->json([
             'message' => 'Продажа обновлена',
-            'sale' => $this->formatSaleProduct($sale->load(['product.producer', 'warehouse', 'user'])),
+            'sale' => $sale->load(['product.producer', 'warehouse', 'user']),
         ]);
     }
 
@@ -325,7 +311,7 @@ class SaleController extends Controller
         if ($sale->processSale()) {
             return response()->json([
                 'message' => 'Продажа оформлена',
-                'sale' => $this->formatSaleProduct($sale->load(['product.producer', 'warehouse', 'user'])),
+                'sale' => $sale->load(['product.producer', 'warehouse', 'user']),
             ]);
         }
 
@@ -347,7 +333,7 @@ class SaleController extends Controller
         if ($sale->cancelSale()) {
             return response()->json([
                 'message' => 'Продажа отменена',
-                'sale' => $this->formatSaleProduct($sale->load(['product.producer', 'warehouse', 'user'])),
+                'sale' => $sale->load(['product.producer', 'warehouse', 'user']),
             ]);
         }
 
@@ -472,17 +458,5 @@ class SaleController extends Controller
             'data' => $exportData,
             'total' => $exportData->count(),
         ]);
-    }
-
-    /**
-     * Форматировать название товара с производителем
-     */
-    private function formatSaleProduct($sale)
-    {
-        if ($sale->product && $sale->product->producer) {
-            $sale->product->name = $sale->product->name.' , '.$sale->product->producer->name;
-        }
-
-        return $sale;
     }
 }

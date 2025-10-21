@@ -247,7 +247,8 @@ class ReceiptController extends Controller
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
                     ->orWhere('producer', 'like', "%{$search}%")
-                    ->orWhere('shipping_location', 'like', "%{$search}%");
+                    ->orWhere('shipping_location', 'like', "%{$search}%")
+                    ->orWhere('transport_number', 'like', "%{$search}%");
             });
         }
 
