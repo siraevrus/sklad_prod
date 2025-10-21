@@ -20,82 +20,225 @@ class EditProduct extends EditRecord
 
     protected function mutateFormDataBeforeSave(array $data): array
     {
-        // Обрабатываем характеристики
+        $startTime = microtime(true);
+        $logId = uniqid('product_edit_', true);
+        
+        \Log::info("=== STEP 1: START PRODUCT EDITING ===", [
+            'log_id' => $logId,
+            'timestamp' => now()->toIso8601String(),
+            'product_id' => $this->record?->id,
+            'user_id' => \Illuminate\Support\Facades\Auth::id(),
+        ]);
+
+        // ============ STEP 2: Extract attributes from form fields ============
+        \Log::info("STEP 2: Starting attribute extraction", [
+            'log_id' => $logId,
+            'total_form_fields' => count($data),
+        ]);
+
         $attributes = [];
+        $attributeCount = 0;
         foreach ($data as $key => $value) {
-            if (str_starts_with($key, 'attribute_') && $value !== null) {
-                $attributeName = str_replace('attribute_', '', $key);
-                $attributes[$attributeName] = $value;
+            if (str_starts_with($key, 'attribute_')) {
+                if ($value !== null) {
+                    $attributeName = str_replace('attribute_', '', $key);
+                    $attributes[$attributeName] = $value;
+                    $attributeCount++;
+                    
+                    \Log::debug("  ✓ Extracted attribute", [
+                        'log_id' => $logId,
+                        'field_key' => $key,
+                        'attribute_name' => $attributeName,
+                        'value' => $value,
+                    ]);
+                }
             }
         }
+        
         $data['attributes'] = $attributes;
+        \Log::info("STEP 2: Attributes extracted", [
+            'log_id' => $logId,
+            'extracted_count' => $attributeCount,
+            'attributes' => $data['attributes'],
+        ]);
 
-        // Удаляем временные поля характеристик
+        // ============ STEP 3: Remove temporary attribute fields ============
+        $removedCount = 0;
         foreach ($data as $key => $value) {
             if (str_starts_with($key, 'attribute_')) {
                 unset($data[$key]);
+                $removedCount++;
             }
         }
+        \Log::info("STEP 3: Removed temporary fields", [
+            'log_id' => $logId,
+            'removed_count' => $removedCount,
+        ]);
 
-        // Убеждаемся, что attributes всегда установлен
+        // ============ STEP 4: Ensure attributes is always set ============
         if (! isset($data['attributes'])) {
             $data['attributes'] = [];
         }
+        \Log::info("STEP 4: Ensured attributes field", [
+            'log_id' => $logId,
+            'attributes_set' => isset($data['attributes']),
+            'attributes_empty' => empty($data['attributes']),
+        ]);
 
-        // Рассчитываем и сохраняем объем
-        if (isset($data['product_template_id']) && isset($data['attributes']) && ! empty($data['attributes'])) {
+        // ============ STEP 5: Collect basic product info ============
+        \Log::info("STEP 5: Basic product info", [
+            'log_id' => $logId,
+            'product_template_id' => $data['product_template_id'] ?? null,
+            'quantity' => $data['quantity'] ?? null,
+            'producer_id' => $data['producer_id'] ?? null,
+        ]);
+
+        // ============ STEP 6: Load template and validate ============
+        $template = null;
+        if (isset($data['product_template_id'])) {
             $template = \App\Models\ProductTemplate::find($data['product_template_id']);
-            if ($template && $template->formula) {
-                // Используем характеристики для формулы и добавляем количество
-                $attributes = $data['attributes'];
-                if (isset($data['quantity'])) {
-                    $attributes['quantity'] = $data['quantity'];
-                }
+            \Log::info("STEP 6: Template loaded", [
+                'log_id' => $logId,
+                'template_id' => $data['product_template_id'],
+                'template_found' => $template !== null,
+                'template_name' => $template?->name,
+                'has_formula' => $template?->formula ? true : false,
+            ]);
+        } else {
+            \Log::warning("STEP 6: No template_id provided", [
+                'log_id' => $logId,
+            ]);
+        }
 
-                // Формируем наименование из характеристик с правильным разделителем
-                $formulaParts = [];
-                $regularParts = [];
+        // ============ STEP 7: Process formula and calculate volume ============
+        if ($template && $template->formula && ! empty($data['attributes'])) {
+            \Log::info("STEP 7: Starting formula processing", [
+                'log_id' => $logId,
+                'formula' => $template->formula,
+                'attributes_count' => count($data['attributes']),
+            ]);
 
-                foreach ($template->attributes as $templateAttribute) {
-                    $attributeKey = $templateAttribute->variable;
-                    if ($templateAttribute->type !== 'text' && isset($attributes[$attributeKey]) && $attributes[$attributeKey] !== null) {
+            // ---- STEP 7.1: Prepare formula attributes ----
+            $formulaAttributes = $data['attributes'];
+            if (isset($data['quantity'])) {
+                $formulaAttributes['quantity'] = $data['quantity'];
+                \Log::debug("  7.1: Added quantity to formula attributes", [
+                    'log_id' => $logId,
+                    'quantity' => $data['quantity'],
+                ]);
+            }
+            \Log::info("  7.1: Formula attributes prepared", [
+                'log_id' => $logId,
+                'formula_attributes' => $formulaAttributes,
+            ]);
+
+            // ---- STEP 7.2: Build product name from attributes ----
+            $formulaParts = [];
+            $regularParts = [];
+            $templateAttributes = $template->attributes ?? [];
+
+            foreach ($templateAttributes as $templateAttribute) {
+                $attributeKey = $templateAttribute->variable;
+                if (isset($data['attributes'][$attributeKey]) && $data['attributes'][$attributeKey] !== null) {
+                    if ($templateAttribute->type !== 'text') {
                         if ($templateAttribute->is_in_formula) {
-                            $formulaParts[] = $attributes[$attributeKey];
+                            $formulaParts[] = $data['attributes'][$attributeKey];
                         } else {
-                            $regularParts[] = $attributes[$attributeKey];
+                            $regularParts[] = $data['attributes'][$attributeKey];
                         }
                     }
-                }
-
-                if (! empty($formulaParts) || ! empty($regularParts)) {
-                    $templateName = $template->name ?? 'Товар';
-                    $generatedName = $templateName;
-
-                    if (! empty($formulaParts)) {
-                        $generatedName .= ': '.implode(' x ', $formulaParts);
-                    }
-
-                    if (! empty($regularParts)) {
-                        if (! empty($formulaParts)) {
-                            $generatedName .= ', '.implode(', ', $regularParts);
-                        } else {
-                            $generatedName .= ': '.implode(', ', $regularParts);
-                        }
-                    }
-
-                    $data['name'] = $generatedName;
-                }
-
-                \Log::info('Quantity for formula', ['quantity' => $data['quantity'] ?? null]);
-                \Log::info('Attributes for formula (EditProduct)', $attributes);
-                $testResult = $template->testFormula($attributes);
-                \Log::info('Formula result (EditProduct)', $testResult);
-                if ($testResult['success']) {
-                    $result = $testResult['result'];
-                    $data['calculated_volume'] = $result;
                 }
             }
+
+            if (! empty($formulaParts) || ! empty($regularParts)) {
+                $templateName = $template->name ?? 'Товар';
+                $generatedName = $templateName;
+
+                if (! empty($formulaParts)) {
+                    $generatedName .= ': '.implode(' x ', $formulaParts);
+                }
+
+                if (! empty($regularParts)) {
+                    if (! empty($formulaParts)) {
+                        $generatedName .= ', '.implode(', ', $regularParts);
+                    } else {
+                        $generatedName .= ': '.implode(', ', $regularParts);
+                    }
+                }
+
+                $data['name'] = $generatedName;
+                \Log::info("  7.2: Product name generated", [
+                    'log_id' => $logId,
+                    'generated_name' => $generatedName,
+                    'formula_parts' => $formulaParts,
+                    'regular_parts' => $regularParts,
+                ]);
+            }
+
+            // ---- STEP 7.3: Call testFormula ----
+            \Log::info("  7.3: Calling testFormula()", [
+                'log_id' => $logId,
+                'formula' => $template->formula,
+                'formula_attributes' => $formulaAttributes,
+            ]);
+
+            $testResult = $template->testFormula($formulaAttributes);
+            
+            \Log::info("  7.3: testFormula() result", [
+                'log_id' => $logId,
+                'success' => $testResult['success'],
+                'result' => $testResult['result'] ?? null,
+                'error' => $testResult['error'] ?? null,
+            ]);
+
+            // ---- STEP 7.4: Process test result ----
+            if ($testResult['success']) {
+                $result = $testResult['result'];
+                $data['calculated_volume'] = $result;
+                \Log::info("  7.4: ✓ Volume calculated successfully", [
+                    'log_id' => $logId,
+                    'calculated_volume' => $result,
+                    'type' => gettype($result),
+                ]);
+            } else {
+                \Log::warning("  7.4: ✗ Volume calculation FAILED", [
+                    'log_id' => $logId,
+                    'error' => $testResult['error'],
+                    'formula_attributes' => $formulaAttributes,
+                ]);
+            }
+        } else {
+            \Log::warning("STEP 7: Skipped formula processing", [
+                'log_id' => $logId,
+                'reason' => [
+                    'has_template' => $template !== null,
+                    'has_formula' => $template?->formula ? true : false,
+                    'has_attributes' => ! empty($data['attributes']),
+                ],
+            ]);
         }
+
+        // ============ STEP 8: Final data preparation ============
+        \Log::info("STEP 8: Final data before save", [
+            'log_id' => $logId,
+            'data' => [
+                'product_template_id' => $data['product_template_id'] ?? null,
+                'name' => $data['name'] ?? null,
+                'quantity' => $data['quantity'] ?? null,
+                'calculated_volume' => $data['calculated_volume'] ?? null,
+                'attributes' => $data['attributes'] ?? [],
+                'producer_id' => $data['producer_id'] ?? null,
+            ],
+        ]);
+
+        // ============ STEP 9: Ready for save ============
+        $duration = microtime(true) - $startTime;
+        \Log::info("=== STEP 9: READY FOR SAVE ===", [
+            'log_id' => $logId,
+            'processing_time_ms' => round($duration * 1000, 2),
+            'product_id' => $this->record?->id,
+            'timestamp' => now()->toIso8601String(),
+        ]);
 
         return $data;
     }
