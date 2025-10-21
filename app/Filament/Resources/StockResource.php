@@ -282,7 +282,7 @@ class StockResource extends Resource
                 DB::raw('SUM(quantity) as total_quantity'),
                 DB::raw('SUM(COALESCE(sold_quantity, 0)) as total_sold_quantity'),
                 DB::raw('SUM(quantity - COALESCE(sold_quantity, 0)) as stock_balance'),
-                DB::raw('CASE WHEN SUM(quantity - COALESCE(sold_quantity, 0)) > 0 THEN SUM((quantity - COALESCE(sold_quantity, 0)) * calculated_volume) / SUM(quantity - COALESCE(sold_quantity, 0)) ELSE 0 END as calculated_volume'),
+                DB::raw('CASE WHEN SUM(quantity) > 0 THEN SUM(quantity * calculated_volume) / SUM(quantity) ELSE 0 END as calculated_volume'),
                 DB::raw('SUM((quantity - COALESCE(sold_quantity, 0)) * calculated_volume) as total_volume'),
                 DB::raw('COUNT(*) as product_count'),
                 DB::raw('MAX(arrival_date) as last_arrival_date'),

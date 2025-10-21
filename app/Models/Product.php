@@ -352,7 +352,9 @@ class Product extends Model
                 $attributes = [];
             }
 
-            // Используем только характеристики для формулы (без количества)
+            // Для расчета calculated_volume подставляем quantity = 1
+            // Это значит, что calculated_volume - это объем за одну единицу товара
+            $attributes['quantity'] = 1;
 
             $testResult = $this->productTemplate->testFormula($attributes);
 
