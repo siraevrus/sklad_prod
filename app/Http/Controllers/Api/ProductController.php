@@ -187,10 +187,16 @@ class ProductController extends Controller
 
         // Форматируем данные для вывода
         $formattedData = $products->getCollection()->map(function ($product) {
+            // Формируем имя товара с производителем
+            $productName = $product->name;
+            if ($product->producer) {
+                $productName .= ', '.$product->producer->name;
+            }
+
             return [
                 'product_template_id' => $product->product_template_id,
                 'composite_product_key' => "{$product->product_template_id}|{$product->warehouse_id}|{$product->producer_id}|{$product->name}",
-                'name' => $product->name,
+                'name' => $productName,
                 'warehouse' => $product->warehouse ? $product->warehouse->name : null,
                 'producer' => $product->producer ? $product->producer->name : null,
                 'quantity' => (float) $product->quantity,
@@ -223,27 +229,27 @@ class ProductController extends Controller
     public function showById(int $id): JsonResponse
     {
         $user = Auth::user();
-        
+
         // Определяем какие связи загружать
         $with = ['template', 'warehouse', 'creator'];
-        
+
         // Проверяем include параметр
         if ($request = request()) {
             $include = $request->query('include');
             if ($include) {
                 $includeRelations = explode(',', $include);
                 $allowed = ['producer', 'template', 'warehouse', 'creator'];
-                
+
                 // Фильтруем только разрешённые связи
                 $includeRelations = array_filter($includeRelations, function ($relation) use ($allowed) {
                     return in_array(trim($relation), $allowed);
                 });
-                
+
                 // Объединяем с обязательными связями и убираем дубликаты
                 $with = array_unique(array_merge($with, $includeRelations));
             }
         }
-        
+
         $product = Product::with($with)->find($id);
         if (! $product) {
             return response()->json(['message' => 'Товар не найден'], 404);

@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Product;
 use App\Models\Sale;
 use App\Models\User;
+use App\Models\Warehouse;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -252,6 +253,44 @@ class SalesApiOptionalFieldsTest extends TestCase
         foreach ($sales as $sale) {
             $this->assertArrayHasKey('producer', $sale['product']);
             $this->assertNotNull($sale['product']['producer']);
+        }
+    }
+
+    /**
+     * Тест включения производителя в название товара при получении списка для выбора
+     */
+    public function test_aggregated_products_includes_producer_in_name(): void
+    {
+        $user = User::first();
+        $warehouse = Warehouse::first();
+
+        if (! $warehouse) {
+            $this->markTestSkipped('Нет склада для тестирования');
+        }
+
+        // Получаем агрегированный список товаров для выбора при создании продажи
+        $response = $this->actingAs($user, 'sanctum')->getJson('/api/products', [
+            'aggregate' => true,
+            'status' => 'in_stock',
+            'warehouse_id' => $warehouse->id,
+        ]);
+
+        $response->assertStatus(200);
+
+        // Проверяем, что в ответе есть товары
+        $products = $response->json('data');
+        if (count($products) > 0) {
+            // Берем первый товар
+            $product = $products[0];
+
+            // Проверяем, что название содержит производителя
+            if ($product['producer']) {
+                $this->assertStringContainsString(
+                    $product['producer'],
+                    $product['name'],
+                    "Название товара должно содержать имя производителя: '{$product['name']}'"
+                );
+            }
         }
     }
 }

@@ -432,7 +432,6 @@ class SaleResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(fn (Builder $query) => $query->with(['product.producer', 'warehouse', 'user']))
             ->columns([
                 Tables\Columns\TextColumn::make('sale_date')
                     ->label('Дата продажи')
@@ -449,12 +448,6 @@ class SaleResource extends Resource
                     ->label('Товар')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: false),
-
-                Tables\Columns\TextColumn::make('product.producer.name')
-                    ->label('Производитель')
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: false)
-                    ->placeholder('Не указан'),
 
                 Tables\Columns\TextColumn::make('customer_name')
                     ->label('Клиент')
