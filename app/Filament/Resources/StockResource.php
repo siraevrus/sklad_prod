@@ -81,27 +81,6 @@ class StockResource extends Resource
     {
         return $table
             ->recordCheckboxPosition(null)
-            ->modifyQueryUsing(function (Builder $query) {
-                // После получения результатов применяем трансформацию
-                return $query->get()->map(function ($item) {
-                    // Рассчитываем объём за единицу через формулу с quantity=1
-                    if ($item->productTemplate && $item->productTemplate->formula) {
-                        $attributes = is_string($item->attributes) 
-                            ? json_decode($item->attributes, true) ?? [] 
-                            : $item->attributes ?? [];
-                        
-                        // Подставляем quantity = 1 для расчёта объёма за единицу
-                        $attributes['quantity'] = 1;
-                        
-                        $testResult = $item->productTemplate->testFormula($attributes);
-                        if ($testResult['success']) {
-                            $item->calculated_volume = (float) $testResult['result'];
-                        }
-                    }
-                    
-                    return $item;
-                });
-            })
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->label('Наименование')
@@ -172,8 +151,21 @@ class StockResource extends Resource
 
                 Tables\Columns\TextColumn::make('calculated_volume')
                     ->label('Объем (за ед.)')
-                    ->formatStateUsing(function ($state) {
-                        return $state ? number_format($state, 3, '.', ' ').' м³' : '0.000 м³';
+                    ->formatStateUsing(function ($state, $record) {
+                        if ($record->productTemplate && $record->productTemplate->formula) {
+                            $attributes = is_string($record->attributes) 
+                                ? json_decode($record->attributes, true) ?? [] 
+                                : $record->attributes ?? [];
+                            
+                            // Подставляем quantity = 1 для расчёта объёма за единицу
+                            $attributes['quantity'] = 1;
+                            
+                            $testResult = $record->productTemplate->testFormula($attributes);
+                            if ($testResult['success']) {
+                                return number_format($testResult['result'], 3, '.', ' ');
+                            }
+                        }
+                        return '0.000';
                     })
                     ->sortable(),
 
