@@ -781,6 +781,10 @@ class ProductResource extends Resource
                     }),
 
             ])
+            ->headerActions([
+                Tables\Actions\CreateAction::make()
+                    ->label('Добавить товар'),
+            ])
             ->actions([
                 Tables\Actions\ViewAction::make()
                     ->iconButton()
