@@ -196,7 +196,7 @@ class StockOverview extends Page implements HasTable
                 'total_products' => $producer->products->count(),
                 'total_quantity' => $producer->products->sum('quantity'),
                 'total_volume' => $producer->products->sum(function ($product) {
-                    return ($product->quantity - ($product->sold_quantity ?? 0)) * $product->calculated_volume;
+                    return ($product->quantity - ($product->sold_quantity ?? 0)) * ($product->volume_per_unit ?? 0);
                 }),
             ];
         }
@@ -233,7 +233,7 @@ class StockOverview extends Page implements HasTable
         return $query->select('warehouse_id')
             ->selectRaw('COUNT(*) as total_products')
             ->selectRaw('SUM(quantity) as total_quantity')
-            ->selectRaw('SUM((products.quantity - COALESCE(products.sold_quantity, 0)) * products.calculated_volume) as total_volume')
+            ->selectRaw('SUM((products.quantity - COALESCE(products.sold_quantity, 0)) * COALESCE(products.volume_per_unit, 0)) as total_volume')
             ->groupBy('warehouse_id')
             ->get()
             ->keyBy('warehouse_id')
@@ -262,7 +262,7 @@ class StockOverview extends Page implements HasTable
             ->select('warehouses.company_id')
             ->selectRaw('COUNT(*) as total_products')
             ->selectRaw('SUM(products.quantity) as total_quantity')
-            ->selectRaw('SUM((products.quantity - COALESCE(products.sold_quantity, 0)) * products.calculated_volume) as total_volume')
+            ->selectRaw('SUM((products.quantity - COALESCE(products.sold_quantity, 0)) * COALESCE(products.volume_per_unit, 0)) as total_volume')
             ->groupBy('warehouses.company_id')
             ->get()
             ->keyBy('company_id')
