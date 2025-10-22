@@ -24,7 +24,7 @@ git push origin main
 ssh -i /var/www/.ssh/id_rsa www-data@your-server-ip
 
 # Перейти в директорию проекта
-cd /var/www/sklad
+cd /var/www/warehouse
 
 # Обновить код с GitHub
 git pull origin main
@@ -61,7 +61,7 @@ curl -H "Authorization: Bearer YOUR_TOKEN" https://your-domain/api/sales | jq '.
 
 ```bash
 # На сервере
-cd /var/www/sklad
+cd /var/www/warehouse
 
 # Откатить последний коммит
 git revert HEAD --no-edit

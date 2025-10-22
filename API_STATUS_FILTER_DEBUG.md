@@ -137,7 +137,7 @@ tail -100 storage/logs/laravel.log | grep "Products API"
 ### На боевом сервере:
 ```bash
 ssh user@192.168.x.x
-cd /var/www/sklad
+cd /var/www/warehouse
 tail -100 storage/logs/laravel.log | grep "Products API"
 ```
 

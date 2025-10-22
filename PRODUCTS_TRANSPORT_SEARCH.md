@@ -160,7 +160,7 @@ git push origin main
 
 2. На боевом сервере:
 ```bash
-cd /var/www/sklad
+cd /var/www/warehouse
 git pull origin main
 ```
 
