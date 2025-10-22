@@ -424,11 +424,15 @@ class ProductController extends Controller
             'is_active' => 'boolean',
             'notes' => 'nullable|string|max:1000',
             'warehouse_id' => 'sometimes|integer|exists:warehouses,id',
+            'shipping_location' => 'nullable|string|max:255', // Место отправки
+            'shipping_date' => 'nullable|date', // Дата отправки
+            'expected_arrival_date' => 'nullable|date', // Ожидаемая дата прибытия
         ]);
 
         $updateData = $request->only([
             'name', 'description', 'attributes', 'quantity', 'calculated_volume',
             'transport_number', 'producer', 'producer_id', 'arrival_date', 'is_active', 'notes',
+            'shipping_location', 'shipping_date', 'expected_arrival_date',
         ]);
 
         // Перенос между складами разрешим только администратору

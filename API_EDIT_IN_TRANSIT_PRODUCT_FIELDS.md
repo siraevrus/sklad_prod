@@ -21,6 +21,9 @@ PUT /api/products/{id}
 | `is_active` | boolean | Активен ли товар | Нет | true/false |
 | `notes` | string | Заметки | Нет | Max 1000 символов |
 | `warehouse_id` | integer | ID склада | Нет | **Только для админов**, должен существовать в таблице warehouses |
+| `shipping_location` | string | Место отправки товара | Нет | Max 255 символов, например: "Санкт-Петербург" |
+| `shipping_date` | date | Дата отправки | Нет | Формат: YYYY-MM-DD |
+| `expected_arrival_date` | date | Ожидаемая дата прибытия | Нет | Формат: YYYY-MM-DD |
 
 ## Пример запроса
 
@@ -34,6 +37,9 @@ curl -X PUT https://warehouse.expwood.ru/api/products/123 \
     "transport_number": "А123БВ77",
     "producer_id": 1,
     "arrival_date": "2025-10-22",
+    "shipping_location": "Санкт-Петербург",
+    "shipping_date": "2025-10-20",
+    "expected_arrival_date": "2025-10-25",
     "notes": "Товар в пути из Санкт-Петербурга",
     "is_active": true
   }'
@@ -41,14 +47,9 @@ curl -X PUT https://warehouse.expwood.ru/api/products/123 \
 
 ## Поля товара в пути
 
-Специальные поля товара в пути (только создание, при обновлении используются поля выше):
+**Все указанные выше поля доступны как при создании, так и при редактировании товара в пути.**
 
-| Поле | Тип | Описание | 
-|------|-----|---------|
-| `shipping_location` | string | Место отправки |
-| `shipping_date` | date | Дата отправки |
-| `expected_arrival_date` | date | Ожидаемая дата прибытия |
-| `status` | string | Статус товара (in_stock, for_receipt, in_transit) |
+Для создания товара в пути используется поле `status` со значением `"in_transit"`.
 
 ## Автоматические пересчеты
 
