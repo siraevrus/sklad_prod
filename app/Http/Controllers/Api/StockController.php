@@ -37,6 +37,17 @@ class StockController extends Controller
     }
 
     /**
+     * Применить фильтр поиска по названию
+     */
+    private function applySearchFilter($query, ?string $search): void
+    {
+        if ($search && ! empty(trim($search))) {
+            $searchTerm = trim($search);
+            $query->where('name', 'LIKE', "%{$searchTerm}%");
+        }
+    }
+
+    /**
      * Агрегация по производителям
      * GET /api/stocks/by-producer
      */
@@ -234,6 +245,10 @@ class StockController extends Controller
                 'producer_id',
             ], $groupByAttributes));
 
+        // Применяем фильтр поиска
+        $search = $request->get('search');
+        $this->applySearchFilter($query, $search);
+
         // Применяем права доступа
         if (! $user->isAdmin()) {
             if ($user->warehouse_id) {
@@ -318,6 +333,10 @@ class StockController extends Controller
                 'warehouse_id',
                 'producer_id',
             ], $groupByAttributes));
+
+        // Применяем фильтр поиска
+        $search = $request->get('search');
+        $this->applySearchFilter($query, $search);
 
         $perPage = $request->get('per_page', 15);
         $products = $query->paginate($perPage);
@@ -413,6 +432,10 @@ class StockController extends Controller
                 'producer_id',
             ], $groupByAttributes));
 
+        // Применяем фильтр поиска
+        $search = $request->get('search');
+        $this->applySearchFilter($query, $search);
+
         $perPage = $request->get('per_page', 15);
         $products = $query->paginate($perPage);
 
@@ -459,6 +482,10 @@ class StockController extends Controller
             ->whereNotNull('producer_id')
             ->groupBy('producer_id');
 
+        // Применяем фильтр поиска
+        $search = $request->get('search');
+        $this->applySearchFilter($query, $search);
+
         // Применяем права доступа
         if (! $user->isAdmin()) {
             if ($user->warehouse_id) {
@@ -502,6 +529,10 @@ class StockController extends Controller
             ->where('status', Product::STATUS_IN_STOCK)
             ->where('is_active', true)
             ->groupBy('warehouse_id');
+
+        // Применяем фильтр поиска
+        $search = $request->get('search');
+        $this->applySearchFilter($query, $search);
 
         // Применяем права доступа
         if (! $user->isAdmin()) {
@@ -550,7 +581,10 @@ class StockController extends Controller
 
         $companies = $companiesQuery->get();
 
-        $data = $companies->map(function ($company) {
+        // Получаем поиск для фильтрации товаров
+        $search = $request->get('search');
+
+        $data = $companies->map(function ($company) use ($search) {
             // Получаем warehouse_ids для этой компании
             $warehouseIds = $company->warehouses->pluck('id')->toArray();
 
@@ -565,15 +599,19 @@ class StockController extends Controller
             }
 
             // Агрегируем товары по складам этой компании
-            $stats = Product::query()
+            $query = Product::query()
                 ->select([
                     DB::raw('COUNT(DISTINCT CONCAT(product_template_id, "_", producer_id, "_", name, "_", COALESCE(MD5(JSON_EXTRACT(attributes, "$")), ""))) as positions_count'),
                     DB::raw('SUM((quantity - COALESCE(sold_quantity, 0)) * volume_per_unit) as total_volume'),
                 ])
                 ->where('status', Product::STATUS_IN_STOCK)
                 ->where('is_active', true)
-                ->whereIn('warehouse_id', $warehouseIds)
-                ->first();
+                ->whereIn('warehouse_id', $warehouseIds);
+
+            // Применяем фильтр поиска
+            $this->applySearchFilter($query, $search);
+
+            $stats = $query->first();
 
             return [
                 'company_id' => $company->id,

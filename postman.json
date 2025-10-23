@@ -1615,6 +1615,11 @@
                   "value": "15"
                 },
                 {
+                  "key": "search",
+                  "value": "",
+                  "disabled": true
+                },
+                {
                   "key": "warehouse_id",
                   "value": "",
                   "disabled": true
@@ -1643,6 +1648,168 @@
               "raw": "{{base_url}}/stocks/1_2_3",
               "host": ["{{base_url}}"],
               "path": ["stocks", "1_2_3"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Остатки по производителям",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/stocks/producers",
+              "host": ["{{base_url}}"],
+              "path": ["stocks", "producers"],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Остатки конкретного производителя",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/stocks/by-producer/1?per_page=15",
+              "host": ["{{base_url}}"],
+              "path": ["stocks", "by-producer", "1"],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "per_page",
+                  "value": "15"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Остатки по складам",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/stocks/warehouses",
+              "host": ["{{base_url}}"],
+              "path": ["stocks", "warehouses"],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Остатки на конкретном складе",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/stocks/by-warehouse/1?per_page=15",
+              "host": ["{{base_url}}"],
+              "path": ["stocks", "by-warehouse", "1"],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "per_page",
+                  "value": "15"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Остатки по компаниям",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/stocks/companies",
+              "host": ["{{base_url}}"],
+              "path": ["stocks", "companies"],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Остатки конкретной компании",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/stocks/by-company/1?per_page=15",
+              "host": ["{{base_url}}"],
+              "path": ["stocks", "by-company", "1"],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "per_page",
+                  "value": "15"
+                }
+              ]
             }
           },
           "response": []

@@ -587,6 +587,11 @@ paths:
           schema:
             type: integer
             default: 15
+        - name: search
+          in: query
+          description: Поиск по названию товара
+          schema:
+            type: string
         - name: warehouse_id
           in: query
           description: Фильтр по складу
@@ -614,6 +619,289 @@ paths:
                       $ref: '#/components/schemas/Stock'
                   pagination:
                     $ref: '#/components/schemas/PaginationMeta'
+
+  /stocks/producers:
+    get:
+      tags: [Остатки]
+      summary: Остатки по производителям
+      description: Получает список производителей с агрегированными остатками
+      parameters:
+        - name: search
+          in: query
+          description: Поиск по названию товара
+          schema:
+            type: string
+      responses:
+        200:
+          description: Список производителей с остатками
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        producer_id:
+                          type: integer
+                        producer:
+                          type: string
+                        positions_count:
+                          type: integer
+                        total_volume:
+                          type: number
+
+  /stocks/by-producer/{producer_id}:
+    get:
+      tags: [Остатки]
+      summary: Остатки товаров конкретного производителя
+      description: Получает детальный список товаров конкретного производителя
+      parameters:
+        - name: producer_id
+          in: path
+          required: true
+          description: ID производителя
+          schema:
+            type: integer
+        - name: search
+          in: query
+          description: Поиск по названию товара
+          schema:
+            type: string
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            default: 15
+      responses:
+        200:
+          description: Список товаров производителя
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        warehouse:
+                          type: string
+                        producer:
+                          type: string
+                        quantity:
+                          type: number
+                        available_quantity:
+                          type: number
+                        sold_quantity:
+                          type: number
+                        total_volume:
+                          type: number
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+        404:
+          description: Производитель не найден
+
+  /stocks/warehouses:
+    get:
+      tags: [Остатки]
+      summary: Остатки по складам
+      description: Получает список складов с агрегированными остатками
+      parameters:
+        - name: search
+          in: query
+          description: Поиск по названию товара
+          schema:
+            type: string
+      responses:
+        200:
+          description: Список складов с остатками
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        warehouse_id:
+                          type: integer
+                        warehouse:
+                          type: string
+                        company:
+                          type: string
+                        address:
+                          type: string
+                        positions_count:
+                          type: integer
+                        total_volume:
+                          type: number
+
+  /stocks/by-warehouse/{warehouse_id}:
+    get:
+      tags: [Остатки]
+      summary: Остатки товаров на конкретном складе
+      description: Получает детальный список товаров на конкретном складе
+      parameters:
+        - name: warehouse_id
+          in: path
+          required: true
+          description: ID склада
+          schema:
+            type: integer
+        - name: search
+          in: query
+          description: Поиск по названию товара
+          schema:
+            type: string
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            default: 15
+      responses:
+        200:
+          description: Список товаров на складе
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        warehouse:
+                          type: string
+                        producer:
+                          type: string
+                        quantity:
+                          type: number
+                        available_quantity:
+                          type: number
+                        sold_quantity:
+                          type: number
+                        total_volume:
+                          type: number
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+        403:
+          description: Доступ запрещен
+        404:
+          description: Склад не найден
+
+  /stocks/companies:
+    get:
+      tags: [Остатки]
+      summary: Остатки по компаниям
+      description: Получает список компаний с агрегированными остатками
+      parameters:
+        - name: search
+          in: query
+          description: Поиск по названию товара
+          schema:
+            type: string
+      responses:
+        200:
+          description: Список компаний с остатками
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        company_id:
+                          type: integer
+                        company:
+                          type: string
+                        warehouses_count:
+                          type: integer
+                        positions_count:
+                          type: integer
+                        total_volume:
+                          type: number
+
+  /stocks/by-company/{company_id}:
+    get:
+      tags: [Остатки]
+      summary: Остатки товаров конкретной компании
+      description: Получает детальный список товаров конкретной компании
+      parameters:
+        - name: company_id
+          in: path
+          required: true
+          description: ID компании
+          schema:
+            type: integer
+        - name: search
+          in: query
+          description: Поиск по названию товара
+          schema:
+            type: string
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            default: 15
+      responses:
+        200:
+          description: Список товаров компании
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        warehouse:
+                          type: string
+                        producer:
+                          type: string
+                        quantity:
+                          type: number
+                        available_quantity:
+                          type: number
+                        sold_quantity:
+                          type: number
+                        total_volume:
+                          type: number
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+        403:
+          description: Доступ запрещен
+        404:
+          description: Компания не найдена
 
   /stocks/{id}:
     get:
