@@ -49,9 +49,10 @@ class ReceiptResource extends Resource
             return false;
         }
 
-        // Приемка доступна только админу и работнику склада
+        // Приемка доступна админу, оператору и работнику склада
         return in_array($user->role->value, [
             'admin',
+            'operator',
             'warehouse_worker',
         ]);
     }
@@ -63,9 +64,10 @@ class ReceiptResource extends Resource
             return false;
         }
 
-        // Редактирование доступно только админу и работнику склада
+        // Редактирование доступно админу, оператору и работнику склада
         return in_array($user->role->value, [
             'admin',
+            'operator',
             'warehouse_worker',
         ]);
     }

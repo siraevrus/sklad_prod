@@ -18,9 +18,10 @@ class EditReceipt extends EditRecord
             return false;
         }
 
-        // Редактирование доступно только админу и работнику склада
+        // Редактирование доступно админу, оператору и работнику склада
         return in_array($user->role->value, [
             'admin',
+            'operator',
             'warehouse_worker',
         ]);
     }

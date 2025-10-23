@@ -38,6 +38,7 @@ enum UserRole: string
                 'products',
                 'inventory',
                 'products_in_transit',
+                'product_receipt',
             ],
             self::WAREHOUSE_WORKER => [
                 'requests',
