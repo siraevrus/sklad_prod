@@ -537,6 +537,7 @@ class ReceiptResource extends Resource
             'index' => Pages\ListReceipts::route('/'),
             'view' => Pages\ViewReceipt::route('/{record}'),
             'edit' => Pages\EditReceipt::route('/{record}/edit'),
+            'export' => Pages\ExportReceipts::route('/export'),
         ];
     }
 

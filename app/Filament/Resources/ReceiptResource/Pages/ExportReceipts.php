@@ -2,19 +2,22 @@
 
 namespace App\Filament\Resources\ReceiptResource\Pages;
 
+use App\Filament\Resources\ReceiptResource;
 use App\Models\Product;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Form;
-use Filament\Pages\Page;
+use Filament\Resources\Pages\Page;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ExportReceipts extends Page implements HasForms
 {
     use InteractsWithForms;
+
+    protected static string $resource = ReceiptResource::class;
 
     protected static string $view = 'filament.resources.receipt-resource.pages.export-receipts';
 

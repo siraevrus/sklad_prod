@@ -16,7 +16,7 @@ class ListReceipts extends ListRecords
             Action::make('export')
                 ->label('Экспорт в Excel')
                 ->icon('heroicon-o-arrow-down-tray')
-                ->url(fn () => '/admin/receipts/export')
+                ->url(static::getResource()::getUrl('export'))
                 ->openUrlInNewTab(false),
         ];
     }
