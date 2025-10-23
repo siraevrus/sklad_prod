@@ -437,10 +437,12 @@ class ProductController extends Controller
 
         // Перенос между складами разрешим только администратору
         if ($request->has('warehouse_id')) {
-            if (! $user->isAdmin()) {
+            $newWarehouseId = (int) $request->integer('warehouse_id');
+            // Проверяем только если warehouse_id действительно МЕНЯЕТСЯ на другой
+            if ($newWarehouseId !== (int) $product->warehouse_id && ! $user->isAdmin()) {
                 return response()->json(['message' => 'Изменение склада запрещено'], 403);
             }
-            $updateData['warehouse_id'] = (int) $request->integer('warehouse_id');
+            $updateData['warehouse_id'] = $newWarehouseId;
         }
 
         // Нормализуем десятичный разделитель для quantity
