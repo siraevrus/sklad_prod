@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\ReceiptResource\Pages;
 
 use App\Filament\Resources\ReceiptResource;
+use Filament\Actions\Action;
 use Filament\Resources\Pages\ListRecords;
 
 class ListReceipts extends ListRecords
@@ -12,7 +13,11 @@ class ListReceipts extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            // Убираем кнопку создания, так как приемка работает только с существующими товарами
+            Action::make('export')
+                ->label('Экспорт в Excel')
+                ->icon('heroicon-o-arrow-down-tray')
+                ->url(route('filament.admin.resources.receipts.export'))
+                ->openUrlInNewTab(false),
         ];
     }
 }
