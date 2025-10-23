@@ -498,7 +498,7 @@ class ProductInTransitResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         $user = Auth::user();
-        $base = parent::getEloquentQuery()->where('status', Product::STATUS_FOR_RECEIPT);
+        $base = parent::getEloquentQuery()->where('status', Product::STATUS_IN_TRANSIT);
 
         if (! $user) {
             return $base->whereRaw('1 = 0');
