@@ -20,3 +20,8 @@ Route::get('/sales/export', [SaleExportController::class, 'export'])
 // Поддержка отправки формы создания товара в тестах
 Route::post('/admin/products', [ProductWebController::class, 'store'])
     ->middleware('auth');
+
+// Маршрут для экспорта приемок (зарегистрирован через Filament)
+Route::get('/admin/receipts/export', \App\Filament\Resources\ReceiptResource\Pages\ExportReceipts::class)
+    ->middleware(['auth', 'verified'])
+    ->name('receipts.export');
