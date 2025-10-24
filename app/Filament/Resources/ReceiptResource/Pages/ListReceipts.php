@@ -12,11 +12,7 @@ class ListReceipts extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            \Filament\Actions\Action::make('export')
-                ->label('Экспорт в Excel')
-                ->icon('heroicon-o-arrow-down-tray')
-                ->url(route('receipts.export'))
-                ->openUrlInNewTab(false),
+            // Кнопка "Экспорт в Excel" скрыта
         ];
     }
 }
