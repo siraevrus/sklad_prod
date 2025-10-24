@@ -59,6 +59,15 @@ class Sale extends Model
 
     const PAYMENT_STATUS_CANCELLED = 'cancelled';
 
+    // Константы способов оплаты
+    const PAYMENT_METHOD_CASH = 'cash';
+
+    const PAYMENT_METHOD_CARD = 'card';
+
+    const PAYMENT_METHOD_BANK_TRANSFER = 'bank_transfer';
+
+    const PAYMENT_METHOD_CREDIT = 'credit';
+
     /**
      * Связь с товаром
      */
@@ -185,6 +194,20 @@ class Sale extends Model
             self::PAYMENT_STATUS_PAID => 'Оплачено',
             self::PAYMENT_STATUS_PARTIALLY_PAID => 'Частично оплачено',
             self::PAYMENT_STATUS_CANCELLED => 'Отменено',
+            default => 'Неизвестно',
+        };
+    }
+
+    /**
+     * Получить способ оплаты на русском языке
+     */
+    public function getPaymentMethodLabel(): string
+    {
+        return match ($this->payment_method) {
+            self::PAYMENT_METHOD_CASH => 'Наличные',
+            self::PAYMENT_METHOD_CARD => 'Карта',
+            self::PAYMENT_METHOD_BANK_TRANSFER => 'Банковский перевод',
+            self::PAYMENT_METHOD_CREDIT => 'Кредит',
             default => 'Неизвестно',
         };
     }
