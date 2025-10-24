@@ -327,6 +327,15 @@ class ProductInTransitResource extends Resource
                     ->searchable()
                     ->sortable(),
 
+                Tables\Columns\TextColumn::make('creator.name')
+                    ->label('Создатель')
+                    ->sortable()
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: false)
+                    ->formatStateUsing(function ($state, Product $record) {
+                        return $state ?: ($record->creator?->name ?? 'Не указан');
+                    }),
+
                 Tables\Columns\TextColumn::make('expected_arrival_date')
                     ->label('Ожидаемая дата')
                     ->date('d.m.Y')
@@ -409,10 +418,6 @@ class ProductInTransitResource extends Resource
                     ->label('Дата обновления')
                     ->toggleable(isToggledHiddenByDefault: true)
                     ->dateTime()
-                    ->sortable(),
-
-                Tables\Columns\TextColumn::make('creator.name')
-                    ->label('Сотрудник')
                     ->sortable(),
 
             ])
@@ -498,7 +503,9 @@ class ProductInTransitResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         $user = Auth::user();
-        $base = parent::getEloquentQuery()->where('status', Product::STATUS_IN_TRANSIT);
+        $base = parent::getEloquentQuery()
+            ->where('status', Product::STATUS_IN_TRANSIT)
+            ->with(['creator', 'warehouse', 'producer', 'template']);
 
         if (! $user) {
             return $base->whereRaw('1 = 0');
