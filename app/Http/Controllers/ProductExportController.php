@@ -16,8 +16,9 @@ class ProductExportController extends Controller
         // Получаем товары с учетом прав доступа
         $query = Product::with(['template', 'warehouse', 'creator', 'producer']);
 
-        // Фильтруем только активные товары
-        $query->where('is_active', true);
+        // Фильтруем только активные товары со статусом in_stock
+        $query->where('is_active', true)
+            ->where('status', Product::STATUS_IN_STOCK);
 
         if ($user->role !== 'admin') {
             if ($user->warehouse_id) {
