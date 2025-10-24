@@ -734,6 +734,15 @@ class ProductResource extends Resource
 
                         return $state;
                     }),
+
+                Tables\Columns\TextColumn::make('creator.name')
+                    ->label('Создатель')
+                    ->sortable()
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: false)
+                    ->formatStateUsing(function ($state, Product $record) {
+                        return $state ?: ($record->creator?->name ?? 'Не указан');
+                    }),
             ])
             ->filters([
                 SelectFilter::make('warehouse')
@@ -821,5 +830,11 @@ class ProductResource extends Resource
             'view' => Pages\ViewProduct::route('/{record}'),
             'edit' => Pages\EditProduct::route('/{record}/edit'),
         ];
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->with(['creator', 'warehouse', 'producer', 'template']);
     }
 }
