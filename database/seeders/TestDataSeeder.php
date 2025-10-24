@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Company;
+use App\Models\Producer;
 use App\Models\Product;
 use App\Models\ProductAttribute;
 use App\Models\ProductInTransit;
@@ -360,6 +361,22 @@ class TestDataSeeder extends Seeder
             'is_active' => true,
         ]);
 
+        // Создаем производителей
+        $producer1 = Producer::create([
+            'name' => 'ООО "ЛесПром"',
+            'region' => 'Московская область',
+        ]);
+
+        $producer2 = Producer::create([
+            'name' => 'ООО "ПластПром"',
+            'region' => 'Ленинградская область',
+        ]);
+
+        $producer3 = Producer::create([
+            'name' => 'ООО "МеталлПром"',
+            'region' => 'Свердловская область',
+        ]);
+
         // Товары для цилиндра
         Product::create([
             'product_template_id' => $template3->id,
@@ -374,7 +391,7 @@ class TestDataSeeder extends Seeder
             ],
             'calculated_volume' => 1.5708, // 3.14159 * 0.5 * 0.5 * 2
             'quantity' => 10,
-            'producer' => 'ООО "МеталлПром"',
+            'producer_id' => $producer3->id,
             'arrival_date' => now()->subDays(5),
             'is_active' => true,
         ]);
@@ -392,7 +409,7 @@ class TestDataSeeder extends Seeder
             ],
             'calculated_volume' => 0.4241, // 3.14159 * 0.3 * 0.3 * 1.5
             'quantity' => 15,
-            'producer' => 'ООО "ПластПром"',
+            'producer_id' => $producer2->id,
             'arrival_date' => now()->subDays(3),
             'is_active' => true,
         ]);
@@ -414,7 +431,7 @@ class TestDataSeeder extends Seeder
             'calculated_volume' => 0.0225,
             'quantity' => 20,
             'transport_number' => 'TR001',
-            'tracking_number' => 'TN12345678',
+            'shipment_number' => 'TN12345678',
             'expected_arrival_date' => now()->addDays(5),
             'status' => ProductInTransit::STATUS_IN_TRANSIT,
             'notes' => 'Товар в пути, ожидается через 5 дней',
@@ -436,7 +453,7 @@ class TestDataSeeder extends Seeder
             'calculated_volume' => 0.024,
             'quantity' => 15,
             'transport_number' => null,
-            'tracking_number' => null,
+            'shipment_number' => null,
             'expected_arrival_date' => now()->addDays(15),
             'status' => ProductInTransit::STATUS_ORDERED,
             'notes' => 'Заказ подтвержден поставщиком',
@@ -458,7 +475,7 @@ class TestDataSeeder extends Seeder
             'calculated_volume' => 0.135,
             'quantity' => 10,
             'transport_number' => 'TR002',
-            'tracking_number' => 'TN87654321',
+            'shipment_number' => 'TN87654321',
             'expected_arrival_date' => now()->subDays(2),
             'actual_arrival_date' => now()->subDays(1),
             'status' => ProductInTransit::STATUS_ARRIVED,
@@ -480,9 +497,9 @@ class TestDataSeeder extends Seeder
             ],
             'calculated_volume' => 1.5708,
             'quantity' => 5,
-            'producer' => 'ООО "МеталлПром"',
+            'producer_id' => $producer3->id,
             'transport_number' => 'TR003',
-            'tracking_number' => 'TN11111111',
+            'shipment_number' => 'TN11111111',
             'expected_arrival_date' => now()->subDays(10),
             'status' => ProductInTransit::STATUS_IN_TRANSIT,
             'notes' => 'Доставка задерживается, связь с поставщиком',
@@ -502,7 +519,6 @@ class TestDataSeeder extends Seeder
             'title' => 'Запрос на доску обрезную',
             'description' => 'Необходимо 10 досок обрезных 6 метров для строительных работ. Срочно требуется для завершения проекта.',
             'quantity' => 10,
-            'priority' => Request::PRIORITY_HIGH,
             'status' => Request::STATUS_PENDING,
             'is_active' => true,
         ]);
@@ -514,7 +530,6 @@ class TestDataSeeder extends Seeder
             'title' => 'Запрос на брус строительный',
             'description' => 'Требуется брус 150x150 для возведения каркаса. Количество: 5 штук.',
             'quantity' => 5,
-            'priority' => Request::PRIORITY_NORMAL,
             'status' => Request::STATUS_APPROVED,
             'approved_by' => $admin->id,
             'approved_at' => now()->subDays(2),
@@ -529,12 +544,9 @@ class TestDataSeeder extends Seeder
             'title' => 'Срочный запрос на доски',
             'description' => 'КРИТИЧНО! Необходимы доски для срочного ремонта. Приоритет максимальный.',
             'quantity' => 15,
-            'priority' => Request::PRIORITY_URGENT,
-            'status' => Request::STATUS_IN_PROGRESS,
+            'status' => Request::STATUS_PENDING,
             'approved_by' => $admin->id,
-            'processed_by' => $admin->id,
             'approved_at' => now()->subDays(5),
-            'processed_at' => now()->subDays(3),
             'is_active' => true,
         ]);
 
@@ -545,13 +557,9 @@ class TestDataSeeder extends Seeder
             'title' => 'Запрос на цилиндры',
             'description' => 'Нужны металлические цилиндры для производственных нужд.',
             'quantity' => 3,
-            'priority' => Request::PRIORITY_LOW,
-            'status' => Request::STATUS_COMPLETED,
+            'status' => Request::STATUS_APPROVED,
             'approved_by' => $admin->id,
-            'processed_by' => $admin->id,
             'approved_at' => now()->subDays(10),
-            'processed_at' => now()->subDays(8),
-            'completed_at' => now()->subDays(5),
             'is_active' => true,
         ]);
 
@@ -563,8 +571,7 @@ class TestDataSeeder extends Seeder
             'title' => 'Запрос на брус для клиента',
             'description' => 'Клиент заказал брус 100x100. Необходимо подготовить к отгрузке.',
             'quantity' => 8,
-            'priority' => Request::PRIORITY_HIGH,
-            'status' => Request::STATUS_REJECTED,
+            'status' => Request::STATUS_PENDING,
             'admin_notes' => 'Отклонено: недостаточно остатков на складе',
             'is_active' => true,
         ]);
@@ -576,7 +583,6 @@ class TestDataSeeder extends Seeder
             'title' => 'Запрос на различные материалы',
             'description' => 'Нужны различные строительные материалы для крупного заказа. Уточнить детали по телефону.',
             'quantity' => 1,
-            'priority' => Request::PRIORITY_NORMAL,
             'status' => Request::STATUS_PENDING,
             'is_active' => true,
         ]);

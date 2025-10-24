@@ -18,11 +18,17 @@ class SaleController extends Controller
     {
         $user = Auth::user();
 
-        $query = Sale::with(['product.producer', 'warehouse', 'user'])
+        $query = Sale::with(['product.producer', 'product.template', 'warehouse', 'user'])
             ->when($request->search, function ($query, $search) {
                 $query->where('sale_number', 'like', "%{$search}%")
                     ->orWhere('customer_name', 'like', "%{$search}%")
-                    ->orWhere('customer_phone', 'like', "%{$search}%");
+                    ->orWhere('customer_phone', 'like', "%{$search}%")
+                    ->orWhereHas('product', function ($productQuery) use ($search) {
+                        $productQuery->where('name', 'like', "%{$search}%")
+                            ->orWhereHas('template', function ($templateQuery) use ($search) {
+                                $templateQuery->where('name', 'like', "%{$search}%");
+                            });
+                    });
             })
             ->when($request->warehouse_id, function ($query, $warehouseId) {
                 $query->where('warehouse_id', $warehouseId);
@@ -78,7 +84,7 @@ class SaleController extends Controller
     public function showById(int $id): JsonResponse
     {
         $user = Auth::user();
-        $sale = Sale::with(['product.producer', 'warehouse', 'user'])->find($id);
+        $sale = Sale::with(['product.producer', 'product.template', 'warehouse', 'user'])->find($id);
         if (! $sale) {
             return response()->json(['message' => 'Продажа не найдена'], 404);
         }
@@ -211,7 +217,7 @@ class SaleController extends Controller
 
         return response()->json([
             'message' => 'Продажа создана',
-            'sale' => $sale->load(['product.producer', 'warehouse', 'user']),
+            'sale' => $sale->load(['product.producer', 'product.template', 'warehouse', 'user']),
         ], 201);
     }
 
@@ -261,7 +267,7 @@ class SaleController extends Controller
 
         return response()->json([
             'message' => 'Продажа обновлена',
-            'sale' => $sale->load(['product.producer', 'warehouse', 'user']),
+            'sale' => $sale->load(['product.producer', 'product.template', 'warehouse', 'user']),
         ]);
     }
 
@@ -311,7 +317,7 @@ class SaleController extends Controller
         if ($sale->processSale()) {
             return response()->json([
                 'message' => 'Продажа оформлена',
-                'sale' => $sale->load(['product.producer', 'warehouse', 'user']),
+                'sale' => $sale->load(['product.producer', 'product.template', 'warehouse', 'user']),
             ]);
         }
 
@@ -333,7 +339,7 @@ class SaleController extends Controller
         if ($sale->cancelSale()) {
             return response()->json([
                 'message' => 'Продажа отменена',
-                'sale' => $sale->load(['product.producer', 'warehouse', 'user']),
+                'sale' => $sale->load(['product.producer', 'product.template', 'warehouse', 'user']),
             ]);
         }
 
@@ -395,11 +401,17 @@ class SaleController extends Controller
     {
         $user = Auth::user();
 
-        $query = Sale::with(['product.producer', 'warehouse', 'user'])
+        $query = Sale::with(['product.producer', 'product.template', 'warehouse', 'user'])
             ->when($request->search, function ($query, $search) {
                 $query->where('sale_number', 'like', "%{$search}%")
                     ->orWhere('customer_name', 'like', "%{$search}%")
-                    ->orWhere('customer_phone', 'like', "%{$search}%");
+                    ->orWhere('customer_phone', 'like', "%{$search}%")
+                    ->orWhereHas('product', function ($productQuery) use ($search) {
+                        $productQuery->where('name', 'like', "%{$search}%")
+                            ->orWhereHas('template', function ($templateQuery) use ($search) {
+                                $templateQuery->where('name', 'like', "%{$search}%");
+                            });
+                    });
             })
             ->when($request->warehouse_id, function ($query, $warehouseId) {
                 $query->where('warehouse_id', $warehouseId);
