@@ -247,3 +247,44 @@ curl -H "Authorization: Bearer TOKEN" \
 ---
 
 **Версия API: 1.0** | **Обновлено: 30.09.2025** 📅
+
+## Stock Endpoints
+
+### Stocks by Producer
+**Endpoint:** `GET /api/stocks/by-producer/{producer_id}`
+
+**Query Parameters:**
+- `search` - Поиск по названию товара (частичное совпадение, case-insensitive)
+- `per_page` - Количество записей на странице (по умолчанию: 15)
+
+**Example:**
+```bash
+# Получить все товары производителя 1
+curl "http://localhost/api/stocks/by-producer/1"
+
+# Поиск товаров, содержащих "деревян"
+curl "http://localhost/api/stocks/by-producer/1?search=деревян"
+
+# С пагинацией
+curl "http://localhost/api/stocks/by-producer/1?search=доска&per_page=20"
+```
+
+**Note:** ✅ Поиск исправлен - фильтр работает корректно (был конфликт GROUP BY)
+
+### Stocks by Warehouse
+**Endpoint:** `GET /api/stocks/by-warehouse/{warehouse_id}`
+
+**Query Parameters:**
+- `search` - Поиск по названию товара
+- `per_page` - Количество записей на странице
+
+**Note:** ✅ Поиск исправлен
+
+### Stocks by Company
+**Endpoint:** `GET /api/stocks/by-company/{company_id}`
+
+**Query Parameters:**
+- `search` - Поиск по названию товара
+- `per_page` - Количество записей на странице
+
+**Note:** ✅ Поиск исправлен

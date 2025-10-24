@@ -91,16 +91,6 @@ class ExportReceipts extends Page implements HasForms
     {
         $fileName = 'Приемки_'.$dateFrom->format('d.m.Y').'_-_'.$dateTo->format('d.m.Y').'.csv';
 
-        $headers = [
-            'Content-Type' => 'text/csv; charset=utf-8',
-            'Content-Disposition' => 'attachment; filename='.$fileName,
-        ];
-
-        $handle = fopen('php://output', 'w');
-
-        // BOM для корректного отображения в Excel
-        fprintf($handle, chr(0xEF).chr(0xBB).chr(0xBF));
-
         // Заголовки таблицы
         $tableHeaders = [
             'Наименование',
@@ -115,27 +105,6 @@ class ExportReceipts extends Page implements HasForms
             'Сотрудник',
             'Дата создания',
         ];
-
-        fputcsv($handle, $tableHeaders, ';');
-
-        // Данные
-        foreach ($receipts as $receipt) {
-            fputcsv($handle, [
-                $receipt->name,
-                $receipt->warehouse?->name ?? '—',
-                $receipt->producer?->name ?? '—',
-                $receipt->productTemplate?->name ?? '—',
-                $receipt->quantity,
-                $receipt->calculated_volume ? round($receipt->calculated_volume, 3) : '—',
-                $receipt->shipping_date?->format('d.m.Y') ?? '—',
-                $receipt->expected_arrival_date?->format('d.m.Y') ?? '—',
-                $receipt->status,
-                $receipt->creator?->name ?? '—',
-                $receipt->created_at->format('d.m.Y H:i'),
-            ], ';');
-        }
-
-        fclose($handle);
 
         return response()->streamDownload(function () use ($receipts, $tableHeaders) {
             $handle = fopen('php://output', 'w');
@@ -162,7 +131,7 @@ class ExportReceipts extends Page implements HasForms
             }
 
             fclose($handle);
-        }, 'Приемки_'.$dateFrom->format('d.m.Y').'_-_'.$dateTo->format('d.m.Y').'.csv', [
+        }, $fileName, [
             'Content-Type' => 'text/csv; charset=utf-8',
         ]);
     }

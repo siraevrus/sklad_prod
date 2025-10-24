@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProductExportController;
 use App\Http\Controllers\ProductWebController;
+use App\Http\Controllers\ReceiptExportController;
 use App\Http\Controllers\SaleExportController;
 use Illuminate\Support\Facades\Route;
 
@@ -15,6 +16,10 @@ Route::get('/products/export', [ProductExportController::class, 'export'])
 
 Route::get('/sales/export', [SaleExportController::class, 'export'])
     ->name('sales.export')
+    ->middleware('auth');
+
+Route::get('/receipts/export', [ReceiptExportController::class, 'export'])
+    ->name('receipts.export')
     ->middleware('auth');
 
 // Поддержка отправки формы создания товара в тестах
