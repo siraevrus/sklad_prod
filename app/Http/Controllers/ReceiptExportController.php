@@ -13,9 +13,8 @@ class ReceiptExportController extends Controller
     {
         $user = Auth::user();
 
-        // Получаем приемки с учетом прав доступа
+        // Получаем все товары с учетом прав доступа
         $query = Product::query()
-            ->where('status', Product::STATUS_FOR_RECEIPT)
             ->active()
             ->with(['warehouse', 'producer', 'productTemplate', 'creator'])
             ->orderByDesc('created_at');
@@ -25,7 +24,8 @@ class ReceiptExportController extends Controller
             if ($user->warehouse_id) {
                 $query->where('warehouse_id', $user->warehouse_id);
             } else {
-                $query->whereRaw('1 = 0');
+                // Если у пользователя нет склада, показываем все товары
+                // или можно добавить фильтр по компании
             }
         }
 
@@ -47,6 +47,13 @@ class ReceiptExportController extends Controller
         }
 
         $receipts = $query->get();
+
+        // Отладочная информация
+        \Log::info('ReceiptExport: Found receipts', [
+            'count' => $receipts->count(),
+            'user_role' => $user->role->value ?? 'unknown',
+            'user_warehouse_id' => $user->warehouse_id ?? 'null',
+        ]);
 
         // Формируем CSV
         $headers = [

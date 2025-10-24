@@ -14,12 +14,18 @@ class ProductExportController extends Controller
         $user = Auth::user();
 
         // Получаем товары с учетом прав доступа
-        $query = Product::with(['template', 'warehouse', 'creator']);
+        $query = Product::with(['template', 'warehouse', 'creator', 'producer']);
+
+        // Фильтруем только активные товары
+        $query->where('is_active', true);
 
         if ($user->role !== 'admin') {
-            $query->whereHas('warehouse', function ($q) use ($user) {
-                $q->where('company_id', $user->company_id);
-            });
+            if ($user->warehouse_id) {
+                $query->where('warehouse_id', $user->warehouse_id);
+            } else {
+                // Если у пользователя нет склада, показываем все товары
+                // или можно добавить фильтр по компании
+            }
         }
 
         // Применяем фильтры
@@ -40,6 +46,13 @@ class ProductExportController extends Controller
         }
 
         $products = $query->get();
+
+        // Отладочная информация
+        \Log::info('ProductExport: Found products', [
+            'count' => $products->count(),
+            'user_role' => $user->role->value ?? 'unknown',
+            'user_warehouse_id' => $user->warehouse_id ?? 'null',
+        ]);
 
         // Формируем CSV
         $headers = [

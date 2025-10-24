@@ -17,9 +17,12 @@ class SaleExportController extends Controller
         $query = Sale::with(['product', 'warehouse', 'user']);
 
         if ($user->role !== 'admin') {
-            $query->whereHas('warehouse', function ($q) use ($user) {
-                $q->where('company_id', $user->company_id);
-            });
+            if ($user->warehouse_id) {
+                $query->where('warehouse_id', $user->warehouse_id);
+            } else {
+                // Если у пользователя нет склада, показываем все продажи
+                // или можно добавить фильтр по компании
+            }
         }
 
         // Применяем фильтры
@@ -40,6 +43,13 @@ class SaleExportController extends Controller
         }
 
         $sales = $query->get();
+
+        // Отладочная информация
+        \Log::info('SaleExport: Found sales', [
+            'count' => $sales->count(),
+            'user_role' => $user->role->value ?? 'unknown',
+            'user_warehouse_id' => $user->warehouse_id ?? 'null',
+        ]);
 
         // Формируем CSV
         $headers = [
