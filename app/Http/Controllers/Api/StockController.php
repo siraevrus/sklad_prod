@@ -225,7 +225,7 @@ class StockController extends Controller
 
         $query = Product::query()
             ->select([
-                DB::raw('MIN(name) as name'),
+                'name',
                 'product_template_id',
                 'warehouse_id',
                 'producer_id',
@@ -240,6 +240,7 @@ class StockController extends Controller
             ->where('producer_id', $producerId)
             ->with(['producer', 'productTemplate', 'warehouse'])
             ->groupBy(array_merge([
+                'name',
                 'product_template_id',
                 'warehouse_id',
                 'producer_id',
@@ -314,7 +315,7 @@ class StockController extends Controller
 
         $query = Product::query()
             ->select([
-                DB::raw('MIN(name) as name'),
+                'name',
                 'product_template_id',
                 'warehouse_id',
                 'producer_id',
@@ -329,6 +330,7 @@ class StockController extends Controller
             ->where('warehouse_id', $warehouseId)
             ->with(['producer', 'productTemplate', 'warehouse'])
             ->groupBy(array_merge([
+                'name',
                 'product_template_id',
                 'warehouse_id',
                 'producer_id',
@@ -412,7 +414,7 @@ class StockController extends Controller
 
         $query = Product::query()
             ->select([
-                DB::raw('MIN(name) as name'),
+                'name',
                 'product_template_id',
                 'warehouse_id',
                 'producer_id',
@@ -427,6 +429,7 @@ class StockController extends Controller
             ->whereIn('warehouse_id', $warehouseIds)
             ->with(['producer', 'productTemplate', 'warehouse'])
             ->groupBy(array_merge([
+                'name',
                 'product_template_id',
                 'warehouse_id',
                 'producer_id',
