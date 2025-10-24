@@ -43,12 +43,15 @@ class ProductExportController extends Controller
 
         // Формируем CSV
         $headers = [
-            'Content-Type' => 'text/csv',
+            'Content-Type' => 'text/csv; charset=utf-8',
             'Content-Disposition' => 'attachment; filename="products_'.date('Y-m-d').'.csv"',
         ];
 
         $callback = function () use ($products) {
             $file = fopen('php://output', 'w');
+
+            // BOM для корректного отображения в Excel
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
 
             // Заголовки
             fputcsv($file, [
@@ -64,7 +67,7 @@ class ProductExportController extends Controller
                 'Статус',
                 'Сотрудник',
                 'Дата создания',
-            ]);
+            ], ';');
 
             // Данные
             foreach ($products as $product) {
@@ -76,12 +79,12 @@ class ProductExportController extends Controller
                     $product->warehouse?->name ?? 'Не указан',
                     $product->producer ? $product->producer->name : 'Не указан', // Используем связь
                     $product->quantity,
-                    $product->calculated_volume,
-                    $product->arrival_date?->format('Y-m-d') ?? 'Не указана',
+                    $product->calculated_volume ? round($product->calculated_volume, 3) : '—',
+                    $product->arrival_date?->format('d.m.Y') ?? 'Не указана',
                     $product->is_active ? 'Активен' : 'Неактивен',
                     $product->creator?->name ?? 'Не указан',
-                    $product->created_at->format('Y-m-d H:i:s'),
-                ]);
+                    $product->created_at->format('d.m.Y H:i'),
+                ], ';');
             }
 
             fclose($file);

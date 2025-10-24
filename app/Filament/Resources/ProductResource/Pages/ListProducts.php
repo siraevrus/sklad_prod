@@ -12,6 +12,12 @@ class ListProducts extends ListRecords
 
     protected function getHeaderActions(): array
     {
-        return [];
+        return [
+            Actions\Action::make('export')
+                ->label('Экспорт в Excel')
+                ->icon('heroicon-o-arrow-down-tray')
+                ->url(route('products.export'))
+                ->openUrlInNewTab(false),
+        ];
     }
 }

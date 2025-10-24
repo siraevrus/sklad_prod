@@ -43,12 +43,15 @@ class SaleExportController extends Controller
 
         // Формируем CSV
         $headers = [
-            'Content-Type' => 'text/csv',
+            'Content-Type' => 'text/csv; charset=utf-8',
             'Content-Disposition' => 'attachment; filename="sales_'.date('Y-m-d').'.csv"',
         ];
 
         $callback = function () use ($sales) {
             $file = fopen('php://output', 'w');
+
+            // BOM для корректного отображения в Excel
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
 
             // Заголовки
             fputcsv($file, [
@@ -68,7 +71,7 @@ class SaleExportController extends Controller
                 'Дата доставки',
                 'Продавец',
                 'Заметки',
-            ]);
+            ], ';');
 
             // Данные
             foreach ($sales as $sale) {
@@ -85,11 +88,11 @@ class SaleExportController extends Controller
                     $sale->total_price,
                     $sale->getPaymentMethodLabel(),
                     $sale->getPaymentStatusLabel(),
-                    $sale->sale_date->format('Y-m-d'),
-                    $sale->delivery_date?->format('Y-m-d') ?? 'Не указана',
+                    $sale->sale_date->format('d.m.Y'),
+                    $sale->delivery_date?->format('d.m.Y') ?? 'Не указана',
                     $sale->user?->name ?? 'Не указан',
                     $sale->notes ?? '',
-                ]);
+                ], ';');
             }
 
             fclose($file);
