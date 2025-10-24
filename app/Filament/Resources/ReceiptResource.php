@@ -544,7 +544,7 @@ class ReceiptResource extends Resource
     {
         $user = Auth::user();
         $base = parent::getEloquentQuery()
-            ->where('status', Product::STATUS_FOR_RECEIPT)
+            ->where('status', Product::STATUS_IN_TRANSIT)
             ->active();
 
         if (! $user) {
