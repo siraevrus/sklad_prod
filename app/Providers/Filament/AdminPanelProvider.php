@@ -40,6 +40,7 @@ class AdminPanelProvider extends PanelProvider
                     700 => '#BAA981',
                     800 => '#AB9A6C',
                     900 => '#9C8B57',
+                    950 => '#8D7C42',
                 ],
             ])
             ->brandName('WOOD WAREHOUSE')
