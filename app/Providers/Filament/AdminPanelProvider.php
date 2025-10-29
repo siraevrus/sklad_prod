@@ -45,7 +45,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->brandName('WOOD WAREHOUSE')
             ->favicon(asset('favicon.ico'))
-            ->logo(asset('logo-expertwood.svg'))
+            ->brandLogo(asset('logo-expertwood.svg'))
             ->logoHeight('60px')
             ->darkMode(false)
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
