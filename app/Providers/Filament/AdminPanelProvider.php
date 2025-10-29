@@ -28,10 +28,10 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login(\App\Filament\Pages\Login::class)
             ->colors([
-                'primary' => Color::Blue,
+                'primary' => Color::Green,
                 'gray' => [
                     50 => '#F8F1DF',
-                    100 => '#BCB8AD',
+                    100 => '#FFFFFF',
                     200 => '#BCB8AD',
                     300 => '#000000',
                     400 => '#000000',
