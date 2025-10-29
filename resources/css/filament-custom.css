@@ -1,39 +1,5 @@
 /* Кастомные стили для Filament - увеличение ширины контейнера */
 
-/* Стили для логотипа на странице входа */
-.filament-auth-page .fi-page-heading {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding-left: 100px;
-    background-image: url('/logo-expertwood.svg');
-    background-repeat: no-repeat;
-    background-size: 80px 80px;
-    background-position: left center;
-}
-
-/* Размер логотипа в верхнем меню */
-.fi-brand-logo {
-    height: 150px !important;
-    width: 150px !important;
-    max-height: 150px !important;
-    max-width: 150px !important;
-}
-
-/* Контейнер логотипа */
-.fi-brand-logo-container {
-    height: 150px !important;
-    width: auto !important;
-}
-
-/* Убиваем все ограничения размера логотипа */
-img.fi-brand-logo {
-    height: 150px !important;
-    width: 150px !important;
-    min-height: 150px !important;
-    min-width: 150px !important;
-}
-
 /* Цвет текста в боковом меню (sidebar) */
 .fi-sidebar,
 .fi-sidebar-nav,
