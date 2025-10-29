@@ -31,16 +31,16 @@ class AdminPanelProvider extends PanelProvider
                 'primary' => Color::Blue,
                 'gray' => [
                     50 => '#F8F1DF',
-                    100 => '#F8F1DF',
-                    200 => '#F0E6D2',
-                    300 => '#E8DCC5',
-                    400 => '#E0D1B8',
-                    500 => '#D8C7AB',
+                    100 => '#BCB8AD',
+                    200 => '#BCB8AD',
+                    300 => '#000000',
+                    400 => '#000000',
+                    500 => '#000000',
                     600 => '#C9B896',
-                    700 => '#BAA981',
+                    700 => '#000000',
                     800 => '#AB9A6C',
                     900 => '#9C8B57',
-                    950 => '#8D7C42',
+                    950 => '#000000',
                 ],
             ])
             ->brandName('WOOD WAREHOUSE')

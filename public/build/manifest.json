@@ -1,6 +1,10 @@
 {
+  "logo-expertwood.svg": {
+    "file": "assets/logo-expertwood-CqzTMIZR.svg",
+    "src": "logo-expertwood.svg"
+  },
   "resources/css/app.css": {
-    "file": "assets/app-qWedmg1X.css",
+    "file": "assets/app-BV2a-JX4.css",
     "src": "resources/css/app.css",
     "isEntry": true,
     "names": [
