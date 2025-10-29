@@ -39,6 +39,10 @@ class AdminPanelProvider extends PanelProvider
                 \App\Filament\Pages\StockOverview::class,
             ])
             ->maxContentWidth('full')
+            ->renderHook(
+                'panels::head.end',
+                fn () => view('filament.head-end'),
+            )
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
