@@ -53,7 +53,7 @@ class Login extends BaseLogin
 
     public function getTitle(): string
     {
-        return 'EXPERT WOOD';
+        return 'WOOD WAREHOUSE';
     }
 
     public function getHeading(): string
