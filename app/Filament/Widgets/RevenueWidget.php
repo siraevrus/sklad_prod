@@ -13,6 +13,8 @@ class RevenueWidget extends Widget
 
     protected int|string|array $columnSpan = 'full';
 
+    protected static bool $isHidden = true;
+
     public string $period = 'day';
 
     public ?string $dateFrom = null;
