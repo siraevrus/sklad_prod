@@ -47,8 +47,8 @@ class AdminPanelProvider extends PanelProvider
             ->favicon(asset('favicon.ico'))
             ->darkMode(false)
             ->renderHook(
-                'panels::topbar.start',
-                fn () => view('filament.logo-topbar'),
+                'panels::sidebar.start',
+                fn () => view('filament.logo-sidebar'),
             )
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
