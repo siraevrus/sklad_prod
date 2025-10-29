@@ -12,6 +12,13 @@
     background-position: left center;
 }
 
+/* Размер логотипа в верхнем меню */
+.fi-brand-logo {
+    height: 60px;
+    width: 60px;
+    object-fit: contain;
+}
+
 /* Цвет текста в боковом меню (sidebar) */
 .fi-sidebar,
 .fi-sidebar-nav,
