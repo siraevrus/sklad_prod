@@ -61,6 +61,11 @@ class Login extends BaseLogin
         return 'Войдите в свой аккаунт';
     }
 
+    public function getHeadingView(): string
+    {
+        return 'filament.pages.auth.login-heading';
+    }
+
     protected function getLogoBrand(): ?string
     {
         return asset('logo-expertwood.svg');
