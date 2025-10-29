@@ -45,8 +45,11 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->brandName('WOOD WAREHOUSE')
             ->favicon(asset('favicon.ico'))
-            ->brandLogo(asset('logo-expertwood.svg'))
             ->darkMode(false)
+            ->renderHook(
+                'panels::topbar.start',
+                fn () => view('filament.logo-topbar'),
+            )
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')

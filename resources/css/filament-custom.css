@@ -14,9 +14,24 @@
 
 /* Размер логотипа в верхнем меню */
 .fi-brand-logo {
-    height: 100px;
-    width: 100px;
-    object-fit: contain;
+    height: 150px !important;
+    width: 150px !important;
+    max-height: 150px !important;
+    max-width: 150px !important;
+}
+
+/* Контейнер логотипа */
+.fi-brand-logo-container {
+    height: 150px !important;
+    width: auto !important;
+}
+
+/* Убиваем все ограничения размера логотипа */
+img.fi-brand-logo {
+    height: 150px !important;
+    width: 150px !important;
+    min-height: 150px !important;
+    min-width: 150px !important;
 }
 
 /* Цвет текста в боковом меню (sidebar) */
