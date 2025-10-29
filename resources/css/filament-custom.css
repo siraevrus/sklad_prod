@@ -12,6 +12,30 @@
     background-position: left center;
 }
 
+/* Цвет текста в боковом меню (sidebar) */
+.fi-sidebar,
+.fi-sidebar-nav,
+.fi-sidebar-nav-item,
+.fi-sidebar-nav-item-label {
+    color: #000000 !important;
+}
+
+/* Цвет ссылок в меню */
+.fi-sidebar-nav-item a {
+    color: #000000 !important;
+}
+
+/* Активный пункт меню */
+.fi-sidebar-nav-item.active,
+.fi-sidebar-nav-item[aria-current="page"] {
+    color: #000000 !important;
+}
+
+/* Все элементы в сайдбаре - чёрный текст */
+.fi-sidebar * {
+    color: #000000 !important;
+}
+
 /* Переопределяем максимальную ширину основного контейнера */
 .filament-main-content {
     max-width: none !important;
