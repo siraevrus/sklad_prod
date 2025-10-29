@@ -58,23 +58,16 @@ class Login extends BaseLogin
 
     public function getHeading(): string
     {
-        $logo = $this->getLogoBrand();
-
-        return <<<HTML
-            <div class="flex items-center gap-4">
-                <img src="{$logo}" alt="Logo" class="h-20 w-20 object-contain" />
-                <span>Войдите в свой аккаунт</span>
-            </div>
-        HTML;
-    }
-
-    public function getHeadingView(): string
-    {
-        return 'filament.pages.auth.login-heading';
+        return 'Войдите в свой аккаунт';
     }
 
     protected function getLogoBrand(): ?string
     {
         return asset('logo-expertwood.svg');
+    }
+
+    protected static function getView(): string
+    {
+        return 'filament.pages.login';
     }
 }
