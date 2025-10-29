@@ -66,7 +66,7 @@ class Login extends BaseLogin
         return asset('logo-expertwood.svg');
     }
 
-    protected static function getView(): string
+    protected function getView(): string
     {
         return 'filament.pages.login';
     }
