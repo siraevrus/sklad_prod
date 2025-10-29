@@ -29,6 +29,18 @@ class AdminPanelProvider extends PanelProvider
             ->login(\App\Filament\Pages\Login::class)
             ->colors([
                 'primary' => Color::Blue,
+                'gray' => [
+                    50 => '#F8F1DF',
+                    100 => '#F8F1DF',
+                    200 => '#F0E6D2',
+                    300 => '#E8DCC5',
+                    400 => '#E0D1B8',
+                    500 => '#D8C7AB',
+                    600 => '#C9B896',
+                    700 => '#BAA981',
+                    800 => '#AB9A6C',
+                    900 => '#9C8B57',
+                ],
             ])
             ->brandName('WOOD WAREHOUSE')
             ->favicon(asset('favicon.ico'))
