@@ -35,6 +35,24 @@ table tbody tr:nth-child(even),
     background-color: white !important;
 }
 
+/* Все таблицы везде */
+* table tbody tr,
+* tbody tr {
+    background: white !important;
+}
+
+* tbody td,
+* tbody th {
+    background: white !important;
+}
+
+/* Переопределяем Tailwind bg-gray-50 на белый */
+.bg-gray-50,
+.dark\:bg-gray-50 {
+    --tw-bg-opacity: 1 !important;
+    background-color: rgb(255 255 255 / var(--tw-bg-opacity)) !important;
+}
+
 /* Белый фон для заголовков таблиц */
 table thead tr,
 .fi-table thead tr,
@@ -65,15 +83,15 @@ th {
     background-color: white !important;
 }
 
-/* Все таблицы везде */
-* table tbody tr,
-* tbody tr {
-    background: white !important;
+/* Агрессивное переопределение через div обертки */
+div[class*="bg-gray"] {
+    background-color: white !important;
 }
 
-* tbody td,
-* tbody th {
-    background: white !important;
+/* Переопределяем ALL div в таблицах */
+.fi-table div,
+table div {
+    background-color: transparent !important;
 }
 
 /* Цвет текста в боковом меню (sidebar) */
