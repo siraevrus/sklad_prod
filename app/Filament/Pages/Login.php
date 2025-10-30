@@ -60,9 +60,4 @@ class Login extends BaseLogin
     {
         return 'Войдите в свой аккаунт';
     }
-
-    protected function getLogoBrand(): ?string
-    {
-        return asset('logo-expertwood.svg');
-    }
 }
