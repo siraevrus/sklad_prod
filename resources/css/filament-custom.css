@@ -35,6 +35,36 @@ table tbody tr:nth-child(even),
     background-color: white !important;
 }
 
+/* Белый фон для заголовков таблиц */
+table thead tr,
+.fi-table thead tr,
+[role="table"] [role="row"],
+thead th,
+thead td {
+    background-color: white !important;
+}
+
+table thead th,
+table thead td,
+.fi-table thead th,
+.fi-table thead td,
+[role="columnheader"] {
+    background-color: white !important;
+}
+
+/* Filament header-cell компонент */
+.fi-ta-header-cell,
+[class*="header-cell"],
+[data-header-cell],
+.fi-table-header-cell {
+    background-color: white !important;
+}
+
+/* Все th элементы везде */
+th {
+    background-color: white !important;
+}
+
 /* Все таблицы везде */
 * table tbody tr,
 * tbody tr {
@@ -44,19 +74,6 @@ table tbody tr:nth-child(even),
 * tbody td,
 * tbody th {
     background: white !important;
-}
-
-/* Переопределяем Tailwind bg-gray-50 на белый */
-.bg-gray-50 {
-    --tw-bg-opacity: 1 !important;
-    background-color: rgb(255 255 255 / var(--tw-bg-opacity)) !important;
-}
-
-/* В таблицах особенно */
-tbody .bg-gray-50,
-tr .bg-gray-50,
-td.bg-gray-50 {
-    background-color: white !important;
 }
 
 /* Цвет текста в боковом меню (sidebar) */
