@@ -46,6 +46,19 @@ table tbody tr:nth-child(even),
     background: white !important;
 }
 
+/* Переопределяем Tailwind bg-gray-50 на белый */
+.bg-gray-50 {
+    --tw-bg-opacity: 1 !important;
+    background-color: rgb(255 255 255 / var(--tw-bg-opacity)) !important;
+}
+
+/* В таблицах особенно */
+tbody .bg-gray-50,
+tr .bg-gray-50,
+td.bg-gray-50 {
+    background-color: white !important;
+}
+
 /* Цвет текста в боковом меню (sidebar) */
 .fi-sidebar,
 .fi-sidebar-nav,
