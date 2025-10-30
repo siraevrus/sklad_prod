@@ -26,6 +26,26 @@ table tbody tr:nth-child(even),
     background-color: white !important;
 }
 
+/* Filament таблицы - глубокие селекторы */
+.fi-ta-table tbody tr {
+    background-color: white !important;
+}
+
+.fi-ta-table tbody td {
+    background-color: white !important;
+}
+
+/* Все таблицы везде */
+* table tbody tr,
+* tbody tr {
+    background: white !important;
+}
+
+* tbody td,
+* tbody th {
+    background: white !important;
+}
+
 /* Цвет текста в боковом меню (sidebar) */
 .fi-sidebar,
 .fi-sidebar-nav,
