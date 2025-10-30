@@ -6,6 +6,7 @@ use App\Models\User;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Pages\Auth\Login as BaseLogin;
+use Illuminate\Support\HtmlString;
 
 class Login extends BaseLogin
 {
@@ -59,5 +60,14 @@ class Login extends BaseLogin
     public function getHeading(): string
     {
         return 'Войдите в свой аккаунт';
+    }
+
+    protected function getLogoBrand(): string|HtmlString|null
+    {
+        $logoUrl = asset('logo-expertwood.svg');
+
+        return new HtmlString(
+            "<img src=\"{$logoUrl}\" alt=\"WOOD WAREHOUSE\" style=\"height: 8rem; max-width: 100%;\">"
+        );
     }
 }
