@@ -1,5 +1,31 @@
 /* Кастомные стили для Filament - увеличение ширины контейнера */
 
+/* Белый фон для всех строк таблиц */
+table tbody tr,
+.fi-table tbody tr,
+[role="table"] [role="row"],
+.filament-table tbody tr {
+    background-color: white !important;
+}
+
+/* Белый фон для ячеек таблиц */
+table tbody td,
+table tbody th,
+.fi-table tbody td,
+.fi-table tbody th,
+[role="table"] [role="cell"],
+.filament-table tbody td {
+    background-color: white !important;
+}
+
+/* Белый фон для четных и нечетных строк */
+table tbody tr:nth-child(odd),
+table tbody tr:nth-child(even),
+.fi-table tbody tr:nth-child(odd),
+.fi-table tbody tr:nth-child(even) {
+    background-color: white !important;
+}
+
 /* Цвет текста в боковом меню (sidebar) */
 .fi-sidebar,
 .fi-sidebar-nav,
