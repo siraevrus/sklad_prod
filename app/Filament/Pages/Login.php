@@ -70,12 +70,8 @@ class Login extends BaseLogin
 
     protected function getLogoBrand(): string|HtmlString|null
     {
-        $logoUrl = asset('logo-expertwood.svg');
-
         return new HtmlString(
-            "<div style=\"height: 11.2rem !important; display: flex; align-items: center; justify-content: center;\">
-                <img src=\"{$logoUrl}\" alt=\"WOOD WAREHOUSE\" style=\"height: 11.2rem !important; max-width: 100%; display: block;\">
-            </div>"
+            view('components.filament.login.logo')->render()
         );
     }
 }
