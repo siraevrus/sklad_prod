@@ -6,6 +6,7 @@ use App\Models\User;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Pages\Auth\Login as BaseLogin;
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\HtmlString;
 
 class Login extends BaseLogin
@@ -57,7 +58,7 @@ class Login extends BaseLogin
         return 'WOOD WAREHOUSE';
     }
 
-    public function getHeading(): string|HtmlString|null
+    public function getHeading(): string|Htmlable|null
     {
         return new HtmlString(
             '<div style="text-align: center;">
