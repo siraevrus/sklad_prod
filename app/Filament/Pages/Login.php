@@ -74,4 +74,9 @@ class Login extends BaseLogin
             view('components.filament.login.logo')->render()
         );
     }
+
+    public function getLogoHeight(): string|int|null
+    {
+        return '14.56rem';
+    }
 }
