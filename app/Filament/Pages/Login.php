@@ -58,7 +58,7 @@ class Login extends BaseLogin
         return 'WOOD WAREHOUSE';
     }
 
-    public function getHeading(): string|Htmlable|null
+    public function getHeading(): string|Htmlable
     {
         return new HtmlString(
             '<div style="text-align: center;">
