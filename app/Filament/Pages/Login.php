@@ -57,9 +57,14 @@ class Login extends BaseLogin
         return 'WOOD WAREHOUSE';
     }
 
-    public function getHeading(): string
+    public function getHeading(): string|HtmlString|null
     {
-        return 'Войдите в свой аккаунт';
+        return new HtmlString(
+            '<div style="text-align: center;">
+                <p style="margin: 0 0 0.5rem 0; font-size: 1.5rem; font-weight: 700; color: #1f2937;">Wood Warehouse</p>
+                <p style="margin: 0; font-size: 1.125rem; color: #6b7280;">Войдите в свой аккаунт</p>
+            </div>'
+        );
     }
 
     protected function getLogoBrand(): string|HtmlString|null
@@ -67,10 +72,7 @@ class Login extends BaseLogin
         $logoUrl = asset('logo-expertwood.svg');
 
         return new HtmlString(
-            "<div style=\"text-align: center;\">
-                <img src=\"{$logoUrl}\" alt=\"WOOD WAREHOUSE\" style=\"height: 8rem; max-width: 100%; display: block; margin: 0 auto;\">
-                <p style=\"margin-top: 1rem; margin-bottom: 0; font-size: 1.25rem; font-weight: 600; color: #1f2937;\">Wood Warehouse</p>
-            </div>"
+            "<img src=\"{$logoUrl}\" alt=\"WOOD WAREHOUSE\" style=\"height: 8rem; max-width: 100%; display: block; margin: 0 auto;\">"
         );
     }
 }
