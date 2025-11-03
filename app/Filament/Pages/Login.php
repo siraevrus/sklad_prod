@@ -73,8 +73,8 @@ class Login extends BaseLogin
         $logoUrl = asset('logo-expertwood.svg');
 
         return new HtmlString(
-            "<div style=\"height: 8rem !important; display: flex; align-items: center; justify-content: center;\">
-                <img src=\"{$logoUrl}\" alt=\"WOOD WAREHOUSE\" style=\"height: 8rem !important; max-width: 100%; display: block;\">
+            "<div style=\"height: 11.2rem !important; display: flex; align-items: center; justify-content: center;\">
+                <img src=\"{$logoUrl}\" alt=\"WOOD WAREHOUSE\" style=\"height: 11.2rem !important; max-width: 100%; display: block;\">
             </div>"
         );
     }
