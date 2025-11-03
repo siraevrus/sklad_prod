@@ -70,13 +70,22 @@ class BackupDatabase extends Command
         exec($command, $output, $returnCode);
 
         if ($returnCode !== 0) {
-            $this->error('Ошибка при создании резервной копии базы данных');
+            $errorMessage = ! empty($output) ? implode("\n", $output) : 'Неизвестная ошибка';
+            $this->error("Ошибка при создании резервной копии базы данных: {$errorMessage}");
 
             return Command::FAILURE;
         }
 
         if (! file_exists($filepath) || filesize($filepath) === 0) {
             $this->error('Файл резервной копии не был создан или пуст');
+
+            return Command::FAILURE;
+        }
+
+        // Проверяем, что файл не содержит только ошибки
+        $fileContent = file_get_contents($filepath);
+        if (strpos($fileContent, 'mysqldump: Error:') !== false || strpos($fileContent, 'ERROR') !== false) {
+            $this->error('Файл резервной копии содержит ошибки');
 
             return Command::FAILURE;
         }
