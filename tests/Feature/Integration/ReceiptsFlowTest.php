@@ -42,7 +42,7 @@ class ReceiptsFlowTest extends TestCase
     {
         $admin = User::factory()->create(['role' => 'admin']);
         $product = Product::factory()->inTransit()->create([
-            'status' => Product::STATUS_FOR_RECEIPT,
+            'status' => Product::STATUS_IN_TRANSIT,
         ]);
         $this->actingAs($admin);
         Filament::setCurrentPanel(Filament::getPanel('admin'));

@@ -34,7 +34,7 @@ class EditReceipt extends EditRecord
                 ->icon('heroicon-o-check')
                 ->color('success')
                 ->visible(function (Product $record): bool {
-                    return $record->status === Product::STATUS_FOR_RECEIPT;
+                    return $record->status === Product::STATUS_IN_TRANSIT;
                 })
                 ->action(function (Product $record): void {
                     try {

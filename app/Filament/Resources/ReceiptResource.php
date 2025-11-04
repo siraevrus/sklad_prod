@@ -477,7 +477,7 @@ class ReceiptResource extends Resource
                     ->label('Принять товар')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
-                    ->visible(fn (Product $record): bool => $record->status === Product::STATUS_FOR_RECEIPT)
+                    ->visible(fn (Product $record): bool => $record->status === Product::STATUS_IN_TRANSIT)
                     ->requiresConfirmation()
                     ->modalHeading('Подтверждение приемки товара')
                     ->modalDescription('Товар будет перемещен в Раздел "Поступление товаров"')
@@ -505,7 +505,7 @@ class ReceiptResource extends Resource
                         ->modalDescription('Вы уверены, что хотите подтвердить приемку выбранных товаров?')
                         ->action(function (\Illuminate\Support\Collection $records): void {
                             foreach ($records as $record) {
-                                if ($record->status === Product::STATUS_FOR_RECEIPT) {
+                                if ($record->status === Product::STATUS_IN_TRANSIT) {
                                     $record->update([
                                         'status' => Product::STATUS_IN_STOCK,
                                         'actual_arrival_date' => now(),
