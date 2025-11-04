@@ -56,7 +56,7 @@ class BackupDatabase extends Command
         $filepath = $backupDir.'/'.$filename;
 
         $command = sprintf(
-            'MYSQL_PWD=%s mysqldump -h %s -P %s -u %s %s --no-tablespaces --single-transaction --quick --lock-tables=false > %s 2>&1',
+            'MYSQL_PWD=%s mysqldump -h %s -P %s -u %s %s --no-tablespaces --single-transaction --quick --lock-tables=false > %s 2>/dev/null',
             escapeshellarg($password),
             escapeshellarg($host),
             escapeshellarg($port),
