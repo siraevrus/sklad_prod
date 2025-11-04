@@ -11,12 +11,12 @@ YELLOW='\033[1;33m'
 RED='\033[0;31m'
 NC='\033[0m'
 
-CONFIG_FILE="/etc/nginx/sites-available/test_warehouse.conf"
+CONFIG_FILE="/etc/nginx/sites-available/test.warehouse.conf"
 NGINX_CONFIG='server {
     listen 80;
     listen [::]:80;
     server_name test.warehouse.expwood.ru;
-    root /var/www/test_warehouse/public;
+    root /var/www/test.warehouse/public;
 
     add_header X-Frame-Options "SAMEORIGIN";
     add_header X-Content-Type-Options "nosniff";
@@ -60,7 +60,7 @@ fi
 
 echo ""
 echo "2️⃣  Создаем символическую ссылку..."
-ssh my "sudo ln -sf $CONFIG_FILE /etc/nginx/sites-enabled/test_warehouse.conf"
+ssh my "sudo ln -sf $CONFIG_FILE /etc/nginx/sites-enabled/test.warehouse.conf"
 
 if [ $? -eq 0 ]; then
     echo -e "${GREEN}✅ Символическая ссылка создана${NC}"
@@ -70,7 +70,7 @@ fi
 
 echo ""
 echo "3️⃣  Исправляем права доступа к проекту..."
-ssh my "cd /var/www/test_warehouse && sudo chown -R www-data:www-data . && sudo chmod -R 755 . && sudo chmod -R 775 storage bootstrap/cache"
+ssh my "cd /var/www/test.warehouse && sudo chown -R www-data:www-data . && sudo chmod -R 755 . && sudo chmod -R 775 storage bootstrap/cache"
 
 if [ $? -eq 0 ]; then
     echo -e "${GREEN}✅ Права доступа исправлены${NC}"
@@ -113,5 +113,5 @@ echo ""
 echo "Если проблема осталась, проверьте:"
 echo "  1. DNS запись для test.warehouse.expwood.ru указывает на правильный IP"
 echo "  2. Логи nginx: sudo tail -f /var/log/nginx/error.log"
-echo "  3. Права доступа: ls -la /var/www/test_warehouse/public"
+echo "  3. Права доступа: ls -la /var/www/test.warehouse/public"
 

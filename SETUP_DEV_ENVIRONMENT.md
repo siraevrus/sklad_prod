@@ -31,13 +31,13 @@ git checkout dev
 git push origin dev
 
 # 2. Подключиться к серверу и обновить код
-ssh my "cd /var/www/test_warehouse && git checkout dev && git pull origin dev"
+ssh my "cd /var/www/test.warehouse && git checkout dev && git pull origin dev"
 
 # 3. Запустить миграции
-ssh my "cd /var/www/test_warehouse && php artisan migrate --force"
+ssh my "cd /var/www/test.warehouse && php artisan migrate --force"
 
 # 4. Очистить кеш
-ssh my "cd /var/www/test_warehouse && php artisan cache:clear && php artisan config:clear"
+ssh my "cd /var/www/test.warehouse && php artisan cache:clear && php artisan config:clear"
 ```
 
 ## 📝 Workflow работы
@@ -106,8 +106,8 @@ ssh my
 
 # Создать директорию для dev проекта
 cd /var/www
-git clone git@github.com:siraevrus/sklad_prod.git test_warehouse
-cd test_warehouse
+git clone git@github.com:siraevrus/sklad_prod.git test.warehouse
+cd test.warehouse
 
 # Переключиться на dev ветку
 git checkout dev
@@ -146,7 +146,7 @@ php artisan config:clear
 server {
     listen 80;
     server_name test.warehouse.expwood.ru;
-    root /var/www/test_warehouse/public;
+    root /var/www/test.warehouse/public;
 
     index index.php;
 
@@ -171,7 +171,7 @@ server {
 | База данных | sklad_prod | sklad_dev |
 | APP_ENV | production | local/staging |
 | APP_DEBUG | false | true |
-| Путь на сервере | /var/www/sklad | /var/www/test_warehouse |
+| Путь на сервере | /var/www/sklad | /var/www/test.warehouse |
 
 ## ⚠️ Важные замечания
 
@@ -189,7 +189,7 @@ git merge main
 git push origin dev
 
 # На сервере
-ssh my "cd /var/www/test_warehouse && git pull origin dev && php artisan migrate --force"
+ssh my "cd /var/www/test.warehouse && git pull origin dev && php artisan migrate --force"
 ```
 
 ## 📝 Чеклист перед деплоем на прод
@@ -216,7 +216,7 @@ git push -u origin dev
 
 Проверьте права доступа на сервере:
 ```bash
-ssh my "chmod +x /var/www/test_warehouse"
+ssh my "chmod +x /var/www/test.warehouse"
 ```
 
 ### Ошибка: "Database connection failed"

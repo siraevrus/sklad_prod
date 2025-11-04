@@ -6,7 +6,7 @@
 
 ```bash
 ssh my
-sudo nano /etc/nginx/sites-available/test_warehouse.conf
+sudo nano /etc/nginx/sites-available/test.warehouse.conf
 ```
 
 ### Содержимое конфигурации:
@@ -16,7 +16,7 @@ server {
     listen 80;
     listen [::]:80;
     server_name test.warehouse.expwood.ru;
-    root /var/www/test_warehouse/public;
+    root /var/www/test.warehouse/public;
 
     add_header X-Frame-Options "SAMEORIGIN";
     add_header X-Content-Type-Options "nosniff";
@@ -51,7 +51,7 @@ server {
 
 ```bash
 # Создать символическую ссылку
-sudo ln -s /etc/nginx/sites-available/test_warehouse.conf /etc/nginx/sites-enabled/
+sudo ln -s /etc/nginx/sites-available/test.warehouse.conf /etc/nginx/sites-enabled/
 
 # Проверить конфигурацию
 sudo nginx -t
@@ -64,7 +64,7 @@ sudo systemctl reload nginx
 
 ```bash
 # Установить правильные права
-cd /var/www/test_warehouse
+cd /var/www/test.warehouse
 sudo chown -R www-data:www-data .
 sudo chmod -R 755 .
 sudo chmod -R 775 storage bootstrap/cache
@@ -101,7 +101,7 @@ sudo tail -f /var/log/php8.4-fpm.log
 
 ```bash
 # Проверить владельца
-ls -la /var/www/test_warehouse/public/
+ls -la /var/www/test.warehouse/public/
 
 # Должно быть:
 # drwxr-xr-x www-data www-data
@@ -126,13 +126,13 @@ ls -la /etc/nginx/sites-enabled/
 **Решение:**
 ```bash
 # Исправить права
-sudo chown -R www-data:www-data /var/www/test_warehouse
-sudo chmod -R 755 /var/www/test_warehouse
-sudo chmod -R 775 /var/www/test_warehouse/storage
-sudo chmod -R 775 /var/www/test_warehouse/bootstrap/cache
+sudo chown -R www-data:www-data /var/www/test.warehouse
+sudo chmod -R 755 /var/www/test.warehouse
+sudo chmod -R 775 /var/www/test.warehouse/storage
+sudo chmod -R 775 /var/www/test.warehouse/bootstrap/cache
 
 # Проверить root в nginx конфигурации
-# Должно быть: root /var/www/test_warehouse/public;
+# Должно быть: root /var/www/test.warehouse/public;
 ```
 
 ### Ошибка 502 Bad Gateway
@@ -158,10 +158,10 @@ sudo systemctl restart php8.4-fpm
 **Решение:**
 ```bash
 # Проверить наличие index.php
-ls -la /var/www/test_warehouse/public/index.php
+ls -la /var/www/test.warehouse/public/index.php
 
 # Проверить root в nginx конфигурации
-# Должно быть: root /var/www/test_warehouse/public;
+# Должно быть: root /var/www/test.warehouse/public;
 ```
 
 ## Проверка после настройки

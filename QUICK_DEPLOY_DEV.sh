@@ -47,7 +47,7 @@ echo -e "${GREEN}✅ Изменения отправлены в GitHub${NC}"
 echo ""
 
 echo "2️⃣  Подключаемся к dev серверу и обновляем код..."
-ssh my "cd /var/www/test_warehouse && git fetch origin && git checkout dev && git pull origin dev"
+ssh my "cd /var/www/test.warehouse && git fetch origin && git checkout dev && git pull origin dev"
 
 if [ $? -ne 0 ]; then
     echo -e "${RED}❌ Ошибка при обновлении на сервере!${NC}"
@@ -58,7 +58,7 @@ echo -e "${GREEN}✅ Код обновлен на сервере${NC}"
 echo ""
 
 echo "3️⃣  Запускаем миграции на dev сервере..."
-ssh my "cd /var/www/test_warehouse && php artisan migrate --force"
+ssh my "cd /var/www/test.warehouse && php artisan migrate --force"
 
 if [ $? -ne 0 ]; then
     echo -e "${YELLOW}⚠️  Предупреждение: Ошибка при миграции (возможно, миграции уже применены)${NC}"
@@ -67,7 +67,7 @@ fi
 echo ""
 
 echo "4️⃣  Очищаем кеш на dev сервере..."
-ssh my "cd /var/www/test_warehouse && php artisan cache:clear && php artisan config:clear && php artisan view:clear && php artisan route:clear"
+ssh my "cd /var/www/test.warehouse && php artisan cache:clear && php artisan config:clear && php artisan view:clear && php artisan route:clear"
 
 echo ""
 
