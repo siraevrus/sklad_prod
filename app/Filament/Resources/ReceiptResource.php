@@ -477,7 +477,7 @@ class ReceiptResource extends Resource
                     ->label('Принять товар')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
-                    ->visible(fn (Product $record): bool => $record->status === Product::STATUS_IN_TRANSIT)
+                    ->visible(fn (Product $record): bool => $record->isInTransit())
                     ->requiresConfirmation()
                     ->modalHeading('Подтверждение приемки товара')
                     ->modalDescription('Товар будет перемещен в Раздел "Поступление товаров"')
