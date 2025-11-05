@@ -180,6 +180,23 @@ class ReceiptController extends Controller
     }
 
     /**
+     * Получить количество новых записей с момента последнего открытия приложения
+     */
+    private function getNewCountForUser($user, $baseQuery): int
+    {
+        if (! $user || ! $user->last_app_opened_at) {
+            // Если пользователь не открывал приложение ранее, считаем все записи как новые
+            return $baseQuery->count();
+        }
+
+        // Клонируем запрос для подсчета
+        $countQuery = clone $baseQuery;
+
+        return $countQuery->where('created_at', '>', $user->last_app_opened_at)
+            ->count();
+    }
+
+    /**
      * Список приемок (товары со статусом «Прибыл»)
      */
     public function index(Request $request): JsonResponse
@@ -257,13 +274,21 @@ class ReceiptController extends Controller
         $sortOrder = $request->get('order', 'desc');
         $query->orderBy($sortBy, $sortOrder);
 
+        // Получаем базовый запрос для подсчета (до пагинации)
+        $baseQueryForCount = clone $query;
+
         // Пагинация
         $perPage = (int) $request->get('per_page', 15);
         $receipts = $query->paginate($perPage);
 
+        // Подсчет новых записей
+        $newCount = $this->getNewCountForUser($user, $baseQueryForCount);
+
         return response()->json([
             'success' => true,
             'data' => $receipts->items(),
+            'new_count' => $newCount,
+            'last_app_opened_at' => $user?->last_app_opened_at?->toIso8601String(),
             'pagination' => [
                 'current_page' => $receipts->currentPage(),
                 'last_page' => $receipts->lastPage(),
@@ -302,6 +327,60 @@ class ReceiptController extends Controller
         return response()->json([
             'success' => true,
             'data' => $receipt,
+        ]);
+    }
+
+    /**
+     * Получить количество новых записей
+     */
+    public function newCount(Request $request): JsonResponse
+    {
+        $user = Auth::user();
+
+        $status = $request->get('status');
+        $query = Product::query()
+            ->where('is_active', true);
+
+        if ($status) {
+            $query->where('status', $status);
+        } else {
+            $query->where('status', Product::STATUS_IN_TRANSIT);
+        }
+
+        // Ограничение по складу для не-админа
+        if ($user && ! $user->isAdmin()) {
+            if ($user->warehouse_id) {
+                $query->where('warehouse_id', $user->warehouse_id);
+            } else {
+                $query->whereRaw('1 = 0');
+            }
+        }
+
+        // Фильтры (аналогично методу index)
+        if ($request->filled('warehouse_id')) {
+            $query->where('warehouse_id', (int) $request->input('warehouse_id'));
+        }
+        if ($request->filled('shipping_location')) {
+            $query->where('shipping_location', $request->input('shipping_location'));
+        }
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('producer', 'like', "%{$search}%")
+                    ->orWhere('shipping_location', 'like', "%{$search}%")
+                    ->orWhere('transport_number', 'like', "%{$search}%");
+            });
+        }
+
+        $newCount = $this->getNewCountForUser($user, $query);
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'new_count' => $newCount,
+                'last_app_opened_at' => $user?->last_app_opened_at?->toIso8601String(),
+            ],
         ]);
     }
 

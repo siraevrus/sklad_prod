@@ -36,6 +36,7 @@ class User extends Authenticatable implements FilamentUser
         'warehouse_id',
         'is_blocked',
         'blocked_at',
+        'last_app_opened_at',
     ];
 
     /**
@@ -61,6 +62,7 @@ class User extends Authenticatable implements FilamentUser
             'role' => \App\Casts\UserRoleCast::class,
             'is_blocked' => 'boolean',
             'blocked_at' => 'datetime',
+            'last_app_opened_at' => 'datetime',
         ];
     }
 
@@ -152,5 +154,21 @@ class User extends Authenticatable implements FilamentUser
     {
         // Все аутентифицированные пользователи могут получить доступ к админке
         return ! $this->isBlocked();
+    }
+
+    /**
+     * Обновить время последнего открытия приложения
+     */
+    public function markAppOpened(): void
+    {
+        $this->update(['last_app_opened_at' => now()]);
+    }
+
+    /**
+     * Получить время последнего открытия приложения
+     */
+    public function getLastAppOpenedAt(): ?\Carbon\Carbon
+    {
+        return $this->last_app_opened_at;
     }
 }

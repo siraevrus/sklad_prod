@@ -42,6 +42,12 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/auth/me', [AuthController::class, 'me']);
     Route::put('/auth/profile', [AuthController::class, 'updateProfile']);
 
+    // Приложение
+    Route::prefix('app')->group(function () {
+        Route::post('/opened', [\App\Http\Controllers\Api\AppController::class, 'markOpened']);
+        Route::get('/last-opened', [\App\Http\Controllers\Api\AppController::class, 'getLastOpened']);
+    });
+
     // Товары
     Route::prefix('products')->group(function () {
         Route::get('/', [ProductController::class, 'index']);
@@ -108,6 +114,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // Приемка
     Route::prefix('receipts')->middleware(['role:warehouse_worker'])->group(function () {
         Route::get('/', [\App\Http\Controllers\Api\ReceiptController::class, 'index']);
+        Route::get('/new-count', [\App\Http\Controllers\Api\ReceiptController::class, 'newCount']);
         Route::post('/', [\App\Http\Controllers\Api\ReceiptController::class, 'store']);
         Route::get('/{receipt}', [\App\Http\Controllers\Api\ReceiptController::class, 'show']);
         Route::post('/{receipt}/receive', [\App\Http\Controllers\Api\ReceiptController::class, 'receive']);
@@ -117,6 +124,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // Алиас для "Товары в пути" (те же обработчики, что и receipts)
     Route::prefix('products-in-transit')->middleware(['role:warehouse_worker'])->group(function () {
         Route::get('/', [\App\Http\Controllers\Api\ReceiptController::class, 'index']);
+        Route::get('/new-count', [\App\Http\Controllers\Api\ReceiptController::class, 'newCount']);
         Route::post('/', [\App\Http\Controllers\Api\ReceiptController::class, 'store']);
         Route::get('/{receipt}', [\App\Http\Controllers\Api\ReceiptController::class, 'show']);
         Route::post('/{receipt}/receive', [\App\Http\Controllers\Api\ReceiptController::class, 'receive']);
