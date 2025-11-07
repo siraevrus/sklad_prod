@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\Sale;
+use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -16,53 +18,23 @@ class SaleController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
+        /** @var User|null $user */
         $user = Auth::user();
 
-        $query = Sale::with(['product.producer', 'product.template', 'warehouse', 'user'])
-            ->when($request->search, function ($query, $search) {
-                $query->where('sale_number', 'like', "%{$search}%")
-                    ->orWhere('customer_name', 'like', "%{$search}%")
-                    ->orWhere('customer_phone', 'like', "%{$search}%")
-                    ->orWhereHas('product', function ($productQuery) use ($search) {
-                        $productQuery->where('name', 'like', "%{$search}%")
-                            ->orWhereHas('template', function ($templateQuery) use ($search) {
-                                $templateQuery->where('name', 'like', "%{$search}%");
-                            });
-                    });
-            })
-            ->when($request->warehouse_id, function ($query, $warehouseId) {
-                $query->where('warehouse_id', $warehouseId);
-            })
-            ->when($request->payment_status, function ($query, $status) {
-                $query->where('payment_status', $status);
-            })
-            ->when($request->payment_method, function ($query, $method) {
-                $query->where('payment_method', $method);
-            })
-            ->when($request->date_from, function ($query, $date) {
-                $query->where('sale_date', '>=', $date);
-            })
-            ->when($request->date_to, function ($query, $date) {
-                $query->where('sale_date', '<=', $date);
-            })
-            ->when($request->active, function ($query) {
-                $query->where('is_active', true);
-            });
+        $query = $this->buildSalesQuery($request, $user, withRelations: true);
 
-        // Применяем права доступа: не админ видит только свой склад
-        if (! $user->isAdmin()) {
-            if ($user->warehouse_id) {
-                $query->where('warehouse_id', $user->warehouse_id);
-            } else {
-                $query->whereRaw('1 = 0');
-            }
-        }
+        $query->orderBy('created_at', 'desc');
 
-        $sales = $query->orderBy('created_at', 'desc')
-            ->paginate($request->get('per_page', 15));
+        $baseQueryForCount = clone $query;
+
+        $sales = $query->paginate($request->get('per_page', 15));
+
+        $newCount = $this->getNewCountForUser($user, $baseQueryForCount);
 
         return response()->json([
             'data' => $sales->items(),
+            'new_count' => $newCount,
+            'last_app_opened_at' => $user?->last_app_opened_at?->toIso8601String(),
             'links' => [
                 'first' => $sales->url(1),
                 'last' => $sales->url($sales->lastPage()),
@@ -74,6 +46,90 @@ class SaleController extends Controller
                 'last_page' => $sales->lastPage(),
                 'per_page' => $sales->perPage(),
                 'total' => $sales->total(),
+            ],
+        ]);
+    }
+
+    private function buildSalesQuery(Request $request, ?User $user, bool $withRelations = false): Builder
+    {
+        $relations = ['product.producer', 'product.template', 'warehouse', 'user'];
+
+        $query = $withRelations
+            ? Sale::with($relations)
+            : Sale::query();
+
+        $query->when($request->search, function (Builder $query, $search) {
+            $query->where('sale_number', 'like', "%{$search}%")
+                ->orWhere('customer_name', 'like', "%{$search}%")
+                ->orWhere('customer_phone', 'like', "%{$search}%")
+                ->orWhereHas('product', function (Builder $productQuery) use ($search) {
+                    $productQuery->where('name', 'like', "%{$search}%")
+                        ->orWhereHas('template', function (Builder $templateQuery) use ($search) {
+                            $templateQuery->where('name', 'like', "%{$search}%");
+                        });
+                });
+        });
+
+        $query->when($request->warehouse_id, function (Builder $query, $warehouseId) {
+            $query->where('warehouse_id', $warehouseId);
+        });
+
+        $query->when($request->payment_status, function (Builder $query, $status) {
+            $query->where('payment_status', $status);
+        });
+
+        $query->when($request->payment_method, function (Builder $query, $method) {
+            $query->where('payment_method', $method);
+        });
+
+        $query->when($request->date_from, function (Builder $query, $date) {
+            $query->where('sale_date', '>=', $date);
+        });
+
+        $query->when($request->date_to, function (Builder $query, $date) {
+            $query->where('sale_date', '<=', $date);
+        });
+
+        $query->when($request->active, function (Builder $query) {
+            $query->where('is_active', true);
+        });
+
+        if ($user && ! $user->isAdmin()) {
+            if ($user->warehouse_id) {
+                $query->where('warehouse_id', $user->warehouse_id);
+            } else {
+                $query->whereRaw('1 = 0');
+            }
+        }
+
+        return $query;
+    }
+
+    private function getNewCountForUser(?User $user, Builder $baseQuery): int
+    {
+        if (! $user || ! $user->last_app_opened_at) {
+            return (clone $baseQuery)->count();
+        }
+
+        return (clone $baseQuery)
+            ->where('created_at', '>', $user->last_app_opened_at)
+            ->count();
+    }
+
+    public function newCount(Request $request): JsonResponse
+    {
+        /** @var User|null $user */
+        $user = Auth::user();
+
+        $query = $this->buildSalesQuery($request, $user);
+
+        $newCount = $this->getNewCountForUser($user, $query);
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'new_count' => $newCount,
+                'last_app_opened_at' => $user?->last_app_opened_at?->toIso8601String(),
             ],
         ]);
     }

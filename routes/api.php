@@ -64,6 +64,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // Продажи
     Route::prefix('sales')->group(function () {
         Route::get('/', [SaleController::class, 'index']);
+        Route::get('/new-count', [SaleController::class, 'newCount']);
         Route::get('/stats', [SaleController::class, 'stats']);
         Route::get('/export', [SaleController::class, 'export']);
         Route::get('/{sale}', [SaleController::class, 'showById']);
