@@ -25,7 +25,12 @@ Content-Type: application/json
   "success": true,
   "message": "Время открытия обновлено",
   "data": {
-    "last_app_opened_at": "2025-01-15T10:30:00+00:00"
+    "last_app_opened_at": "2025-01-15T10:30:00+00:00",
+    "sections": {
+      "receipts": "2025-01-15T10:25:00+00:00",
+      "products_in_transit": "2025-01-15T10:20:00+00:00",
+      "sales": "2025-01-15T10:10:00+00:00"
+    }
   }
 }
 ```
@@ -43,12 +48,57 @@ Authorization: Bearer {token}
 {
   "success": true,
   "data": {
-    "last_app_opened_at": "2025-01-15T10:30:00+00:00"
+    "last_app_opened_at": "2025-01-15T10:30:00+00:00",
+    "sections": {
+      "receipts": "2025-01-15T10:25:00+00:00",
+      "products_in_transit": "2025-01-15T10:20:00+00:00",
+      "sales": "2025-01-15T10:10:00+00:00"
+    }
   }
 }
 ```
 
-### 3. Получить список поступлений с счетчиком
+### 3. Отметить просмотр раздела
+**POST** `/api/app/sections/viewed`
+
+Фиксирует время посещения конкретного раздела. Используется для обнуления счётчика при переходе на экран.
+
+**Заголовки:**
+```
+Authorization: Bearer {token}
+Content-Type: application/json
+```
+
+**Тело запроса:**
+```json
+{
+  "section": "receipts",
+  "viewed_at": "2025-01-15T10:30:00+00:00" // опционально, по умолчанию текущее серверное время
+}
+```
+
+Допустимые значения `section`:
+- `receipts`
+- `products_in_transit`
+- `sales`
+
+**Ответ:**
+```json
+{
+  "success": true,
+  "data": {
+    "section": "receipts",
+    "last_viewed_at": "2025-01-15T10:30:00+00:00",
+    "sections": {
+      "receipts": "2025-01-15T10:30:00+00:00",
+      "products_in_transit": "2025-01-15T10:20:00+00:00",
+      "sales": "2025-01-15T10:10:00+00:00"
+    }
+  }
+}
+```
+
+### 4. Получить список поступлений с счетчиком
 **GET** `/api/receipts`
 
 **Параметры запроса:**
@@ -75,6 +125,7 @@ Authorization: Bearer {token}
     }
   ],
   "new_count": 5,
+  "last_viewed_at": "2025-01-15T10:30:00+00:00",
   "last_app_opened_at": "2025-01-15T10:30:00+00:00",
   "pagination": {
     "current_page": 1,
@@ -85,7 +136,7 @@ Authorization: Bearer {token}
 }
 ```
 
-### 4. Получить только счетчик новых поступлений
+### 5. Получить только счетчик новых поступлений
 **GET** `/api/receipts/new-count`
 
 **Параметры запроса:**
@@ -103,20 +154,82 @@ Authorization: Bearer {token}
   "success": true,
   "data": {
     "new_count": 5,
+    "last_viewed_at": "2025-01-15T10:30:00+00:00",
     "last_app_opened_at": "2025-01-15T10:30:00+00:00"
   }
 }
 ```
 
-### 5. Получить список товаров в пути с счетчиком
+### 6. Получить список товаров в пути с счетчиком
 **GET** `/api/products-in-transit`
 
 Параметры и формат ответа аналогичны `/api/receipts`
 
-### 6. Получить только счетчик новых товаров в пути
+### 7. Получить только счетчик новых товаров в пути
 **GET** `/api/products-in-transit/new-count`
 
 Параметры и формат ответа аналогичны `/api/receipts/new-count`
+
+### 8. Получить список продаж с счетчиком
+**GET** `/api/sales`
+
+**Параметры запроса:**
+- `page` (int) — номер страницы (по умолчанию 1)
+- `per_page` (int) — количество записей на странице (по умолчанию 15)
+- `search`, `warehouse_id`, `payment_status`, `payment_method`, `date_from`, `date_to`, `active` — фильтры, совпадающие с существующим функционалом списка продаж
+
+**Заголовки:**
+```
+Authorization: Bearer {token}
+```
+
+**Ответ:**
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "sale_number": "S-001",
+      // ... остальные поля продажи
+    }
+  ],
+  "new_count": 3,
+  "last_viewed_at": "2025-11-07T11:27:39+00:00",
+  "last_app_opened_at": "2025-11-07T11:27:39+00:00",
+  "links": {
+    "first": "...",
+    "last": "...",
+    "prev": null,
+    "next": "..."
+  },
+  "meta": {
+    "current_page": 1,
+    "last_page": 5,
+    "per_page": 15,
+    "total": 72
+  }
+}
+```
+
+### 9. Получить только счетчик новых продаж
+**GET** `/api/sales/new-count`
+
+**Заголовки:**
+```
+Authorization: Bearer {token}
+```
+
+**Ответ:**
+```json
+{
+  "success": true,
+  "data": {
+    "new_count": 3,
+    "last_viewed_at": "2025-11-07T11:27:39+00:00",
+    "last_app_opened_at": "2025-11-07T11:27:39+00:00"
+  }
+}
+```
 
 ---
 
@@ -149,14 +262,26 @@ class AppOpenedResponse {
 
 class AppOpenedData {
   final String? lastAppOpenedAt;
+  final Map<String, String?> sections;
 
   AppOpenedData({
     this.lastAppOpenedAt,
+    this.sections = const {},
   });
 
   factory AppOpenedData.fromJson(Map<String, dynamic> json) {
+    final sectionsJson = json['sections'];
+    final mappedSections = <String, String?>{};
+
+    if (sectionsJson is Map<String, dynamic>) {
+      sectionsJson.forEach((key, value) {
+        mappedSections[key] = value as String?;
+      });
+    }
+
     return AppOpenedData(
       lastAppOpenedAt: json['last_app_opened_at'],
+      sections: mappedSections,
     );
   }
 }
@@ -169,6 +294,7 @@ class ReceiptsResponse {
   final bool success;
   final List<dynamic> data;
   final int newCount;
+  final String? lastViewedAt;
   final String? lastAppOpenedAt;
   final Pagination? pagination;
 
@@ -176,6 +302,7 @@ class ReceiptsResponse {
     required this.success,
     required this.data,
     required this.newCount,
+    this.lastViewedAt,
     this.lastAppOpenedAt,
     this.pagination,
   });
@@ -185,6 +312,7 @@ class ReceiptsResponse {
       success: json['success'] ?? false,
       data: json['data'] ?? [],
       newCount: json['new_count'] ?? 0,
+      lastViewedAt: json['last_viewed_at'],
       lastAppOpenedAt: json['last_app_opened_at'],
       pagination: json['pagination'] != null 
           ? Pagination.fromJson(json['pagination']) 
@@ -212,16 +340,19 @@ class NewCountResponse {
 
 class NewCountData {
   final int newCount;
+  final String? lastViewedAt;
   final String? lastAppOpenedAt;
 
   NewCountData({
     required this.newCount,
+    this.lastViewedAt,
     this.lastAppOpenedAt,
   });
 
   factory NewCountData.fromJson(Map<String, dynamic> json) {
     return NewCountData(
       newCount: json['new_count'] ?? 0,
+      lastViewedAt: json['last_viewed_at'],
       lastAppOpenedAt: json['last_app_opened_at'],
     );
   }
@@ -764,8 +895,8 @@ class Badge extends StatelessWidget {
 
 ## Логика работы
 
-- Если `last_app_opened_at` равно `null` (первое открытие), все записи считаются новыми.
-- Если `last_app_opened_at` установлено, считаются записи, созданные после этого времени (`created_at > last_app_opened_at`).
+- Если для раздела нет `last_viewed_at` (первое посещение), все записи считаются новыми.
+- Если `last_viewed_at` установлено, считаются записи, созданные после этого времени (`created_at > last_viewed_at`).
 - Время синхронизируется с сервером, поэтому используется серверное время.
 
 ---
@@ -775,4 +906,133 @@ class Badge extends StatelessWidget {
 - Все эндпоинты требуют аутентификации через Bearer токен.
 - Счетчики обновляются автоматически при каждом запросе списка.
 - Для оптимизации можно использовать отдельные эндпоинты `/new-count` для быстрого получения только счетчика без загрузки полного списка.
+
+## Пошаговая проверка на боевом сервере
+
+### 1. Получить токен авторизации
+
+- **Запрос**: `POST https://warehouse.expwood.ru/api/auth/login`
+- **Заголовки**: `Content-Type: application/json`
+- **Тело**:
+  ```json
+  {"login":"admin","password":"password"}
+  ```
+- **Ответ** (фрагмент):
+  ```json
+  {
+    "message": "Успешный вход",
+    "user": {
+      "username": "admin",
+      "last_app_opened_at": null
+    },
+    "token": "<BEARER_TOKEN>"
+  }
+  ```
+
+### 2. Проверить текущее время открытия
+
+- **Запрос**: `GET https://warehouse.expwood.ru/api/app/last-opened`
+- **Заголовки**: `Authorization: Bearer <BEARER_TOKEN>`
+- **Ожидаемый ответ до отметки**:
+  ```json
+  {
+    "success": true,
+    "data": {
+      "last_app_opened_at": null,
+      "sections": {
+        "receipts": null,
+        "products_in_transit": null,
+        "sales": null
+      }
+    }
+  }
+  ```
+
+### 3. Зафиксировать открытие приложения
+
+- **Запрос**: `POST https://warehouse.expwood.ru/api/app/opened`
+- **Заголовки**: `Authorization: Bearer <BEARER_TOKEN>`, `Content-Type: application/json`
+- **Тело**: пустое
+- **Ответ**:
+  ```json
+  {
+    "success": true,
+    "message": "Время открытия обновлено",
+    "data": {
+      "last_app_opened_at": "2025-11-07T11:27:39+00:00",
+      "sections": {
+        "receipts": null,
+        "products_in_transit": null,
+        "sales": null
+      }
+    }
+  }
+  ```
+
+### 4. Зафиксировать посещение конкретного раздела
+
+- **Запрос**: `POST https://warehouse.expwood.ru/api/app/sections/viewed`
+- **Заголовки**: `Authorization: Bearer <BEARER_TOKEN>`, `Content-Type: application/json`
+- **Тело**:
+  ```json
+  {
+    "section": "receipts"
+  }
+  ```
+- **Ответ**:
+  ```json
+  {
+    "success": true,
+    "data": {
+      "section": "receipts",
+      "last_viewed_at": "2025-11-07T11:27:45+00:00",
+      "sections": {
+        "receipts": "2025-11-07T11:27:45+00:00",
+        "products_in_transit": null,
+        "sales": null
+      }
+    }
+  }
+  ```
+
+Повторите вызов для разделов `products_in_transit` и `sales`, когда пользователь реально их откроет.
+
+### 5. Проверить счетчики новых записей
+
+- **Поступление товара**: `GET https://warehouse.expwood.ru/api/receipts/new-count`
+- **Товары в пути**: `GET https://warehouse.expwood.ru/api/products-in-transit/new-count`
+- **Продажи**: `GET https://warehouse.expwood.ru/api/sales/new-count`
+- **Общие заголовки**: `Authorization: Bearer <BEARER_TOKEN>`
+- **Ответ сразу после отметки**:
+  ```json
+  {
+    "success": true,
+    "data": {
+      "new_count": 0,
+      "last_viewed_at": "2025-11-07T11:27:45+00:00",
+      "last_app_opened_at": "2025-11-07T11:27:39+00:00"
+    }
+  }
+  ```
+
+### 6. Добавить новые записи и перепроверить
+
+- После создания новых «Поступлений», «Товаров в пути» и/или «Продаж» повторите шаг 5.
+- **Пример ответа после добавления записей**:
+  ```json
+  {
+    "success": true,
+    "data": {
+      "new_count": 2,
+      "last_viewed_at": "2025-11-07T11:27:45+00:00",
+      "last_app_opened_at": "2025-11-07T11:27:39+00:00"
+    }
+  }
+  ```
+
+### 7. Рекомендации по вызовам `POST /api/app/opened`
+
+- Отправляйте запрос при входе пользователя в приложение, при возврате из фонового режима или после явного действия «просмотрено/обновлено», если нужно сбросить счётчики.
+- Не вызывайте endpoint перед каждым API-запросом, чтобы не обнулять `new_count` без необходимости.
+- После завершения проверки рекомендуется выполнить `POST /api/auth/logout`, чтобы отозвать временный Bearer-токен.
 

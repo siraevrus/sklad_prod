@@ -46,6 +46,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::prefix('app')->group(function () {
         Route::post('/opened', [\App\Http\Controllers\Api\AppController::class, 'markOpened']);
         Route::get('/last-opened', [\App\Http\Controllers\Api\AppController::class, 'getLastOpened']);
+        Route::post('/sections/viewed', [\App\Http\Controllers\Api\AppController::class, 'markSectionViewed']);
     });
 
     // Товары

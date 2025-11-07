@@ -8,8 +8,10 @@ use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Carbon;
 use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable implements FilamentUser
@@ -147,6 +149,11 @@ class User extends Authenticatable implements FilamentUser
         return $this->belongsTo(Warehouse::class);
     }
 
+    public function sectionViews(): HasMany
+    {
+        return $this->hasMany(UserSectionView::class);
+    }
+
     /**
      * Check if user can access Filament panel.
      */
@@ -170,5 +177,20 @@ class User extends Authenticatable implements FilamentUser
     public function getLastAppOpenedAt(): ?\Carbon\Carbon
     {
         return $this->last_app_opened_at;
+    }
+
+    public function markSectionViewed(string $section, ?Carbon $viewedAt = null): void
+    {
+        $this->sectionViews()->updateOrCreate(
+            ['section' => $section],
+            ['last_viewed_at' => $viewedAt ?? now()]
+        );
+    }
+
+    public function getSectionLastViewedAt(string $section): ?Carbon
+    {
+        return $this->sectionViews()
+            ->where('section', $section)
+            ->first()?->last_viewed_at;
     }
 }

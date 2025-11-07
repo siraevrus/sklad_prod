@@ -5,6 +5,7 @@ namespace Tests\Feature\Api;
 use App\Models\Product;
 use App\Models\Sale;
 use App\Models\User;
+use App\Models\UserSectionView;
 use App\Models\Warehouse;
 use App\UserRole;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -20,8 +21,9 @@ class SalesNewCountTest extends TestCase
         $user = User::factory()->create([
             'role' => UserRole::WAREHOUSE_WORKER,
             'warehouse_id' => $warehouse->id,
-            'last_app_opened_at' => now()->subHour(),
         ]);
+        $viewedAt = now()->subHour();
+        $user->markSectionViewed(UserSectionView::SECTION_SALES, $viewedAt);
 
         $product = Product::factory()->inStock()->create([
             'warehouse_id' => $warehouse->id,
@@ -49,10 +51,7 @@ class SalesNewCountTest extends TestCase
         $response = $this->getJson('/api/sales')->assertOk();
 
         $this->assertSame(1, $response->json('new_count'));
-        $this->assertSame(
-            $user->last_app_opened_at?->toIso8601String(),
-            $response->json('last_app_opened_at')
-        );
+        $this->assertSame($viewedAt->toIso8601String(), $response->json('last_viewed_at'));
     }
 
     public function test_sales_new_count_endpoint_respects_last_app_opened_time(): void
@@ -61,8 +60,9 @@ class SalesNewCountTest extends TestCase
         $user = User::factory()->create([
             'role' => UserRole::WAREHOUSE_WORKER,
             'warehouse_id' => $warehouse->id,
-            'last_app_opened_at' => now()->subMinutes(30),
         ]);
+        $viewedAt = now()->subMinutes(30);
+        $user->markSectionViewed(UserSectionView::SECTION_SALES, $viewedAt);
 
         $product = Product::factory()->inStock()->create([
             'warehouse_id' => $warehouse->id,
@@ -93,8 +93,8 @@ class SalesNewCountTest extends TestCase
 
         $this->assertSame(1, $response->json('data.new_count'));
         $this->assertSame(
-            $user->last_app_opened_at?->toIso8601String(),
-            $response->json('data.last_app_opened_at')
+            $viewedAt->toIso8601String(),
+            $response->json('data.last_viewed_at')
         );
     }
 }

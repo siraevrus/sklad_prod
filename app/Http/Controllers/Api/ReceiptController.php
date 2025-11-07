@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\ProductTemplate;
+use App\Models\UserSectionView;
 use App\Support\AttributeNormalizer;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -182,17 +184,20 @@ class ReceiptController extends Controller
     /**
      * Получить количество новых записей с момента последнего открытия приложения
      */
-    private function getNewCountForUser($user, $baseQuery): int
+    private function getNewCountForUser($user, Builder $baseQuery, string $section): int
     {
-        if (! $user || ! $user->last_app_opened_at) {
-            // Если пользователь не открывал приложение ранее, считаем все записи как новые
-            return $baseQuery->count();
+        if (! $user) {
+            return (clone $baseQuery)->count();
         }
 
-        // Клонируем запрос для подсчета
-        $countQuery = clone $baseQuery;
+        $lastViewedAt = $user->getSectionLastViewedAt($section);
 
-        return $countQuery->where('created_at', '>', $user->last_app_opened_at)
+        if (! $lastViewedAt) {
+            return (clone $baseQuery)->count();
+        }
+
+        return (clone $baseQuery)
+            ->where('created_at', '>', $lastViewedAt)
             ->count();
     }
 
@@ -202,6 +207,9 @@ class ReceiptController extends Controller
     public function index(Request $request): JsonResponse
     {
         $user = Auth::user();
+
+        $section = $this->resolveSection($request);
+        $lastViewedAt = $user?->getSectionLastViewedAt($section);
 
         // Новый блок: поддержка фильтрации по статусу
         $status = $request->get('status');
@@ -282,12 +290,13 @@ class ReceiptController extends Controller
         $receipts = $query->paginate($perPage);
 
         // Подсчет новых записей
-        $newCount = $this->getNewCountForUser($user, $baseQueryForCount);
+        $newCount = $this->getNewCountForUser($user, $baseQueryForCount, $section);
 
         return response()->json([
             'success' => true,
             'data' => $receipts->items(),
             'new_count' => $newCount,
+            'last_viewed_at' => $lastViewedAt?->toIso8601String(),
             'last_app_opened_at' => $user?->last_app_opened_at?->toIso8601String(),
             'pagination' => [
                 'current_page' => $receipts->currentPage(),
@@ -373,15 +382,28 @@ class ReceiptController extends Controller
             });
         }
 
-        $newCount = $this->getNewCountForUser($user, $query);
+        $section = $this->resolveSection($request);
+        $lastViewedAt = $user?->getSectionLastViewedAt($section);
+
+        $newCount = $this->getNewCountForUser($user, $query, $section);
 
         return response()->json([
             'success' => true,
             'data' => [
                 'new_count' => $newCount,
+                'last_viewed_at' => $lastViewedAt?->toIso8601String(),
                 'last_app_opened_at' => $user?->last_app_opened_at?->toIso8601String(),
             ],
         ]);
+    }
+
+    private function resolveSection(Request $request): string
+    {
+        if ($request->is('api/products-in-transit*')) {
+            return UserSectionView::SECTION_PRODUCTS_IN_TRANSIT;
+        }
+
+        return UserSectionView::SECTION_RECEIPTS;
     }
 
     /**

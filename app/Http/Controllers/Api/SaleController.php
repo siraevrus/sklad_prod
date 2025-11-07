@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\Sale;
 use App\Models\User;
+use App\Models\UserSectionView;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -29,11 +30,13 @@ class SaleController extends Controller
 
         $sales = $query->paginate($request->get('per_page', 15));
 
-        $newCount = $this->getNewCountForUser($user, $baseQueryForCount);
+        $lastViewedAt = $user?->getSectionLastViewedAt(UserSectionView::SECTION_SALES);
+        $newCount = $this->getNewCountForUser($user, $baseQueryForCount, UserSectionView::SECTION_SALES);
 
         return response()->json([
             'data' => $sales->items(),
             'new_count' => $newCount,
+            'last_viewed_at' => $lastViewedAt?->toIso8601String(),
             'last_app_opened_at' => $user?->last_app_opened_at?->toIso8601String(),
             'links' => [
                 'first' => $sales->url(1),
@@ -105,14 +108,20 @@ class SaleController extends Controller
         return $query;
     }
 
-    private function getNewCountForUser(?User $user, Builder $baseQuery): int
+    private function getNewCountForUser(?User $user, Builder $baseQuery, string $section): int
     {
-        if (! $user || ! $user->last_app_opened_at) {
+        if (! $user) {
+            return (clone $baseQuery)->count();
+        }
+
+        $lastViewedAt = $user->getSectionLastViewedAt($section);
+
+        if (! $lastViewedAt) {
             return (clone $baseQuery)->count();
         }
 
         return (clone $baseQuery)
-            ->where('created_at', '>', $user->last_app_opened_at)
+            ->where('created_at', '>', $lastViewedAt)
             ->count();
     }
 
@@ -123,12 +132,14 @@ class SaleController extends Controller
 
         $query = $this->buildSalesQuery($request, $user);
 
-        $newCount = $this->getNewCountForUser($user, $query);
+        $lastViewedAt = $user?->getSectionLastViewedAt(UserSectionView::SECTION_SALES);
+        $newCount = $this->getNewCountForUser($user, $query, UserSectionView::SECTION_SALES);
 
         return response()->json([
             'success' => true,
             'data' => [
                 'new_count' => $newCount,
+                'last_viewed_at' => $lastViewedAt?->toIso8601String(),
                 'last_app_opened_at' => $user?->last_app_opened_at?->toIso8601String(),
             ],
         ]);
