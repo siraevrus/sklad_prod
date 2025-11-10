@@ -812,7 +812,8 @@ class ProductResource extends Resource
             ])
             ->emptyStateActions([
                 Tables\Actions\CreateAction::make(),
-            ]);
+            ])
+            ->defaultSort('arrival_date', 'desc');
     }
 
     public static function getRelations(): array
