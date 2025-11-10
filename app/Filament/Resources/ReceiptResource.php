@@ -435,12 +435,6 @@ class ReceiptResource extends Resource
                     ->label('Статус')
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('actual_arrival_date')
-                    ->label('Фактическая дата')
-                    ->date()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-
                 Tables\Columns\TextColumn::make('creator.name')
                     ->label('Сотрудник')
                     ->sortable(),
