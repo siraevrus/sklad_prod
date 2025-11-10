@@ -433,7 +433,8 @@ class ReceiptResource extends Resource
 
                 Tables\Columns\TextColumn::make('status')
                     ->label('Статус')
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
 
                 Tables\Columns\TextColumn::make('creator.name')
                     ->label('Сотрудник')
