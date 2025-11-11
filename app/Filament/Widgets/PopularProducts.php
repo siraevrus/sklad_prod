@@ -19,6 +19,11 @@ class PopularProducts extends BaseWidget
 
     protected static ?string $heading = 'Популярные товары';
 
+    public static function canView(): bool
+    {
+        return false;
+    }
+
     public function getHeading(): string
     {
         return 'Популярные товары';
