@@ -3,6 +3,7 @@
 namespace App\Filament\Widgets;
 
 use App\Models\Sale;
+use Carbon\Carbon;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
@@ -79,22 +80,15 @@ class LatestSales extends BaseWidget
                     })
                     ->sortable(),
 
-                Tables\Columns\BadgeColumn::make('payment_status')
-                    ->label('Оплата')
-                    ->colors([
-                        'warning' => Sale::PAYMENT_STATUS_PENDING,
-                        'success' => Sale::PAYMENT_STATUS_PAID,
-                        'info' => Sale::PAYMENT_STATUS_PARTIALLY_PAID,
-                        'danger' => Sale::PAYMENT_STATUS_CANCELLED,
-                    ])
-                    ->formatStateUsing(function (Sale $record): string {
-                        return $record->getPaymentStatusLabel();
-                    })
-                    ->sortable(),
-
                 Tables\Columns\TextColumn::make('sale_date')
                     ->label('Дата продажи')
-                    ->date()
+                    ->formatStateUsing(function ($state): string {
+                        if (! $state) {
+                            return '—';
+                        }
+
+                        return Carbon::parse($state)->format('d.m.Y');
+                    })
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('user.name')
