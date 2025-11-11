@@ -35,8 +35,10 @@ class DashboardStats extends BaseWidget
                 ->color('warning')
                 ->url('admin/warehouses'),
 
-            Stat::make('Товаров', Product::count())
-                ->description('Всего товаров')
+            Stat::make('Товаров', Product::where('status', Product::STATUS_IN_STOCK)
+                ->where('is_active', true)
+                ->count())
+                ->description('Товары на складе')
                 ->descriptionIcon('heroicon-m-cube')
                 ->color('success')
                 ->url('admin/products'),

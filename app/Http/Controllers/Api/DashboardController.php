@@ -22,7 +22,10 @@ class DashboardController extends Controller
         $employeesActive = User::query()->where('is_blocked', false)->count();
         $warehousesActive = Warehouse::query()->where('is_active', true)->count();
 
-        $productsTotal = Product::query()->count();
+        $productsTotal = Product::query()
+            ->where('status', Product::STATUS_IN_STOCK)
+            ->when(schema_has_column('products', 'is_active'), fn ($q) => $q->where('is_active', true))
+            ->count();
 
         $productsInTransit = Product::query()
             ->when(defined(Product::class.'::STATUS_IN_TRANSIT'), function ($q) {
