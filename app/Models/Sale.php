@@ -16,6 +16,7 @@ class Sale extends Model
         'composite_product_key',
         'warehouse_id',
         'user_id',
+        'client_id',
         'sale_number',
         'customer_name',
         'customer_phone',
@@ -98,6 +99,14 @@ class Sale extends Model
     public function company(): BelongsTo
     {
         return $this->belongsTo(Company::class, 'warehouse_id', 'id');
+    }
+
+    /**
+     * Связь с клиентом
+     */
+    public function client(): BelongsTo
+    {
+        return $this->belongsTo(Client::class);
     }
 
     /**
@@ -231,6 +240,11 @@ class Sale extends Model
      */
     public function getCustomerFullName(): string
     {
+        if ($this->client && $this->client->name) {
+            return $this->client->name;
+        }
+
+        // Fallback на старые данные для обратной совместимости
         if ($this->customer_name) {
             return $this->customer_name;
         }
@@ -245,12 +259,21 @@ class Sale extends Model
     {
         $contacts = [];
 
-        if ($this->customer_phone) {
-            $contacts[] = $this->customer_phone;
-        }
-
-        if ($this->customer_email) {
-            $contacts[] = $this->customer_email;
+        if ($this->client) {
+            if ($this->client->phone) {
+                $contacts[] = $this->client->phone;
+            }
+            if ($this->client->email) {
+                $contacts[] = $this->client->email;
+            }
+        } else {
+            // Fallback на старые данные для обратной совместимости
+            if ($this->customer_phone) {
+                $contacts[] = $this->customer_phone;
+            }
+            if ($this->customer_email) {
+                $contacts[] = $this->customer_email;
+            }
         }
 
         return $contacts ? implode(', ', $contacts) : 'Контакты не указаны';

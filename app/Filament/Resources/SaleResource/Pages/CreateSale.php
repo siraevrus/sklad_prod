@@ -78,6 +78,36 @@ class CreateSale extends CreateRecord
         $data['payment_status'] = $data['payment_status'] ?? 'pending';
         $data['is_active'] = $data['is_active'] ?? true;
 
+        // Создаем или находим клиента
+        if (! empty($data['customer_phone']) || ! empty($data['customer_name'])) {
+            // Если есть телефон, ищем по телефону, иначе по имени
+            $searchBy = ! empty($data['customer_phone'])
+                ? ['phone' => $data['customer_phone']]
+                : ['name' => $data['customer_name']];
+
+            $client = \App\Models\Client::firstOrCreate(
+                $searchBy,
+                [
+                    'name' => $data['customer_name'] ?? null,
+                    'phone' => $data['customer_phone'] ?? null,
+                    'email' => $data['customer_email'] ?? null,
+                    'address' => $data['customer_address'] ?? null,
+                ]
+            );
+
+            // Обновляем данные если клиент уже существует
+            if (! $client->wasRecentlyCreated) {
+                $client->update([
+                    'name' => $data['customer_name'] ?? $client->name,
+                    'phone' => $data['customer_phone'] ?? $client->phone,
+                    'email' => $data['customer_email'] ?? $client->email,
+                    'address' => $data['customer_address'] ?? $client->address,
+                ]);
+            }
+
+            $data['client_id'] = $client->id;
+        }
+
         return $data;
     }
 

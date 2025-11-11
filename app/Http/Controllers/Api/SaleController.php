@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Client;
 use App\Models\Product;
 use App\Models\Sale;
 use App\Models\User;
@@ -55,7 +56,7 @@ class SaleController extends Controller
 
     private function buildSalesQuery(Request $request, ?User $user, bool $withRelations = false): Builder
     {
-        $relations = ['product.producer', 'product.template', 'warehouse', 'user'];
+        $relations = ['product.producer', 'product.template', 'warehouse', 'user', 'client'];
 
         $query = $withRelations
             ? Sale::with($relations)
@@ -65,6 +66,11 @@ class SaleController extends Controller
             $query->where('sale_number', 'like', "%{$search}%")
                 ->orWhere('customer_name', 'like', "%{$search}%")
                 ->orWhere('customer_phone', 'like', "%{$search}%")
+                ->orWhereHas('client', function (Builder $clientQuery) use ($search) {
+                    $clientQuery->where('name', 'like', "%{$search}%")
+                        ->orWhere('phone', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%");
+                })
                 ->orWhereHas('product', function (Builder $productQuery) use ($search) {
                     $productQuery->where('name', 'like', "%{$search}%")
                         ->orWhereHas('template', function (Builder $templateQuery) use ($search) {
@@ -151,7 +157,7 @@ class SaleController extends Controller
     public function showById(int $id): JsonResponse
     {
         $user = Auth::user();
-        $sale = Sale::with(['product.producer', 'product.template', 'warehouse', 'user'])->find($id);
+        $sale = Sale::with(['product.producer', 'product.template', 'warehouse', 'user', 'client'])->find($id);
         if (! $sale) {
             return response()->json(['message' => 'Продажа не найдена'], 404);
         }
@@ -231,12 +237,42 @@ class SaleController extends Controller
         $totalPrice = $request->get('total_price', 0.00);
         $quantity = $request->quantity;
 
+        // Создаем или находим клиента
+        $client = null;
+        if ($request->customer_phone || $request->customer_name) {
+            // Если есть телефон, ищем по телефону, иначе по имени
+            $searchBy = $request->customer_phone 
+                ? ['phone' => $request->customer_phone]
+                : ['name' => $request->customer_name];
+
+            $client = Client::firstOrCreate(
+                $searchBy,
+                [
+                    'name' => $request->customer_name ?? null,
+                    'phone' => $request->customer_phone ?? null,
+                    'email' => $request->customer_email ?? null,
+                    'address' => $request->customer_address ?? null,
+                ]
+            );
+
+            // Если клиент уже существует, обновляем его данные если они изменились
+            if (! $client->wasRecentlyCreated) {
+                $client->update([
+                    'name' => $request->customer_name ?? $client->name,
+                    'phone' => $request->customer_phone ?? $client->phone,
+                    'email' => $request->customer_email ?? $client->email,
+                    'address' => $request->customer_address ?? $client->address,
+                ]);
+            }
+        }
+
         try {
             $sale = Sale::create([
                 'product_id' => $product->id,
                 'composite_product_key' => $compositeKey,
                 'warehouse_id' => $request->warehouse_id,
                 'user_id' => $user->id,
+                'client_id' => $client?->id,
                 'sale_number' => Sale::generateSaleNumber(),
                 'customer_name' => $request->customer_name,
                 'customer_phone' => $request->customer_phone,
@@ -284,7 +320,7 @@ class SaleController extends Controller
 
         return response()->json([
             'message' => 'Продажа создана',
-            'sale' => $sale->load(['product.producer', 'product.template', 'warehouse', 'user']),
+            'sale' => $sale->load(['product.producer', 'product.template', 'warehouse', 'user', 'client']),
         ], 201);
     }
 
@@ -327,6 +363,38 @@ class SaleController extends Controller
             'invoice_number', 'reason_cancellation', 'notes', 'sale_date', 'is_active',
         ]));
 
+        // Обновляем или создаем клиента при изменении данных клиента
+        if ($request->hasAny(['customer_name', 'customer_phone', 'customer_email', 'customer_address'])) {
+            if ($request->customer_phone || $request->customer_name) {
+                // Если есть телефон, ищем по телефону, иначе по имени
+                $searchBy = $request->customer_phone
+                    ? ['phone' => $request->customer_phone]
+                    : ['name' => $request->customer_name];
+
+                $client = Client::firstOrCreate(
+                    $searchBy,
+                    [
+                        'name' => $request->customer_name ?? null,
+                        'phone' => $request->customer_phone ?? null,
+                        'email' => $request->customer_email ?? null,
+                        'address' => $request->customer_address ?? null,
+                    ]
+                );
+
+                // Если клиент уже существует, обновляем его данные
+                if (! $client->wasRecentlyCreated) {
+                    $client->update([
+                        'name' => $request->customer_name ?? $client->name,
+                        'phone' => $request->customer_phone ?? $client->phone,
+                        'email' => $request->customer_email ?? $client->email,
+                        'address' => $request->customer_address ?? $client->address,
+                    ]);
+                }
+
+                $sale->update(['client_id' => $client->id]);
+            }
+        }
+
         // Обновляем price_without_vat при изменении total_price
         if ($request->has('total_price')) {
             $sale->update(['price_without_vat' => $request->total_price]);
@@ -334,7 +402,7 @@ class SaleController extends Controller
 
         return response()->json([
             'message' => 'Продажа обновлена',
-            'sale' => $sale->load(['product.producer', 'product.template', 'warehouse', 'user']),
+            'sale' => $sale->load(['product.producer', 'product.template', 'warehouse', 'user', 'client']),
         ]);
     }
 
@@ -384,7 +452,7 @@ class SaleController extends Controller
         if ($sale->processSale()) {
             return response()->json([
                 'message' => 'Продажа оформлена',
-                'sale' => $sale->load(['product.producer', 'product.template', 'warehouse', 'user']),
+                'sale' => $sale->load(['product.producer', 'product.template', 'warehouse', 'user', 'client']),
             ]);
         }
 
@@ -406,7 +474,7 @@ class SaleController extends Controller
         if ($sale->cancelSale()) {
             return response()->json([
                 'message' => 'Продажа отменена',
-                'sale' => $sale->load(['product.producer', 'product.template', 'warehouse', 'user']),
+                'sale' => $sale->load(['product.producer', 'product.template', 'warehouse', 'user', 'client']),
             ]);
         }
 
@@ -468,11 +536,16 @@ class SaleController extends Controller
     {
         $user = Auth::user();
 
-        $query = Sale::with(['product.producer', 'product.template', 'warehouse', 'user'])
+        $query = Sale::with(['product.producer', 'product.template', 'warehouse', 'user', 'client'])
             ->when($request->search, function ($query, $search) {
                 $query->where('sale_number', 'like', "%{$search}%")
                     ->orWhere('customer_name', 'like', "%{$search}%")
                     ->orWhere('customer_phone', 'like', "%{$search}%")
+                    ->orWhereHas('client', function ($clientQuery) use ($search) {
+                        $clientQuery->where('name', 'like', "%{$search}%")
+                            ->orWhere('phone', 'like', "%{$search}%")
+                            ->orWhere('email', 'like', "%{$search}%");
+                    })
                     ->orWhereHas('product', function ($productQuery) use ($search) {
                         $productQuery->where('name', 'like', "%{$search}%")
                             ->orWhereHas('template', function ($templateQuery) use ($search) {
