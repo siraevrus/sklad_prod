@@ -8,6 +8,7 @@ use Filament\Forms\Form;
 use Filament\Pages\Auth\Login as BaseLogin;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\HtmlString;
+use Illuminate\Validation\ValidationException;
 
 class Login extends BaseLogin
 {
@@ -15,7 +16,7 @@ class Login extends BaseLogin
     {
         return $form
             ->schema([
-                TextInput::make('login')
+                TextInput::make('email')
                     ->label('Email или логин')
                     ->required()
                     ->autocomplete()
@@ -33,7 +34,7 @@ class Login extends BaseLogin
 
     protected function getCredentialsFromFormData(array $data): array
     {
-        $login = $data['login'];
+        $login = $data['email'];
 
         // Пытаемся найти пользователя по email или username
         $user = User::where('email', $login)
@@ -51,6 +52,16 @@ class Login extends BaseLogin
             'email' => $login,
             'password' => $data['password'],
         ];
+    }
+
+    /**
+     * Переопределяем валидацию, чтобы использовать поле 'email' вместо стандартного
+     */
+    protected function throwFailureValidationException(): never
+    {
+        throw ValidationException::withMessages([
+            'email' => __('filament-panels::pages/auth/login.messages.failed'),
+        ]);
     }
 
     public function getTitle(): string
