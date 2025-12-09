@@ -37,9 +37,10 @@ class Login extends BaseLogin
         $login = $data['email'];
 
         // Пытаемся найти пользователя по email или username
-        $user = User::where('email', $login)
-            ->orWhere('username', $login)
-            ->first();
+        $user = User::where(function ($query) use ($login) {
+            $query->where('email', $login)
+                ->orWhere('username', $login);
+        })->first();
 
         if ($user) {
             return [
